@@ -63,28 +63,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 主题样式
     colorThemeRadios: document.querySelectorAll('input[name="colorTheme"]'),
-    customThemeOption: document.getElementById('customThemeOption'),
-    customThemePreview: document.getElementById('customThemePreview'),
-    customThemeName: document.getElementById('customThemeName'),
     previewWord: document.getElementById('previewWord'),
     previewTooltip: document.getElementById('previewTooltip'),
-    createThemeBtn: document.getElementById('createThemeBtn'),
     importThemeBtn: document.getElementById('importThemeBtn'),
     exportThemeBtn: document.getElementById('exportThemeBtn'),
-    themeEditorGroup: document.getElementById('themeEditorGroup'),
+    themeEditorSidebar: document.getElementById('themeEditorSidebar'),
+    themeEditorPanel: document.getElementById('themeEditorPanel'),
+    themeEditorTitle: document.getElementById('themeEditorTitle'),
+    themeEditorForm: document.getElementById('themeEditorForm'),
     themeNameInput: document.getElementById('themeNameInput'),
     primaryColor: document.getElementById('primaryColor'),
     underlineColor: document.getElementById('underlineColor'),
+    underlineWidth: document.getElementById('underlineWidth'),
+    underlineStyle: document.getElementById('underlineStyle'),
     hoverBgColor: document.getElementById('hoverBgColor'),
+    wordColorEnabled: document.getElementById('wordColorEnabled'),
+    wordColor: document.getElementById('wordColor'),
+    originalColorEnabled: document.getElementById('originalColorEnabled'),
+    originalColor: document.getElementById('originalColor'),
     tooltipWordColor: document.getElementById('tooltipWordColor'),
     cardBgColor: document.getElementById('cardBgColor'),
     cardBgLightColor: document.getElementById('cardBgLightColor'),
     saveThemeBtn: document.getElementById('saveThemeBtn'),
-    cancelThemeBtn: document.getElementById('cancelThemeBtn'),
-    importThemeGroup: document.getElementById('importThemeGroup'),
-    importThemeCss: document.getElementById('importThemeCss'),
-    confirmImportBtn: document.getElementById('confirmImportBtn'),
-    cancelImportBtn: document.getElementById('cancelImportBtn'),
     ttsVoice: document.getElementById('ttsVoice'),
     ttsRate: document.getElementById('ttsRate'),
     ttsRateValue: document.getElementById('ttsRateValue'),
@@ -143,34 +143,138 @@ document.addEventListener('DOMContentLoaded', async () => {
     default: {
       name: '默认紫',
       primary: '#6366f1',
-      underline: 'rgba(99,102,241,0.5)',
+      underline: 'rgba(99,102,241,0.6)',
       hoverBg: 'rgba(99,102,241,0.15)',
-      tooltipWord: '#818cf8'
+      tooltipWord: '#818cf8',
+      underlineWidth: '1.5px',
+      underlineStyle: 'solid',
+      wordColor: '',
+      originalColor: ''
     },
     ocean: {
       name: '海洋蓝',
       primary: '#0ea5e9',
-      underline: 'rgba(14,165,233,0.5)',
-      hoverBg: 'rgba(14,165,233,0.15)',
-      tooltipWord: '#38bdf8'
+      underline: 'rgba(14,165,233,0.7)',
+      hoverBg: 'rgba(14,165,233,0.12)',
+      tooltipWord: '#38bdf8',
+      underlineWidth: '2px',
+      underlineStyle: 'dashed',
+      wordColor: '#0ea5e9',
+      originalColor: '#64748b'
     },
     forest: {
       name: '森林绿',
       primary: '#10b981',
-      underline: 'rgba(16,185,129,0.5)',
-      hoverBg: 'rgba(16,185,129,0.15)',
-      tooltipWord: '#34d399'
+      underline: 'rgba(16,185,129,0.6)',
+      hoverBg: 'rgba(16,185,129,0.1)',
+      tooltipWord: '#34d399',
+      underlineWidth: '1.5px',
+      underlineStyle: 'dotted',
+      wordColor: '#059669',
+      originalColor: '#6b7280'
     },
     sunset: {
       name: '日落橙',
       primary: '#f59e0b',
-      underline: 'rgba(245,158,11,0.5)',
-      hoverBg: 'rgba(245,158,11,0.15)',
-      tooltipWord: '#fbbf24'
+      underline: 'rgba(245,158,11,0.7)',
+      hoverBg: 'rgba(245,158,11,0.12)',
+      tooltipWord: '#fbbf24',
+      underlineWidth: '2px',
+      underlineStyle: 'wavy',
+      wordColor: '#d97706',
+      originalColor: '#78716c'
     }
   };
 
   let customTheme = null;
+
+  // 颜色选择器变化更新显示
+  function updateColorValues() {
+    if (elements.primaryColor) {
+      document.getElementById('primaryColorValue').textContent = elements.primaryColor.value;
+    }
+    if (elements.underlineColor) {
+      document.getElementById('underlineColorValue').textContent = elements.underlineColor.value;
+    }
+    if (elements.hoverBgColor) {
+      document.getElementById('hoverBgColorValue').textContent = elements.hoverBgColor.value;
+    }
+    if (elements.tooltipWordColor) {
+      document.getElementById('tooltipWordColorValue').textContent = elements.tooltipWordColor.value;
+    }
+    if (elements.cardBgColor) {
+      document.getElementById('cardBgColorValue').textContent = elements.cardBgColor.value;
+    }
+    if (elements.cardBgLightColor) {
+      document.getElementById('cardBgLightColorValue').textContent = elements.cardBgLightColor.value;
+    }
+    if (elements.wordColor) {
+      document.getElementById('wordColorValue').textContent = 
+        elements.wordColorEnabled?.checked ? elements.wordColor.value : '保持原样';
+    }
+    if (elements.originalColor) {
+      document.getElementById('originalColorValue').textContent = 
+        elements.originalColorEnabled?.checked ? elements.originalColor.value : '保持原样';
+    }
+  }
+
+  // 更新编辑器状态的函数
+  function updateThemeEditorState(themeId) {
+    const isDefault = themeId === 'default';
+    const theme = BUILT_IN_THEMES[themeId] || BUILT_IN_THEMES.default;
+    
+    // 更新标题
+    elements.themeEditorTitle.textContent = theme.name || '主题编辑器';
+    
+    // 填充表单值
+    elements.themeNameInput.value = theme.name || '';
+    elements.primaryColor.value = theme.primary || '#6366f1';
+    elements.underlineColor.value = theme.underline ? rgbaToHex(theme.underline) : '#6366f1';
+    elements.underlineWidth.value = theme.underlineWidth || '2px';
+    elements.underlineStyle.value = theme.underlineStyle || 'solid';
+    elements.hoverBgColor.value = theme.hoverBg ? rgbaToHex(theme.hoverBg) : '#6366f1';
+    elements.tooltipWordColor.value = theme.tooltipWord || '#818cf8';
+    elements.cardBgColor.value = theme.cardBg || '#1e293b';
+    elements.cardBgLightColor.value = theme.cardBgLight || '#ffffff';
+    
+    // 译文/原文颜色
+    const hasWordColor = theme.wordColor && theme.wordColor !== 'inherit';
+    const hasOriginalColor = theme.originalColor && theme.originalColor !== 'inherit';
+    elements.wordColorEnabled.checked = hasWordColor;
+    elements.wordColor.value = hasWordColor ? theme.wordColor : '#000000';
+    elements.originalColorEnabled.checked = hasOriginalColor;
+    elements.originalColor.value = hasOriginalColor ? theme.originalColor : '#000000';
+    
+    // 默认紫不可编辑，其他主题可以编辑
+    const formInputs = elements.themeEditorForm.querySelectorAll('input, select, button');
+    formInputs.forEach(input => {
+      if (input.id === 'wordColor') {
+        input.disabled = isDefault || !elements.wordColorEnabled.checked;
+      } else if (input.id === 'originalColor') {
+        input.disabled = isDefault || !elements.originalColorEnabled.checked;
+      } else {
+        input.disabled = isDefault;
+      }
+    });
+    
+    // 添加/移除禁用样式
+    elements.themeEditorForm.classList.toggle('disabled', isDefault);
+    
+    updateColorValues();
+  }
+  
+  // rgba 转 hex 的辅助函数
+  function rgbaToHex(rgba) {
+    if (!rgba || rgba.startsWith('#')) return rgba;
+    const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+      const r = parseInt(match[1]).toString(16).padStart(2, '0');
+      const g = parseInt(match[2]).toString(16).padStart(2, '0');
+      const b = parseInt(match[3]).toString(16).padStart(2, '0');
+      return `#${r}${g}${b}`;
+    }
+    return rgba;
+  }
 
   // 更新预览颜色和页面主色调
   function updatePreviewColors(theme) {
@@ -181,6 +285,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.style.setProperty('--preview-primary', theme.primary);
     root.style.setProperty('--preview-underline', theme.underline);
     root.style.setProperty('--preview-bg', theme.hoverBg);
+    root.style.setProperty('--preview-underline-width', theme.underlineWidth || '2px');
+    root.style.setProperty('--preview-underline-style', theme.underlineStyle || 'solid');
     
     // 计算渐变的第二个颜色（稍微偏紫/深一点）
     const gradientEnd = theme.primary.replace('#', '');
@@ -188,7 +294,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const g = Math.max(0, parseInt(gradientEnd.substr(2, 2), 16) - 30);
     const b = Math.min(255, parseInt(gradientEnd.substr(4, 2), 16) + 20);
     const secondColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    root.style.setProperty('--preview-badge-gradient', `linear-gradient(135deg, ${theme.primary}, ${secondColor})`);
     
     // 亮色主题下使用 primary 颜色，暗色主题下使用 tooltipWord（浅色版本）
     if (currentTheme === 'light') {
@@ -217,7 +322,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 :root {
   --vocabmeld-primary: ${theme.primary};
   --vocabmeld-underline: ${theme.underline};
+  --vocabmeld-underline-width: ${theme.underlineWidth || '2px'};
+  --vocabmeld-underline-style: ${theme.underlineStyle || 'solid'};
   --vocabmeld-hover-bg: ${theme.hoverBg};
+  --vocabmeld-word-color: ${theme.wordColor || ''};
+  --vocabmeld-original-color: ${theme.originalColor || ''};
   --vocabmeld-tooltip-word: ${theme.tooltipWord};
   --vocabmeld-card-bg: ${theme.cardBg || '#1e293b'};
   --vocabmeld-card-bg-light: ${theme.cardBgLight || '#ffffff'};
@@ -230,7 +339,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       const nameMatch = css.match(/主题:\s*([^\*\/\n]+)/);
       const primaryMatch = css.match(/--vocabmeld-primary:\s*([^;]+)/);
       const underlineMatch = css.match(/--vocabmeld-underline:\s*([^;]+)/);
+      const underlineWidthMatch = css.match(/--vocabmeld-underline-width:\s*([^;]+)/);
+      const underlineStyleMatch = css.match(/--vocabmeld-underline-style:\s*([^;]+)/);
       const hoverBgMatch = css.match(/--vocabmeld-hover-bg:\s*([^;]+)/);
+      const wordColorMatch = css.match(/--vocabmeld-word-color:\s*([^;]+)/);
+      const originalColorMatch = css.match(/--vocabmeld-original-color:\s*([^;]+)/);
       const tooltipWordMatch = css.match(/--vocabmeld-tooltip-word:\s*([^;]+)/);
       const cardBgMatch = css.match(/--vocabmeld-card-bg:\s*([^;]+)/);
       const cardBgLightMatch = css.match(/--vocabmeld-card-bg-light:\s*([^;]+)/);
@@ -241,7 +354,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         name: nameMatch ? nameMatch[1].trim() : '导入主题',
         primary: primaryMatch[1].trim(),
         underline: underlineMatch ? underlineMatch[1].trim() : `${primaryMatch[1].trim()}80`,
+        underlineWidth: underlineWidthMatch ? underlineWidthMatch[1].trim() : '2px',
+        underlineStyle: underlineStyleMatch ? underlineStyleMatch[1].trim() : 'solid',
         hoverBg: hoverBgMatch ? hoverBgMatch[1].trim() : `${primaryMatch[1].trim()}1a`,
+        wordColor: wordColorMatch ? wordColorMatch[1].trim() : '',
+        originalColor: originalColorMatch ? originalColorMatch[1].trim() : '',
         tooltipWord: tooltipWordMatch ? tooltipWordMatch[1].trim() : primaryMatch[1].trim(),
         cardBg: cardBgMatch ? cardBgMatch[1].trim() : '#1e293b',
         cardBgLight: cardBgLightMatch ? cardBgLightMatch[1].trim() : '#ffffff'
@@ -766,13 +883,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       const colorTheme = result.colorTheme || 'default';
       customTheme = result.customTheme || null;
       
-      // 如果有自定义主题，显示自定义选项
-      if (customTheme) {
-        elements.customThemeOption.style.display = '';
-        elements.customThemeName.textContent = customTheme.name || '自定义';
-        elements.customThemePreview.style.setProperty('--preview-primary', customTheme.primary);
-        elements.customThemePreview.style.setProperty('--preview-underline', customTheme.underline);
-        elements.customThemePreview.style.setProperty('--preview-bg', customTheme.hoverBg);
+      // 加载保存的可修改内置主题配置
+      if (result.customizedThemes) {
+        ['ocean', 'forest', 'sunset'].forEach(themeId => {
+          if (result.customizedThemes[themeId]) {
+            BUILT_IN_THEMES[themeId] = result.customizedThemes[themeId];
+            // 更新配色选择器中的预览和名称
+            const optionEl = document.querySelector(`input[name="colorTheme"][value="${themeId}"]`)?.closest('.color-theme-option');
+            if (optionEl) {
+              const previewEl = optionEl.querySelector('.color-theme-preview');
+              const nameEl = optionEl.querySelector('.color-theme-name');
+              const theme = result.customizedThemes[themeId];
+              if (previewEl) {
+                previewEl.style.setProperty('--preview-underline', theme.underline);
+                previewEl.style.setProperty('--preview-bg', theme.hoverBg);
+                previewEl.style.setProperty('--underline-width', theme.underlineWidth || '2px');
+                previewEl.style.setProperty('--underline-style', theme.underlineStyle || 'solid');
+                if (theme.wordColor) previewEl.style.setProperty('--word-color', theme.wordColor);
+                if (theme.originalColor) previewEl.style.setProperty('--original-color', theme.originalColor);
+              }
+              if (nameEl) nameEl.textContent = theme.name;
+            }
+          }
+        });
       }
       
       elements.colorThemeRadios.forEach(radio => {
@@ -780,8 +913,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       
       // 更新预览
-      const activeTheme = colorTheme === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[colorTheme] || BUILT_IN_THEMES.default;
+      const activeTheme = BUILT_IN_THEMES[colorTheme] || BUILT_IN_THEMES.default;
       updatePreviewColors(activeTheme);
+      
+      // 更新编辑器状态
+      setTimeout(() => {
+        updateThemeEditorState(colorTheme);
+      }, 0);
       
       // 站点规则
       const siteMode = result.siteMode || 'all';
@@ -1098,7 +1236,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       excludedSites: elements.excludedSitesInput.value.split('\n').filter(s => s.trim()),
       allowedSites: elements.allowedSitesInput.value.split('\n').filter(s => s.trim()),
       colorTheme: document.querySelector('input[name="colorTheme"]:checked')?.value || 'default',
-      customTheme: customTheme
+      customTheme: customTheme,
+      // 保存可修改的内置主题配置
+      customizedThemes: {
+        ocean: BUILT_IN_THEMES.ocean,
+        forest: BUILT_IN_THEMES.forest,
+        sunset: BUILT_IN_THEMES.sunset
+      }
     };
 
     try {
@@ -1252,6 +1396,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (navItem && section) {
       navItem.classList.add('active');
       section.classList.add('active');
+    }
+    
+    // 仅在主题样式页显示编辑器侧边栏
+    if (elements.themeEditorSidebar) {
+      elements.themeEditorSidebar.style.display = sectionId === 'style' ? '' : 'none';
     }
   }
 
@@ -1623,29 +1772,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (theme) {
           updatePreviewColors(theme);
         }
+        updateThemeEditorState(themeId);
         debouncedSave(200);
       });
     });
-
-    // 创建主题按钮
-    elements.createThemeBtn?.addEventListener('click', () => {
-      elements.themeEditorGroup.style.display = '';
-      elements.importThemeGroup.style.display = 'none';
-      elements.themeNameInput.value = '';
-      elements.primaryColor.value = '#6366f1';
-      elements.underlineColor.value = '#6366f1';
-      elements.hoverBgColor.value = '#6366f1';
-      elements.tooltipWordColor.value = '#818cf8';
-      elements.cardBgColor.value = '#1e293b';
-      elements.cardBgLightColor.value = '#ffffff';
-      updateColorValues();
-    });
+    
+    // 初始化编辑器状态
+    const initialTheme = document.querySelector('input[name="colorTheme"]:checked')?.value || 'default';
+    updateThemeEditorState(initialTheme);
 
     // 导入主题按钮
     elements.importThemeBtn?.addEventListener('click', () => {
-      elements.importThemeGroup.style.display = '';
-      elements.themeEditorGroup.style.display = 'none';
-      elements.importThemeCss.value = '';
+      const css = prompt('请粘贴主题 CSS 代码:');
+      if (css) {
+        const parsed = parseThemeCss(css);
+        if (parsed) {
+          const selectedThemeId = document.querySelector('input[name="colorTheme"]:checked')?.value;
+          if (selectedThemeId && selectedThemeId !== 'default') {
+            // 更新当前选中的主题
+            BUILT_IN_THEMES[selectedThemeId] = parsed;
+            updatePreviewColors(parsed);
+            updateThemeEditorState(selectedThemeId);
+            saveSettings();
+            alert('主题导入成功！');
+          } else {
+            alert('请先选择一个可编辑的主题（海洋蓝/森林绿/日落橙）');
+          }
+        } else {
+          alert('无法解析主题 CSS，请检查格式是否正确。');
+        }
+      }
     });
 
     // 导出主题按钮
@@ -1662,99 +1818,84 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // 颜色选择器变化更新显示
-    function updateColorValues() {
-      if (elements.primaryColor) {
-        document.getElementById('primaryColorValue').textContent = elements.primaryColor.value;
-      }
-      if (elements.underlineColor) {
-        document.getElementById('underlineColorValue').textContent = elements.underlineColor.value;
-      }
-      if (elements.hoverBgColor) {
-        document.getElementById('hoverBgColorValue').textContent = elements.hoverBgColor.value;
-      }
-      if (elements.tooltipWordColor) {
-        document.getElementById('tooltipWordColorValue').textContent = elements.tooltipWordColor.value;
-      }
-      if (elements.cardBgColor) {
-        document.getElementById('cardBgColorValue').textContent = elements.cardBgColor.value;
-      }
-      if (elements.cardBgLightColor) {
-        document.getElementById('cardBgLightColorValue').textContent = elements.cardBgLightColor.value;
-      }
-    }
-
     elements.primaryColor?.addEventListener('input', updateColorValues);
     elements.cardBgColor?.addEventListener('input', updateColorValues);
     elements.cardBgLightColor?.addEventListener('input', updateColorValues);
     elements.underlineColor?.addEventListener('input', updateColorValues);
     elements.hoverBgColor?.addEventListener('input', updateColorValues);
     elements.tooltipWordColor?.addEventListener('input', updateColorValues);
+    elements.wordColor?.addEventListener('input', updateColorValues);
+    elements.originalColor?.addEventListener('input', updateColorValues);
+    
+    // 译文/原文颜色启用切换
+    elements.wordColorEnabled?.addEventListener('change', () => {
+      elements.wordColor.disabled = !elements.wordColorEnabled.checked;
+      document.getElementById('wordColorValue').textContent = 
+        elements.wordColorEnabled.checked ? elements.wordColor.value : '保持原样';
+    });
+    elements.originalColorEnabled?.addEventListener('change', () => {
+      elements.originalColor.disabled = !elements.originalColorEnabled.checked;
+      document.getElementById('originalColorValue').textContent = 
+        elements.originalColorEnabled.checked ? elements.originalColor.value : '保持原样';
+    });
 
-    // 保存主题
+    // 保存主题（实时保存）
     elements.saveThemeBtn?.addEventListener('click', () => {
-      const name = elements.themeNameInput.value.trim() || '自定义主题';
+      const selectedThemeId = document.querySelector('input[name="colorTheme"]:checked')?.value;
+      
+      // 默认紫不可修改
+      if (selectedThemeId === 'default') return;
+      
+      const name = elements.themeNameInput.value.trim() || BUILT_IN_THEMES[selectedThemeId]?.name || '自定义';
       const primary = elements.primaryColor.value;
       
-      customTheme = {
+      const updatedTheme = {
         name,
         primary,
-        underline: hexToRgba(elements.underlineColor.value, 0.5),
+        underline: hexToRgba(elements.underlineColor.value, 0.6),
         hoverBg: hexToRgba(elements.hoverBgColor.value, 0.15),
         tooltipWord: elements.tooltipWordColor.value,
+        underlineWidth: elements.underlineWidth.value,
+        underlineStyle: elements.underlineStyle.value,
+        wordColor: elements.wordColorEnabled.checked ? elements.wordColor.value : '',
+        originalColor: elements.originalColorEnabled.checked ? elements.originalColor.value : '',
         cardBg: elements.cardBgColor.value,
         cardBgLight: elements.cardBgLightColor.value
       };
       
-      // 显示自定义主题选项
-      elements.customThemeOption.style.display = '';
-      elements.customThemeName.textContent = name;
-      elements.customThemePreview.style.setProperty('--preview-primary', customTheme.primary);
-      elements.customThemePreview.style.setProperty('--preview-underline', customTheme.underline);
-      elements.customThemePreview.style.setProperty('--preview-bg', customTheme.hoverBg);
+      // 更新内置主题
+      BUILT_IN_THEMES[selectedThemeId] = updatedTheme;
       
-      // 选中自定义主题
-      document.querySelector('input[name="colorTheme"][value="custom"]').checked = true;
-      updatePreviewColors(customTheme);
+      // 更新显示
+      elements.themeEditorTitle.textContent = name;
       
-      elements.themeEditorGroup.style.display = 'none';
-      saveSettings();
-    });
-
-    // 取消编辑
-    elements.cancelThemeBtn?.addEventListener('click', () => {
-      elements.themeEditorGroup.style.display = 'none';
-    });
-
-    // 确认导入
-    elements.confirmImportBtn?.addEventListener('click', () => {
-      const css = elements.importThemeCss.value;
-      const parsed = parseThemeCss(css);
-      if (parsed) {
-        customTheme = parsed;
-        
-        // 显示自定义主题选项
-        elements.customThemeOption.style.display = '';
-        elements.customThemeName.textContent = parsed.name;
-        elements.customThemePreview.style.setProperty('--preview-primary', parsed.primary);
-        elements.customThemePreview.style.setProperty('--preview-underline', parsed.underline);
-        elements.customThemePreview.style.setProperty('--preview-bg', parsed.hoverBg);
-        
-        // 选中自定义主题
-        document.querySelector('input[name="colorTheme"][value="custom"]').checked = true;
-        updatePreviewColors(customTheme);
-        
-        elements.importThemeGroup.style.display = 'none';
-        saveSettings();
-        alert('主题导入成功！');
-      } else {
-        alert('无法解析主题 CSS，请检查格式是否正确。');
+      // 更新配色选择器中的预览
+      const previewEl = document.querySelector(`input[name="colorTheme"][value="${selectedThemeId}"]`)
+        ?.closest('.color-theme-option')
+        ?.querySelector('.color-theme-preview');
+      if (previewEl) {
+        previewEl.style.setProperty('--preview-underline', updatedTheme.underline);
+        previewEl.style.setProperty('--preview-bg', updatedTheme.hoverBg);
+        previewEl.style.setProperty('--underline-width', updatedTheme.underlineWidth);
+        previewEl.style.setProperty('--underline-style', updatedTheme.underlineStyle);
+        if (updatedTheme.wordColor) {
+          previewEl.style.setProperty('--word-color', updatedTheme.wordColor);
+        }
+        if (updatedTheme.originalColor) {
+          previewEl.style.setProperty('--original-color', updatedTheme.originalColor);
+        }
       }
-    });
-
-    // 取消导入
-    elements.cancelImportBtn?.addEventListener('click', () => {
-      elements.importThemeGroup.style.display = 'none';
+      
+      // 更新名称
+      const nameEl = document.querySelector(`input[name="colorTheme"][value="${selectedThemeId}"]`)
+        ?.closest('.color-theme-option')
+        ?.querySelector('.color-theme-name');
+      if (nameEl) {
+        nameEl.textContent = name;
+      }
+      
+      updatePreviewColors(updatedTheme);
+      saveSettings();
     });
 
     // 添加自动保存事件监听器

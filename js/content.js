@@ -19,31 +19,47 @@
   const SKIP_CLASSES = ['vocabmeld-translated', 'vocabmeld-tooltip', 'hljs', 'code', 'syntax'];
   const DEFAULT_CACHE_MAX_SIZE = 2000;
 
-  // 内置主题配置
-  const BUILT_IN_THEMES = {
+  // 内置主题配置（可被用户自定义覆盖）
+  let BUILT_IN_THEMES = {
     default: {
       primary: '#6366f1',
-      underline: 'rgba(99,102,241,0.5)',
+      underline: 'rgba(99,102,241,0.6)',
       hoverBg: 'rgba(99,102,241,0.15)',
-      tooltipWord: '#818cf8'
+      tooltipWord: '#818cf8',
+      underlineWidth: '1.5px',
+      underlineStyle: 'solid',
+      wordColor: '',  // 保持原样式
+      originalColor: ''
     },
     ocean: {
       primary: '#0ea5e9',
-      underline: 'rgba(14,165,233,0.5)',
-      hoverBg: 'rgba(14,165,233,0.15)',
-      tooltipWord: '#38bdf8'
+      underline: 'rgba(14,165,233,0.7)',
+      hoverBg: 'rgba(14,165,233,0.12)',
+      tooltipWord: '#38bdf8',
+      underlineWidth: '2px',
+      underlineStyle: 'dashed',
+      wordColor: '#0ea5e9',
+      originalColor: '#64748b'
     },
     forest: {
       primary: '#10b981',
-      underline: 'rgba(16,185,129,0.5)',
-      hoverBg: 'rgba(16,185,129,0.15)',
-      tooltipWord: '#34d399'
+      underline: 'rgba(16,185,129,0.6)',
+      hoverBg: 'rgba(16,185,129,0.1)',
+      tooltipWord: '#34d399',
+      underlineWidth: '1.5px',
+      underlineStyle: 'dotted',
+      wordColor: '#059669',
+      originalColor: '#6b7280'
     },
     sunset: {
       primary: '#f59e0b',
-      underline: 'rgba(245,158,11,0.5)',
-      hoverBg: 'rgba(245,158,11,0.15)',
-      tooltipWord: '#fbbf24'
+      underline: 'rgba(245,158,11,0.7)',
+      hoverBg: 'rgba(245,158,11,0.12)',
+      tooltipWord: '#fbbf24',
+      underlineWidth: '2px',
+      underlineStyle: 'wavy',
+      wordColor: '#d97706',
+      originalColor: '#78716c'
     }
   };
 
@@ -179,8 +195,18 @@
           learnedWords: result.learnedWords || [],
           memorizeList: result.memorizeList || [],
           colorTheme: result.colorTheme || 'default',
-          customTheme: result.customTheme || null
+          customTheme: result.customTheme || null,
+          customizedThemes: result.customizedThemes || null
         };
+        
+        // 加载保存的自定义主题配置
+        if (config.customizedThemes) {
+          ['ocean', 'forest', 'sunset'].forEach(themeId => {
+            if (config.customizedThemes[themeId]) {
+              BUILT_IN_THEMES[themeId] = config.customizedThemes[themeId];
+            }
+          });
+        }
         
         // 应用主题
         applyColorTheme(config.colorTheme, config.customTheme);
@@ -215,22 +241,30 @@
     const cardBorderDark = theme.cardBorder || '#334155';
     const cardBorderLight = theme.cardBorderLight || '#e2e8f0';
     
+    // 下划线样式
+    const underlineWidth = theme.underlineWidth || '2px';
+    const underlineStyle = theme.underlineStyle || 'solid';
+    
     // 暗色主题使用 tooltipWord（浅色版本），亮色主题使用 primary
+    // 文本颜色（空值表示保持原样式）
+    const wordColorStyle = theme.wordColor ? `color: ${theme.wordColor} !important;` : '';
+    const originalColorStyle = theme.originalColor ? `color: ${theme.originalColor} !important;` : '';
+    
     styleEl.textContent = `
       .vocabmeld-translated {
-        border-bottom-color: ${theme.underline} !important;
+        border-bottom: ${underlineWidth} ${underlineStyle} ${theme.underline} !important;
+        text-decoration: none !important;
       }
       .vocabmeld-translated:hover {
         background: ${theme.hoverBg} !important;
       }
+      ${wordColorStyle ? `.vocabmeld-translated .vocabmeld-word { ${wordColorStyle} }` : ''}
+      ${originalColorStyle ? `.vocabmeld-translated .vocabmeld-original { ${originalColorStyle} }` : ''}
       .vocabmeld-tooltip .vocabmeld-tooltip-word {
         color: ${theme.tooltipWord} !important;
       }
       .vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-word {
         color: ${theme.primary} !important;
-      }
-      .vocabmeld-tooltip .vocabmeld-tooltip-badge {
-        background: linear-gradient(135deg, ${theme.primary}, ${secondColor}) !important;
       }
       .vocabmeld-tooltip {
         background: ${cardBgDark} !important;
@@ -2098,38 +2132,40 @@ ${originalWord}
     const dictWord = isOriginalTargetLang ? original : (isTranslationTargetLang ? translation : null);
 
     tooltip.innerHTML = `
-      <div class="vocabmeld-tooltip-actions">
-        <button class="vocabmeld-tooltip-btn vocabmeld-btn-speak" data-original="${original}" data-translation="${translation}" title="发音">
-          <svg viewBox="0 0 24 24" width="14" height="14">
-            <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
-          </svg>
-        </button>
+      <div class="vocabmeld-tooltip-header">
+        <span class="vocabmeld-tooltip-word">${translation}</span>
+        <span class="vocabmeld-tooltip-badge" data-difficulty="${difficulty}">${difficulty}</span>
         <button class="vocabmeld-tooltip-btn vocabmeld-btn-memorize ${isInMemorizeList ? 'active' : ''}" data-original="${original}" title="${isInMemorizeList ? '已在记忆列表' : '添加到记忆列表'}">
-          <svg viewBox="0 0 24 24" width="14" height="14">
+          <svg viewBox="0 0 24 24" width="16" height="16">
             ${isInMemorizeList 
               ? '<path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>'
               : '<path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>'
             }
           </svg>
         </button>
+      </div>
+      ${phonetic && config.showPhonetic ? `
+      <div class="vocabmeld-tooltip-phonetic vocabmeld-btn-speak" data-original="${original}" data-translation="${translation}" title="点击发音">
+        <svg viewBox="0 0 24 24" width="12" height="12">
+          <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+        </svg>
+        <span>${phonetic}</span>
+      </div>
+      ` : ''}
+      <div class="vocabmeld-tooltip-original">原文: ${original}</div>
+      <div class="vocabmeld-tooltip-dict"></div>
+      <div class="vocabmeld-tooltip-actions">
         <button class="vocabmeld-tooltip-btn vocabmeld-btn-learned" data-original="${original}" data-translation="${translation}" data-difficulty="${difficulty}" title="标记已学会">
-          <svg viewBox="0 0 24 24" width="14" height="14">
+          <svg viewBox="0 0 24 24" width="16" height="16">
             <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
           </svg>
         </button>
         <button class="vocabmeld-tooltip-btn vocabmeld-btn-retranslate" data-original="${original}" title="根据上下文重新翻译">
-          <svg viewBox="0 0 24 24" width="14" height="14">
+          <svg viewBox="0 0 24 24" width="16" height="16">
             <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
           </svg>
         </button>
       </div>
-      <div class="vocabmeld-tooltip-header">
-        <span class="vocabmeld-tooltip-word">${translation}</span>
-        <span class="vocabmeld-tooltip-badge">${difficulty}</span>
-      </div>
-      ${phonetic && config.showPhonetic ? `<div class="vocabmeld-tooltip-phonetic">${phonetic}</div>` : ''}
-      <div class="vocabmeld-tooltip-original">原文: ${original}</div>
-      <div class="vocabmeld-tooltip-dict"></div>
     `;
 
     // 使用 caretRangeFromPoint 找到鼠标所在行的位置

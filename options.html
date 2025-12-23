@@ -440,191 +440,90 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label>配色样式</label>
-          <p class="help-text">选择内置主题或创建自定义主题</p>
-          <div class="color-theme-selector">
-            <label class="color-theme-option">
-              <input type="radio" name="colorTheme" value="default" checked>
-              <span class="color-theme-card">
-                <span class="color-theme-preview" style="--preview-primary: #6366f1; --preview-underline: rgba(99,102,241,0.5); --preview-bg: rgba(99,102,241,0.15);">
-                  <span class="color-theme-word">单词</span>
-                  <span class="color-theme-original">(word)</span>
-                </span>
-                <span class="color-theme-name">默认紫</span>
-              </span>
-            </label>
-            <label class="color-theme-option">
-              <input type="radio" name="colorTheme" value="ocean">
-              <span class="color-theme-card">
-                <span class="color-theme-preview" style="--preview-primary: #0ea5e9; --preview-underline: rgba(14,165,233,0.5); --preview-bg: rgba(14,165,233,0.15);">
-                  <span class="color-theme-word">单词</span>
-                  <span class="color-theme-original">(word)</span>
-                </span>
-                <span class="color-theme-name">海洋蓝</span>
-              </span>
-            </label>
-            <label class="color-theme-option">
-              <input type="radio" name="colorTheme" value="forest">
-              <span class="color-theme-card">
-                <span class="color-theme-preview" style="--preview-primary: #10b981; --preview-underline: rgba(16,185,129,0.5); --preview-bg: rgba(16,185,129,0.15);">
-                  <span class="color-theme-word">单词</span>
-                  <span class="color-theme-original">(word)</span>
-                </span>
-                <span class="color-theme-name">森林绿</span>
-              </span>
-            </label>
-            <label class="color-theme-option">
-              <input type="radio" name="colorTheme" value="sunset">
-              <span class="color-theme-card">
-                <span class="color-theme-preview" style="--preview-primary: #f59e0b; --preview-underline: rgba(245,158,11,0.5); --preview-bg: rgba(245,158,11,0.15);">
-                  <span class="color-theme-word">单词</span>
-                  <span class="color-theme-original">(word)</span>
-                </span>
-                <span class="color-theme-name">日落橙</span>
-              </span>
-            </label>
-            <label class="color-theme-option" id="customThemeOption" style="display: none;">
-              <input type="radio" name="colorTheme" value="custom">
-              <span class="color-theme-card">
-                <span class="color-theme-preview" id="customThemePreview">
-                  <span class="color-theme-word">单词</span>
-                  <span class="color-theme-original">(word)</span>
-                </span>
-                <span class="color-theme-name" id="customThemeName">自定义</span>
-              </span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>实时预览</label>
-          <p class="help-text">查看当前主题在不同场景下的效果</p>
-          <div class="style-preview-container">
-            <div class="style-preview-section">
-              <span class="style-preview-label">文本替换效果</span>
-              <div class="style-preview-text">
-                这是一段示例文本，其中包含被替换的 <span class="preview-translated" id="previewWord"><span class="preview-word">单词</span><span class="preview-original">(word)</span></span> 来展示效果。
+        <div class="theme-layout">
+          <div class="theme-layout-left">
+            <div class="form-group">
+              <label>配色样式</label>
+              <p class="help-text">选择内置主题或创建自定义主题</p>
+              <div class="color-theme-selector">
+                <label class="color-theme-option">
+                  <input type="radio" name="colorTheme" value="default" checked>
+                  <span class="color-theme-card">
+                    <span class="color-theme-preview" style="--preview-underline: rgba(99,102,241,0.6); --preview-bg: rgba(99,102,241,0.15); --underline-width: 1.5px; --underline-style: solid;">
+                      <span class="color-theme-word">单词</span><span class="color-theme-original">(word)</span>
+                    </span>
+                    <span class="color-theme-name">默认紫</span>
+                  </span>
+                </label>
+                <label class="color-theme-option">
+                  <input type="radio" name="colorTheme" value="ocean">
+                  <span class="color-theme-card">
+                    <span class="color-theme-preview" style="--preview-underline: rgba(14,165,233,0.7); --preview-bg: rgba(14,165,233,0.12); --underline-width: 2px; --underline-style: dashed; --word-color: #0ea5e9; --original-color: #64748b;">
+                      <span class="color-theme-word">单词</span><span class="color-theme-original">(word)</span>
+                    </span>
+                    <span class="color-theme-name">海洋蓝</span>
+                  </span>
+                </label>
+                <label class="color-theme-option">
+                  <input type="radio" name="colorTheme" value="forest">
+                  <span class="color-theme-card">
+                    <span class="color-theme-preview" style="--preview-underline: rgba(16,185,129,0.6); --preview-bg: rgba(16,185,129,0.1); --underline-width: 1.5px; --underline-style: dotted; --word-color: #059669; --original-color: #6b7280;">
+                      <span class="color-theme-word">单词</span><span class="color-theme-original">(word)</span>
+                    </span>
+                    <span class="color-theme-name">森林绿</span>
+                  </span>
+                </label>
+                <label class="color-theme-option">
+                  <input type="radio" name="colorTheme" value="sunset">
+                  <span class="color-theme-card">
+                    <span class="color-theme-preview" style="--preview-underline: rgba(245,158,11,0.7); --preview-bg: rgba(245,158,11,0.12); --underline-width: 2px; --underline-style: wavy; --word-color: #d97706; --original-color: #78716c;">
+                      <span class="color-theme-word">单词</span><span class="color-theme-original">(word)</span>
+                    </span>
+                    <span class="color-theme-name">日落橙</span>
+                  </span>
+                </label>
               </div>
             </div>
-            <div class="style-preview-section">
-              <span class="style-preview-label">悬停卡片效果</span>
-              <div class="style-preview-tooltip" id="previewTooltip">
-                <div class="preview-tooltip-actions">
-                  <span class="preview-tooltip-btn preview-btn-speak">
-                    <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/></svg>
-                  </span>
-                  <span class="preview-tooltip-btn preview-btn-memorize">
-                    <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/></svg>
-                  </span>
-                  <span class="preview-tooltip-btn preview-btn-learned">
-                    <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/></svg>
-                  </span>
-                  <span class="preview-tooltip-btn preview-btn-refresh">
-                    <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/></svg>
-                  </span>
-                </div>
-                <div class="preview-tooltip-header">
-                  <span class="preview-tooltip-word">word</span>
-                  <span class="preview-tooltip-badge">A1</span>
-                </div>
-                <div class="preview-tooltip-phonetic">/wɜːd/</div>
-                <div class="preview-tooltip-original">原文: 单词</div>
-                <div class="preview-tooltip-dict">
-                  <div class="preview-dict-entry">
-                    <span class="preview-dict-pos">n.</span>
-                    <span class="preview-dict-def">单词，词语</span>
+
+            <div class="form-group">
+              <label>效果预览</label>
+              <div class="style-preview-container">
+                <div class="style-preview-section">
+                  <div class="style-preview-tooltip" id="previewTooltip">
+                    <div class="preview-tooltip-header">
+                      <span class="preview-tooltip-word">word</span>
+                      <span class="preview-tooltip-badge">A1</span>
+                      <span class="preview-tooltip-btn preview-btn-memorize">
+                        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/></svg>
+                      </span>
+                    </div>
+                    <div class="preview-tooltip-phonetic">
+                      <svg viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/></svg>
+                      <span>/wɜːd/</span>
+                    </div>
+                    <div class="preview-tooltip-original">原文: 单词</div>
+                    <div class="preview-tooltip-dict">
+                      <div class="preview-dict-entry">
+                        <span class="preview-dict-pos">n.</span>
+                        <ul class="preview-dict-defs">
+                          <li>单词，词语</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="preview-tooltip-actions">
+                      <span class="preview-tooltip-btn preview-btn-learned">
+                        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/></svg>
+                      </span>
+                      <span class="preview-tooltip-btn preview-btn-refresh">
+                        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/></svg>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label>自定义主题</label>
-          <p class="help-text">创建或导入自定义配色方案</p>
-          <div class="custom-theme-actions">
-            <button type="button" class="btn btn-secondary" id="createThemeBtn">
-              <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
-              创建主题
-            </button>
-            <button type="button" class="btn btn-secondary" id="importThemeBtn">
-              <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13.5,16V19H10.5V16H8L12,12L16,16H13.5M13,9V3.5L18.5,9H13Z"/></svg>
-              导入主题
-            </button>
-            <button type="button" class="btn btn-secondary" id="exportThemeBtn">
-              <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13.5,13V16H10.5V13H8L12,9L16,13H13.5M13,9V3.5L18.5,9H13Z"/></svg>
-              导出主题
-            </button>
-          </div>
-        </div>
-
-        <!-- 自定义主题编辑器（默认隐藏） -->
-        <div class="form-group theme-editor-group" id="themeEditorGroup" style="display: none;">
-          <label>主题编辑器</label>
-          <div class="theme-editor">
-            <div class="theme-editor-row">
-              <label>主题名称</label>
-              <input type="text" id="themeNameInput" class="form-input" placeholder="我的主题">
-            </div>
-            <div class="theme-editor-row">
-              <label>主色调</label>
-              <div class="color-picker-wrapper">
-                <input type="color" id="primaryColor" value="#6366f1">
-                <span class="color-value" id="primaryColorValue">#6366f1</span>
-              </div>
-            </div>
-            <div class="theme-editor-row">
-              <label>下划线颜色</label>
-              <div class="color-picker-wrapper">
-                <input type="color" id="underlineColor" value="#6366f1">
-                <span class="color-value" id="underlineColorValue">#6366f1</span>
-              </div>
-            </div>
-            <div class="theme-editor-row">
-              <label>悬停背景</label>
-              <div class="color-picker-wrapper">
-                <input type="color" id="hoverBgColor" value="#6366f1">
-                <span class="color-value" id="hoverBgColorValue">#6366f1</span>
-              </div>
-            </div>
-            <div class="theme-editor-row">
-              <label>卡片标题色</label>
-              <div class="color-picker-wrapper">
-                <input type="color" id="tooltipWordColor" value="#818cf8">
-                <span class="color-value" id="tooltipWordColorValue">#818cf8</span>
-              </div>
-            </div>
-            <div class="theme-editor-row">
-              <label>卡片底色(暗)</label>
-              <div class="color-picker-wrapper">
-                <input type="color" id="cardBgColor" value="#1e293b">
-                <span class="color-value" id="cardBgColorValue">#1e293b</span>
-              </div>
-            </div>
-            <div class="theme-editor-row">
-              <label>卡片底色(亮)</label>
-              <div class="color-picker-wrapper">
-                <input type="color" id="cardBgLightColor" value="#ffffff">
-                <span class="color-value" id="cardBgLightColorValue">#ffffff</span>
-              </div>
-            </div>
-            <div class="theme-editor-actions">
-              <button type="button" class="btn btn-primary" id="saveThemeBtn">保存主题</button>
-              <button type="button" class="btn btn-secondary" id="cancelThemeBtn">取消</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 导入主题对话框（默认隐藏） -->
-        <div class="form-group" id="importThemeGroup" style="display: none;">
-          <label>导入主题 CSS</label>
-          <textarea id="importThemeCss" class="form-textarea" rows="6" placeholder="粘贴主题 CSS 代码..."></textarea>
-          <div class="theme-editor-actions">
-            <button type="button" class="btn btn-primary" id="confirmImportBtn">确认导入</button>
-            <button type="button" class="btn btn-secondary" id="cancelImportBtn">取消</button>
-          </div>
         </div>
       </section>
 
@@ -878,6 +777,107 @@
         </div>
       </section>
     </main>
+
+    <!-- 主题编辑器侧边栏（仅在主题样式页显示） -->
+    <aside class="theme-editor-sidebar" id="themeEditorSidebar" style="display: none;">
+      <div class="theme-editor-panel" id="themeEditorPanel">
+        <div class="theme-editor-header">
+          <span class="theme-editor-title" id="themeEditorTitle">主题编辑器</span>
+          <div class="theme-editor-header-actions">
+            <button type="button" class="btn btn-sm btn-secondary" id="importThemeBtn" title="导入主题">
+              <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13.5,16V19H10.5V16H8L12,12L16,16H13.5M13,9V3.5L18.5,9H13Z"/></svg>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" id="exportThemeBtn" title="导出主题">
+              <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13.5,13V16H10.5V13H8L12,9L16,13H13.5M13,9V3.5L18.5,9H13Z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="theme-editor" id="themeEditorForm">
+          <div class="theme-editor-row">
+            <label>主题名称</label>
+            <input type="text" id="themeNameInput" class="form-input" placeholder="我的主题">
+          </div>
+          <div class="theme-editor-row">
+            <label>主色调</label>
+            <div class="color-picker-wrapper">
+              <input type="color" id="primaryColor" value="#6366f1">
+              <span class="color-value" id="primaryColorValue">#6366f1</span>
+            </div>
+          </div>
+          <div class="theme-editor-row">
+            <label>下划线颜色</label>
+            <div class="color-picker-wrapper">
+              <input type="color" id="underlineColor" value="#6366f1">
+              <span class="color-value" id="underlineColorValue">#6366f1</span>
+            </div>
+          </div>
+          <div class="theme-editor-row">
+            <label>下划线宽度</label>
+            <select id="underlineWidth" class="form-select-sm">
+              <option value="1px">1px 细线</option>
+              <option value="2px" selected>2px 标准</option>
+              <option value="3px">3px 粗线</option>
+            </select>
+          </div>
+          <div class="theme-editor-row">
+            <label>下划线样式</label>
+            <select id="underlineStyle" class="form-select-sm">
+              <option value="solid" selected>实线</option>
+              <option value="dashed">虚线</option>
+              <option value="dotted">点线</option>
+              <option value="wavy">波浪</option>
+            </select>
+          </div>
+          <div class="theme-editor-row">
+            <label>悬停背景</label>
+            <div class="color-picker-wrapper">
+              <input type="color" id="hoverBgColor" value="#6366f1">
+              <span class="color-value" id="hoverBgColorValue">#6366f1</span>
+            </div>
+          </div>
+          <div class="theme-editor-row">
+            <label>译文颜色</label>
+            <div class="color-picker-wrapper">
+              <input type="checkbox" id="wordColorEnabled" class="color-toggle">
+              <input type="color" id="wordColor" value="#000000" disabled>
+              <span class="color-value" id="wordColorValue">保持原样</span>
+            </div>
+          </div>
+          <div class="theme-editor-row">
+            <label>原文颜色</label>
+            <div class="color-picker-wrapper">
+              <input type="checkbox" id="originalColorEnabled" class="color-toggle">
+              <input type="color" id="originalColor" value="#000000" disabled>
+              <span class="color-value" id="originalColorValue">保持原样</span>
+            </div>
+          </div>
+          <div class="theme-editor-row">
+            <label>卡片标题色</label>
+            <div class="color-picker-wrapper">
+              <input type="color" id="tooltipWordColor" value="#818cf8">
+              <span class="color-value" id="tooltipWordColorValue">#818cf8</span>
+            </div>
+          </div>
+          <div class="theme-editor-row">
+            <label>卡片底色(暗)</label>
+            <div class="color-picker-wrapper">
+              <input type="color" id="cardBgColor" value="#1e293b">
+              <span class="color-value" id="cardBgColorValue">#1e293b</span>
+            </div>
+          </div>
+          <div class="theme-editor-row">
+            <label>卡片底色(亮)</label>
+            <div class="color-picker-wrapper">
+              <input type="color" id="cardBgLightColor" value="#ffffff">
+              <span class="color-value" id="cardBgLightColorValue">#ffffff</span>
+            </div>
+          </div>
+          <div class="theme-editor-actions">
+            <button type="button" class="btn btn-primary" id="saveThemeBtn">保存</button>
+          </div>
+        </div>
+      </div>
+    </aside>
   </div>
 
   <script src="js/options.js"></script>
