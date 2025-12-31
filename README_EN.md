@@ -28,6 +28,7 @@
 ## ✨ Key Features
 
 - **Multi-LLM Support** — Compatible with OpenAI, DeepSeek, Moonshot, Groq, Ollama and more
+- **Multi-Node Failover** — Configure multiple API nodes with automatic failover and rate-limit rotation
 - **CEFR 6-Level Difficulty** — Precise vocabulary difficulty control (A1-C2), learn what you need
 - **Smart Caching** — LRU cache (up to 10,000 words), millisecond response on revisits
 - **Bidirectional Translation** — Auto-detect page language, smart translation direction
@@ -100,6 +101,21 @@
 - **All Sites Mode**: Run on all websites by default, with exclusion list
 - **Specified Sites Only**: Only run on designated websites
 - Supports domain fuzzy matching, quick toggle in Popup
+
+### Multi-Node Management
+
+Configure multiple API nodes for intelligent failover and load balancing:
+
+- **Multi-Node Config** — Configure multiple nodes, each with independent endpoint, API key, model, and enable/disable status
+- **Custom Priority** — Set node priority order, prefer optimal nodes first
+- **Auto Failover** — Automatically switch to next node on failure (network error, service unavailable, quota exhausted, RPM limit)
+- **Rate-Limit Rotation** — Rotate requests across nodes to bypass single-node RPM limits
+- **Health Check** — Mark node as unhealthy after 3 failures in 5 minutes, auto-recover periodically
+
+**Typical Use Cases**:
+- Register multiple ModelScope accounts (2,000 free calls/day each), enable rotation to stack free quotas
+- Configure different providers (DeepSeek + Moonshot) as mutual backups for high availability
+- Prioritize free nodes, auto-fallback to paid nodes when quota runs out
 
 ---
 
