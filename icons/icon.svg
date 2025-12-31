@@ -1,36 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6366f1"/>
-      <stop offset="50%" style="stop-color:#8b5cf6"/>
-      <stop offset="100%" style="stop-color:#a855f7"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
     </linearGradient>
-    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#fef3c7"/>
-      <stop offset="100%" style="stop-color:#fcd34d"/>
+    <linearGradient id="leaf" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#4ade80"/>
     </linearGradient>
   </defs>
-  <!-- Background circle -->
-  <circle cx="64" cy="64" r="60" fill="url(#bgGrad)"/>
-  <!-- Inner glow -->
-  <circle cx="64" cy="64" r="52" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
-  <!-- V letter stylized -->
-  <path d="M32 35 L52 85 L64 60 L76 85 L96 35" 
-        fill="none" 
-        stroke="url(#textGrad)" 
-        stroke-width="8" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"/>
-  <!-- M letter below V -->
-  <path d="M36 95 L36 75 L52 88 L68 75 L68 95" 
-        fill="none" 
-        stroke="url(#textGrad)" 
-        stroke-width="5" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        transform="translate(12, -5)"/>
-  <!-- Sparkle effects -->
-  <circle cx="98" cy="30" r="3" fill="#fef3c7" opacity="0.8"/>
-  <circle cx="30" cy="50" r="2" fill="#fef3c7" opacity="0.6"/>
-  <circle cx="100" cy="70" r="2.5" fill="#fef3c7" opacity="0.7"/>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+  <path d="M38 32 L38 88 L80 88" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M72 20 Q104 36 96 72 Q80 58 72 20 Z" fill="url(#leaf)" opacity="0.4"/>
+  <path d="M68 28 Q96 42 90 70 Q76 58 68 28 Z" fill="url(#leaf)"/>
+  <path d="M79 49 Q71 58 74 32" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
 </svg>
