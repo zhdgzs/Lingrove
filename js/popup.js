@@ -1,5 +1,5 @@
 /**
- * VocabMeld Popup 脚本
+ * Lingrove Popup 脚本
  */
 
 document.addEventListener('DOMContentLoaded', async () => {

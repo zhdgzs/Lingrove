@@ -1,5 +1,5 @@
 /**
- * VocabMeld Options 脚本 - 自动保存版本
+ * Lingrove Options 脚本 - 自动保存版本
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -313,18 +313,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 生成主题 CSS
   function generateThemeCss(theme) {
-    return `/* VocabMeld 主题: ${theme.name || '自定义'} */
+    return `/* Lingrove 主题: ${theme.name || '自定义'} */
 :root {
-  --vocabmeld-primary: ${theme.primary};
-  --vocabmeld-underline: ${theme.underline};
-  --vocabmeld-underline-width: ${theme.underlineWidth || '2px'};
-  --vocabmeld-underline-style: ${theme.underlineStyle || 'solid'};
-  --vocabmeld-hover-bg: ${theme.hoverBg};
-  --vocabmeld-word-color: ${theme.wordColor || ''};
-  --vocabmeld-original-color: ${theme.originalColor || ''};
-  --vocabmeld-tooltip-word: ${theme.tooltipWord};
-  --vocabmeld-card-bg: ${theme.cardBg || '#1e293b'};
-  --vocabmeld-card-bg-light: ${theme.cardBgLight || '#ffffff'};
+  --lingrove-primary: ${theme.primary};
+  --lingrove-underline: ${theme.underline};
+  --lingrove-underline-width: ${theme.underlineWidth || '2px'};
+  --lingrove-underline-style: ${theme.underlineStyle || 'solid'};
+  --lingrove-hover-bg: ${theme.hoverBg};
+  --lingrove-word-color: ${theme.wordColor || ''};
+  --lingrove-original-color: ${theme.originalColor || ''};
+  --lingrove-tooltip-word: ${theme.tooltipWord};
+  --lingrove-card-bg: ${theme.cardBg || '#1e293b'};
+  --lingrove-card-bg-light: ${theme.cardBgLight || '#ffffff'};
 }`;
   }
 
@@ -332,16 +332,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   function parseThemeCss(css) {
     try {
       const nameMatch = css.match(/主题:\s*([^\*\/\n]+)/);
-      const primaryMatch = css.match(/--vocabmeld-primary:\s*([^;]+)/);
-      const underlineMatch = css.match(/--vocabmeld-underline:\s*([^;]+)/);
-      const underlineWidthMatch = css.match(/--vocabmeld-underline-width:\s*([^;]+)/);
-      const underlineStyleMatch = css.match(/--vocabmeld-underline-style:\s*([^;]+)/);
-      const hoverBgMatch = css.match(/--vocabmeld-hover-bg:\s*([^;]+)/);
-      const wordColorMatch = css.match(/--vocabmeld-word-color:\s*([^;]+)/);
-      const originalColorMatch = css.match(/--vocabmeld-original-color:\s*([^;]+)/);
-      const tooltipWordMatch = css.match(/--vocabmeld-tooltip-word:\s*([^;]+)/);
-      const cardBgMatch = css.match(/--vocabmeld-card-bg:\s*([^;]+)/);
-      const cardBgLightMatch = css.match(/--vocabmeld-card-bg-light:\s*([^;]+)/);
+      const primaryMatch = css.match(/--lingrove-primary:\s*([^;]+)/);
+      const underlineMatch = css.match(/--lingrove-underline:\s*([^;]+)/);
+      const underlineWidthMatch = css.match(/--lingrove-underline-width:\s*([^;]+)/);
+      const underlineStyleMatch = css.match(/--lingrove-underline-style:\s*([^;]+)/);
+      const hoverBgMatch = css.match(/--lingrove-hover-bg:\s*([^;]+)/);
+      const wordColorMatch = css.match(/--lingrove-word-color:\s*([^;]+)/);
+      const originalColorMatch = css.match(/--lingrove-original-color:\s*([^;]+)/);
+      const tooltipWordMatch = css.match(/--lingrove-tooltip-word:\s*([^;]+)/);
+      const cardBgMatch = css.match(/--lingrove-card-bg:\s*([^;]+)/);
+      const cardBgLightMatch = css.match(/--lingrove-card-bg-light:\s*([^;]+)/);
       
       if (!primaryMatch) return null;
       
@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       dictCache.set(cacheKey, result);
       return result;
     } catch (e) {
-      console.error('[VocabMeld] Dictionary fetch error:', e);
+      console.error('[Lingrove] Dictionary fetch error:', e);
       return null;
     }
   }
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       return meanings.length > 0 ? { meanings } : null;
     } catch (e) {
-      console.error('[VocabMeld] Youdao fetch error:', e);
+      console.error('[Lingrove] Youdao fetch error:', e);
       return null;
     }
   }
@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       return meanings.length > 0 ? { meanings } : null;
     } catch (e) {
-      console.error('[VocabMeld] Wiktionary fetch error:', e);
+      console.error('[Lingrove] Wiktionary fetch error:', e);
       return null;
     }
   }
@@ -682,7 +682,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.runtime.sendMessage({ action: 'getNodesWithStatus' }, (response) => {
       // 检查是否有错误或无响应
       if (chrome.runtime.lastError || !response) {
-        console.warn('[VocabMeld] loadApiNodes failed:', chrome.runtime.lastError?.message || 'no response');
+        console.warn('[Lingrove] loadApiNodes failed:', chrome.runtime.lastError?.message || 'no response');
         if (retryCount < maxRetries) {
           setTimeout(() => loadApiNodes(retryCount + 1), retryDelay);
         }
@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (!response.success) {
-        console.error('[VocabMeld] Failed to load nodes:', response.error);
+        console.error('[Lingrove] Failed to load nodes:', response.error);
         return;
       }
 
@@ -1366,8 +1366,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     filterMemorizeWords();
     
     // 加载缓存
-    chrome.storage.local.get('vocabmeld_word_cache', (data) => {
-      const cache = data.vocabmeld_word_cache || [];
+    chrome.storage.local.get('lingrove_word_cache', (data) => {
+      const cache = data.lingrove_word_cache || [];
       const cacheWords = cache.map(item => {
         const [word] = item.key.split(':');
         return { 
@@ -1446,10 +1446,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 删除单个缓存项
   function removeCacheItem(key) {
     if (!key) return;
-    chrome.storage.local.get('vocabmeld_word_cache', (data) => {
-      const cache = data.vocabmeld_word_cache || [];
+    chrome.storage.local.get('lingrove_word_cache', (data) => {
+      const cache = data.lingrove_word_cache || [];
       const newCache = cache.filter(item => item.key !== key);
-      chrome.storage.local.set({ vocabmeld_word_cache: newCache }, () => {
+      chrome.storage.local.set({ lingrove_word_cache: newCache }, () => {
         loadSettings();
       });
     });
@@ -1579,8 +1579,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const hitRate = total > 0 ? Math.round((hits / total) * 100) : 0;
     elements.statHitRate.textContent = hitRate + '%';
     
-    chrome.storage.local.get('vocabmeld_word_cache', (data) => {
-      const cacheSize = (data.vocabmeld_word_cache || []).length;
+    chrome.storage.local.get('lingrove_word_cache', (data) => {
+      const cacheSize = (data.lingrove_word_cache || []).length;
       const checkedRadio = document.querySelector('input[name="cacheMaxSize"]:checked');
       const maxSize = checkedRadio ? parseInt(checkedRadio.value) : 2000;
       elements.statCacheSize.textContent = `${cacheSize}/${maxSize}`;
@@ -1624,9 +1624,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       await chrome.storage.sync.set(settings);
-      console.log('[VocabMeld] Settings saved automatically');
+      console.log('[Lingrove] Settings saved automatically');
     } catch (error) {
-      console.error('[VocabMeld] Failed to save settings:', error);
+      console.error('[Lingrove] Failed to save settings:', error);
     }
   }
 
@@ -1940,7 +1940,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         // 词汇列表存储在 local 中
         chrome.storage.local.set({ learnedWords: [], memorizeList: [] });
-        chrome.storage.local.remove('vocabmeld_word_cache', () => {
+        chrome.storage.local.remove('lingrove_word_cache', () => {
           loadSettings();
           debouncedSave(200);
         });
@@ -2003,8 +2003,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       
       if (elements.exportCache.checked) {
-        const localData = await new Promise(resolve => chrome.storage.local.get('vocabmeld_word_cache', resolve));
-        exportData.cache = localData.vocabmeld_word_cache || [];
+        const localData = await new Promise(resolve => chrome.storage.local.get('lingrove_word_cache', resolve));
+        exportData.cache = localData.lingrove_word_cache || [];
       }
 
       // 下载文件
@@ -2012,7 +2012,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `vocabmeld-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `lingrove-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -2066,7 +2066,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               deduplicatedCache.push(item);
             }
           }
-          localUpdates.vocabmeld_word_cache = deduplicatedCache;
+          localUpdates.lingrove_word_cache = deduplicatedCache;
         }
 
         // 保存数据

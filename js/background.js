@@ -1,5 +1,5 @@
 /**
- * VocabMeld 后台脚本
+ * Lingrove 后台脚本
  * 处理扩展级别的事件和消息
  */
 
@@ -180,7 +180,7 @@ function handleRateLimitResponse(nodeId, retryAfterHeader) {
   }
 
   counter.cooldownUntil = Date.now() + retryAfter * 1000;
-  console.log(`[VocabMeld] Node ${nodeId} rate limited by API, cooldown for ${retryAfter}s`);
+  console.log(`[Lingrove] Node ${nodeId} rate limited by API, cooldown for ${retryAfter}s`);
 }
 
 /**
@@ -198,7 +198,7 @@ async function migrateApiConfig() {
     chrome.storage.sync.get(['apiNodes', 'apiConfigs', 'currentApiConfig', 'apiEndpoint', 'apiKey', 'modelName'], async (result) => {
       // 如果已经有新格式的节点配置，跳过迁移
       if (result.apiNodes && result.apiNodes.length > 0) {
-        console.log('[VocabMeld] API nodes already exist, skipping migration');
+        console.log('[Lingrove] API nodes already exist, skipping migration');
         resolve();
         return;
       }
@@ -207,7 +207,7 @@ async function migrateApiConfig() {
 
       // 情况1：有 apiConfigs（多配置格式）
       if (result.apiConfigs && Object.keys(result.apiConfigs).length > 0) {
-        console.log('[VocabMeld] Migrating from apiConfigs format');
+        console.log('[Lingrove] Migrating from apiConfigs format');
         const currentConfig = result.currentApiConfig;
         let priority = 0;
 
@@ -230,7 +230,7 @@ async function migrateApiConfig() {
       }
       // 情况2：只有单个 API 配置
       else if (result.apiEndpoint) {
-        console.log('[VocabMeld] Migrating from single API config');
+        console.log('[Lingrove] Migrating from single API config');
         newNodes.push({
           id: generateNodeId(),
           name: 'DeepSeek',
@@ -247,7 +247,7 @@ async function migrateApiConfig() {
         chrome.storage.sync.set({ apiNodes: newNodes }, () => {
           // 清理旧字段（保留一段时间以防回滚）
           // chrome.storage.sync.remove(['apiConfigs', 'currentApiConfig', 'apiEndpoint', 'apiKey', 'modelName']);
-          console.log('[VocabMeld] Migrated', newNodes.length, 'API nodes');
+          console.log('[Lingrove] Migrated', newNodes.length, 'API nodes');
           resolve();
         });
       } else {
@@ -262,7 +262,7 @@ async function migrateApiConfig() {
           priority: 0
         };
         chrome.storage.sync.set({ apiNodes: [defaultNode] }, () => {
-          console.log('[VocabMeld] Created default API node');
+          console.log('[Lingrove] Created default API node');
           resolve();
         });
       }
@@ -430,7 +430,7 @@ async function getCurrentNode() {
       if (!limitStatus.limited) {
         // 第一个节点可用，切回
         if (currentNodeId !== firstNode.id) {
-          console.log('[VocabMeld] Switching back to first node:', firstNode.name);
+          console.log('[Lingrove] Switching back to first node:', firstNode.name);
         }
         currentNodeId = firstNode.id;
         return firstNode;
@@ -484,7 +484,7 @@ async function switchToNextNode(failedNodeId) {
 
   if (nextNode) {
     currentNodeId = nextNode.id;
-    console.log('[VocabMeld] Switched to node:', nextNode.name);
+    console.log('[Lingrove] Switched to node:', nextNode.name);
     return nextNode;
   }
 
@@ -558,7 +558,7 @@ async function callApiWithFailover(body, retryCount = 0) {
         if (retryCount < maxRetries) {
           const nextNode = await switchToNextNode(node.id);
           if (nextNode) {
-            console.log('[VocabMeld] Rate limited, switching to node:', nextNode.name);
+            console.log('[Lingrove] Rate limited, switching to node:', nextNode.name);
             return callApiWithFailover(body, retryCount + 1);
           }
         }
@@ -571,7 +571,7 @@ async function callApiWithFailover(body, retryCount = 0) {
       if (retryCount < maxRetries) {
         const nextNode = await switchToNextNode(node.id);
         if (nextNode) {
-          console.log('[VocabMeld] Retrying with node:', nextNode.name);
+          console.log('[Lingrove] Retrying with node:', nextNode.name);
           return callApiWithFailover(body, retryCount + 1);
         }
       }
@@ -591,7 +591,7 @@ async function callApiWithFailover(body, retryCount = 0) {
       if (retryCount < maxRetries) {
         const nextNode = await switchToNextNode(node.id);
         if (nextNode) {
-          console.log('[VocabMeld] Network error, retrying with node:', nextNode.name);
+          console.log('[Lingrove] Network error, retrying with node:', nextNode.name);
           return callApiWithFailover(body, retryCount + 1);
         }
       }
@@ -613,7 +613,7 @@ async function performHealthCheck() {
     const node = nodes.find(n => n.id === status.nodeId);
     if (!node || !node.enabled) continue;
 
-    console.log('[VocabMeld] Health checking node:', node.name);
+    console.log('[Lingrove] Health checking node:', node.name);
 
     try {
       const headers = { 'Content-Type': 'application/json' };
@@ -631,10 +631,10 @@ async function performHealthCheck() {
 
       if (response.ok) {
         await markNodeHealthy(node.id);
-        console.log('[VocabMeld] Node recovered:', node.name);
+        console.log('[Lingrove] Node recovered:', node.name);
       }
     } catch (error) {
-      console.log('[VocabMeld] Node still unhealthy:', node.name);
+      console.log('[Lingrove] Node still unhealthy:', node.name);
     }
   }
 }
@@ -647,12 +647,12 @@ function startHealthCheckTimer() {
     clearInterval(healthCheckTimer);
   }
   healthCheckTimer = setInterval(performHealthCheck, FAILOVER_CONFIG.healthCheckIntervalMs);
-  console.log('[VocabMeld] Health check timer started');
+  console.log('[Lingrove] Health check timer started');
 }
 
 // 安装/更新时初始化
 chrome.runtime.onInstalled.addListener(async (details) => {
-  console.log('[VocabMeld] Extension installed/updated:', details.reason);
+  console.log('[Lingrove] Extension installed/updated:', details.reason);
 
   // 设置默认配置
   if (details.reason === 'install') {
@@ -714,7 +714,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         if (Object.keys(updates).length > 0) {
           chrome.storage.local.set(updates, () => {
             chrome.storage.sync.remove(toRemove, () => {
-              console.log('[VocabMeld] Migrated word lists from sync to local');
+              console.log('[Lingrove] Migrated word lists from sync to local');
             });
           });
         }
@@ -733,13 +733,13 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 function createContextMenus() {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
-      id: 'vocabmeld-add-memorize',
+      id: 'lingrove-add-memorize',
       title: '添加到需记忆列表',
       contexts: ['selection']
     });
     
     chrome.contextMenus.create({
-      id: 'vocabmeld-process-page',
+      id: 'lingrove-process-page',
       title: '处理当前页面',
       contexts: ['page']
     });
@@ -748,7 +748,7 @@ function createContextMenus() {
 
 // 右键菜单点击处理
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'vocabmeld-add-memorize' && info.selectionText) {
+  if (info.menuItemId === 'lingrove-add-memorize' && info.selectionText) {
     const word = info.selectionText.trim();
     if (word && word.length < 50) {
       chrome.storage.local.get('memorizeList', (result) => {
@@ -761,7 +761,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
               action: 'processSpecificWords', 
               words: [word] 
             }).catch(err => {
-              console.log('[VocabMeld] Content script not ready, word will be processed on next page load');
+              console.log('[Lingrove] Content script not ready, word will be processed on next page load');
             });
           });
         }
@@ -769,7 +769,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
   }
   
-  if (info.menuItemId === 'vocabmeld-process-page') {
+  if (info.menuItemId === 'lingrove-process-page') {
     chrome.tabs.sendMessage(tab.id, { action: 'processPage' });
   }
 });
@@ -809,7 +809,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       chrome.tts.speak(text, options, () => {
         if (chrome.runtime.lastError) {
-          console.error('[VocabMeld] TTS Error:', chrome.runtime.lastError.message);
+          console.error('[Lingrove] TTS Error:', chrome.runtime.lastError.message);
           sendResponse({ success: false, error: chrome.runtime.lastError.message });
         } else {
           sendResponse({ success: true });
@@ -1031,8 +1031,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'getCacheStats') {
     chrome.storage.sync.get('cacheMaxSize', (syncResult) => {
       const maxSize = syncResult.cacheMaxSize || 2000;
-      chrome.storage.local.get('vocabmeld_word_cache', (result) => {
-        const cache = result.vocabmeld_word_cache || [];
+      chrome.storage.local.get('lingrove_word_cache', (result) => {
+        const cache = result.lingrove_word_cache || [];
         sendResponse({
           size: cache.length,
           maxSize: maxSize
@@ -1044,7 +1044,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // 清空缓存
   if (message.action === 'clearCache') {
-    chrome.storage.local.remove('vocabmeld_word_cache', () => {
+    chrome.storage.local.remove('lingrove_word_cache', () => {
       chrome.storage.sync.set({ cacheHits: 0, cacheMisses: 0 }, () => {
         sendResponse({ success: true });
       });
@@ -1139,7 +1139,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   await migrateApiConfig();
   // 启动健康检查定时器
   startHealthCheckTimer();
-  console.log('[VocabMeld] Initialization complete');
+  console.log('[Lingrove] Initialization complete');
 })();
 
-console.log('[VocabMeld] Background script loaded');
+console.log('[Lingrove] Background script loaded');

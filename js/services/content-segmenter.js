@@ -1,5 +1,5 @@
 /**
- * VocabMeld 内容分段器模块
+ * Lingrove 内容分段器模块
  * 智能分段页面内容，平衡处理批次大小和上下文相关性
  */
 
@@ -58,7 +58,7 @@ class ContentSegmenter {
     }
 
     // 跳过已处理的元素
-    if (element.hasAttribute('data-vocabmeld-processed')) {
+    if (element.hasAttribute('data-lingrove-processed')) {
       return true;
     }
 

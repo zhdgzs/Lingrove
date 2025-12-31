@@ -1,7 +1,7 @@
-# VocabMeld - Immersive Language Learning Chrome Extension
+# Lingrove - Immersive Language Learning Chrome Extension
 
 <p align="center">
-  <img src="icons/icon.svg" width="128" height="128" alt="VocabMeld Logo">
+  <img src="icons/icon.svg" width="128" height="128" alt="Lingrove Logo">
 </p>
 
 <p align="center">
@@ -14,12 +14,14 @@
 </p>
 
 <p align="center">
-  <img src="assets/preview.png" alt="VocabMeld Preview" width="100%">
+  <img src="assets/preview.png" alt="Lingrove Preview" width="100%">
 </p>
 
 ---
 
-> To ensure code quality, this project was developed entirely using **Claude Opus 4.5**, with API costs exceeding **$100+** so far. If you find this project helpful, please consider supporting via the donation link at the bottom. Your support keeps this project going! ⭐
+> This project is forked from [VocabMeld](https://github.com/lzskyline/VocabMeld).
+>
+> Due to some issues in the original project and incomplete functionality and slow iterative updates, I decided to fork and maintain it independently with improvements.
 
 ---
 
@@ -116,19 +118,9 @@
 
 ---
 
-## ☕ Support
-
-This project is fully open source, If it helps you, consider supporting!
-
-<p align="center">
-  <img src="assets/wechat.jpg" alt="WeChat Donation" width="300">
-</p>
-
----
-
 ## 📈 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=lzskyline/VocabMeld&type=Date)](https://star-history.com/#lzskyline/VocabMeld&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=zhdgzs/Lingrove&type=Date)](https://star-history.com/#zhdgzs/Lingrove&Date)
 
 ---
 
@@ -138,9 +130,4 @@ This project is open source under the [MIT License](LICENSE).
 
 You are free to use, copy, modify, and distribute this project, including for commercial purposes. The only requirement is to retain the original copyright notice and license.
 
-If you've built upon this project, feel free to attribute:
-
-```
-Based on VocabMeld (https://github.com/lzskyline/VocabMeld)
-```
-
+Original project: [VocabMeld](https://github.com/lzskyline/VocabMeld)

@@ -1,5 +1,5 @@
 /**
- * VocabMeld 配置管理模块
+ * Lingrove 配置管理模块
  * 管理所有配置项和默认值
  */
 
@@ -103,7 +103,7 @@ export const DEFAULT_CONFIG = {
 // 缓存配置
 export const CACHE_CONFIG = {
   maxSize: 2000,
-  storageKey: 'vocabmeld_word_cache'
+  storageKey: 'lingrove_word_cache'
 };
 
 // API 节点状态枚举
@@ -179,8 +179,8 @@ export const SKIP_TAGS = [
 
 // 需要跳过的类名
 export const SKIP_CLASSES = [
-  'vocabmeld-translated',
-  'vocabmeld-tooltip',
+  'lingrove-translated',
+  'lingrove-tooltip',
   'highlight-mengshen',
   'code',
   'syntax',

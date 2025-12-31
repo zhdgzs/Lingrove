@@ -1,6 +1,6 @@
-# VocabMeld 技术文档
+# Lingrove 技术文档
 
-本文档详细描述 VocabMeld 的技术实现方案，可作为复刻或二次开发的参考。
+本文档详细描述 Lingrove 的技术实现方案，可作为复刻或二次开发的参考。
 
 ---
 
@@ -21,7 +21,7 @@
 ## 项目结构
 
 ```
-VocabMeld/
+Lingrove/
 ├── _locales/                    # 国际化
 │   ├── en/messages.json
 │   └── zh_CN/messages.json

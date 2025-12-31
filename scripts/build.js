@@ -1,5 +1,5 @@
 /**
- * VocabMeld 构建脚本
+ * Lingrove 构建脚本
  * 生成不同尺寸的图标
  */
 
@@ -21,7 +21,7 @@ if (!fs.existsSync(iconsDir)) {
 const generateIconsHtml = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Generate VocabMeld Icons</title>
+  <title>Generate Lingrove Icons</title>
   <style>
     body { font-family: sans-serif; padding: 20px; background: #1e293b; color: white; }
     .icon-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
@@ -33,7 +33,7 @@ const generateIconsHtml = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <h1>VocabMeld Icon Generator</h1>
+  <h1>Lingrove Icon Generator</h1>
   <p>点击按钮生成并下载图标文件</p>
   
   <div class="icon-grid" id="iconGrid"></div>
@@ -148,7 +148,7 @@ const generateIconsHtml = `<!DOCTYPE html>
 
 fs.writeFileSync(path.join(iconsDir, 'generate_icons.html'), generateIconsHtml);
 
-console.log('VocabMeld Build Script');
+console.log('Lingrove Build Script');
 console.log('======================');
 console.log('');
 console.log('图标生成器已创建: icons/generate_icons.html');

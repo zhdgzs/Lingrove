@@ -1,7 +1,7 @@
-/* VocabMeld Content 样式 - 注入到页面中 */
+/* Lingrove Content 样式 - 注入到页面中 */
 
 /* 动画定义 */
-@keyframes vocabmeld-tooltip-in {
+@keyframes lingrove-tooltip-in {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -13,12 +13,12 @@
 }
 
 /* 悬停效果 - 背景色由 content.js 动态生成以支持配色切换 */
-.vocabmeld-translated:hover {
+.lingrove-translated:hover {
   background: rgba(99, 102, 241, 0.15);
 }
 
 /* 明亮主题适配 */
-.vocabmeld-tooltip[data-theme="light"] {
+.lingrove-tooltip[data-theme="light"] {
   /* 背景色和边框色由 content.js 动态生成以支持配色切换 */
   background: #ffffff;
   color: #1e293b !important;
@@ -28,46 +28,46 @@
 
 /* 亮色主题下的卡片标题颜色由 content.js 动态生成，以支持配色切换 */
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-phonetic {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-phonetic {
   color: #64748b !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-original {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-original {
   color: #475569 !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-tip {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-tip {
   color: #94a3b8 !important;
   border-top: 1px solid #e2e8f0 !important;
 }
 
-.vocabmeld-selection-popup[data-theme="light"] {
+.lingrove-selection-popup[data-theme="light"] {
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
 }
 
-.vocabmeld-selection-popup[data-theme="light"] .vocabmeld-add-memorize {
+.lingrove-selection-popup[data-theme="light"] .lingrove-add-memorize {
   color: #1e293b !important;
 }
 
-.vocabmeld-selection-popup[data-theme="light"] .vocabmeld-add-memorize:hover {
+.lingrove-selection-popup[data-theme="light"] .lingrove-add-memorize:hover {
   background: #f1f5f9 !important;
 }
 
 /* 暗色主题适配 - 颜色由 content.js 动态生成以支持配色切换 */
 @media (prefers-color-scheme: dark) {
-  .vocabmeld-translated {
+  .lingrove-translated {
     border-bottom-color: rgba(129, 140, 248, 0.6);
   }
   
-  .vocabmeld-translated:hover {
+  .lingrove-translated:hover {
     background: rgba(129, 140, 248, 0.15);
   }
 }
 
 /* Toast 显示状态 */
-.vocabmeld-toast {
+.lingrove-toast {
   bottom: 24px !important;
   left: 50% !important;
   transform: translateX(-50%) translateY(100px) !important;
@@ -75,13 +75,13 @@
   transition: all 0.3s ease !important;
 }
 
-.vocabmeld-toast-show {
+.lingrove-toast-show {
   transform: translateX(-50%) translateY(0) !important;
   opacity: 1 !important;
 }
 
 /* 选择弹出框按钮 */
-.vocabmeld-add-memorize {
+.lingrove-add-memorize {
   display: block !important;
   padding: 8px 16px !important;
   background: none !important;
@@ -98,13 +98,13 @@
   box-sizing: border-box !important;
 }
 
-.vocabmeld-add-memorize:hover {
+.lingrove-add-memorize:hover {
   background: #334155 !important;
 }
 
 /* 确保样式不被覆盖 - 使用 !important 覆盖页面样式 */
 /* 下划线颜色由 content.js 动态生成以支持配色切换 */
-.vocabmeld-translated {
+.lingrove-translated {
   position: relative !important;
   display: inline !important;
   cursor: pointer !important;
@@ -118,19 +118,19 @@
   margin-right: 0.15em !important;
 }
 
-.vocabmeld-translated .vocabmeld-word {
+.lingrove-translated .lingrove-word {
   color: inherit !important;
   font-weight: inherit !important;
   font-size: inherit !important;
 }
 
-.vocabmeld-translated .vocabmeld-original {
+.lingrove-translated .lingrove-original {
   color: inherit !important;
   font-size: inherit !important;
   margin-left: 2px !important;
 }
 
-.vocabmeld-tooltip {
+.lingrove-tooltip {
   position: absolute !important;
   z-index: 2147483647 !important;
   /* 背景色和边框色由 content.js 动态生成以支持配色切换 */
@@ -150,7 +150,7 @@
   pointer-events: auto !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-header {
+.lingrove-tooltip .lingrove-tooltip-header {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
@@ -158,7 +158,7 @@
   padding: 0 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-word {
+.lingrove-tooltip .lingrove-tooltip-word {
   font-size: 18px !important;
   font-weight: 600 !important;
   color: #818cf8 !important;
@@ -169,7 +169,7 @@
   word-break: break-word !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-badge {
+.lingrove-tooltip .lingrove-tooltip-badge {
   display: inline-block !important;
   padding: 2px 8px !important;
   color: white !important;
@@ -182,26 +182,26 @@
 }
 
 /* 难度颜色 - 与词汇管理页面一致 */
-.vocabmeld-tooltip .vocabmeld-tooltip-badge[data-difficulty="A1"] {
+.lingrove-tooltip .lingrove-tooltip-badge[data-difficulty="A1"] {
   background: #22c55e !important;
 }
-.vocabmeld-tooltip .vocabmeld-tooltip-badge[data-difficulty="A2"] {
+.lingrove-tooltip .lingrove-tooltip-badge[data-difficulty="A2"] {
   background: #3b82f6 !important;
 }
-.vocabmeld-tooltip .vocabmeld-tooltip-badge[data-difficulty="B1"] {
+.lingrove-tooltip .lingrove-tooltip-badge[data-difficulty="B1"] {
   background: #fbbf24 !important;
 }
-.vocabmeld-tooltip .vocabmeld-tooltip-badge[data-difficulty="B2"] {
+.lingrove-tooltip .lingrove-tooltip-badge[data-difficulty="B2"] {
   background: #f97316 !important;
 }
-.vocabmeld-tooltip .vocabmeld-tooltip-badge[data-difficulty="C1"] {
+.lingrove-tooltip .lingrove-tooltip-badge[data-difficulty="C1"] {
   background: #ef4444 !important;
 }
-.vocabmeld-tooltip .vocabmeld-tooltip-badge[data-difficulty="C2"] {
+.lingrove-tooltip .lingrove-tooltip-badge[data-difficulty="C2"] {
   background: #a855f7 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-phonetic {
+.lingrove-tooltip .lingrove-tooltip-phonetic {
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
@@ -216,33 +216,33 @@
   transition: all 0.2s ease !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-phonetic:hover {
+.lingrove-tooltip .lingrove-tooltip-phonetic:hover {
   background: #3b82f6 !important;
   color: white !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-phonetic svg {
+.lingrove-tooltip .lingrove-tooltip-phonetic svg {
   flex-shrink: 0 !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-phonetic {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-phonetic {
   background: #f1f5f9 !important;
   color: #64748b !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-phonetic:hover {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-phonetic:hover {
   background: #3b82f6 !important;
   color: white !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-original {
+.lingrove-tooltip .lingrove-tooltip-original {
   color: #64748b !important;
   font-size: 13px !important;
   margin-bottom: 8px !important;
   padding: 0 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-tip {
+.lingrove-tooltip .lingrove-tooltip-tip {
   font-size: 11px !important;
   color: #64748b !important;
   padding-top: 8px !important;
@@ -250,7 +250,7 @@
   margin: 0 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-actions {
+.lingrove-tooltip .lingrove-tooltip-actions {
   display: flex !important;
   justify-content: space-between !important;
   gap: 16px !important;
@@ -259,7 +259,7 @@
   border-top: 1px solid #334155 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-btn {
+.lingrove-tooltip .lingrove-tooltip-btn {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -273,13 +273,13 @@
   transition: all 0.2s ease !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-btn:hover {
+.lingrove-tooltip .lingrove-tooltip-btn:hover {
   background: #475569 !important;
   color: #f8fafc !important;
 }
 
 /* Header 中的收藏按钮 */
-.vocabmeld-tooltip .vocabmeld-tooltip-header .vocabmeld-btn-memorize {
+.lingrove-tooltip .lingrove-tooltip-header .lingrove-btn-memorize {
   width: 28px !important;
   height: 28px !important;
   padding: 0 !important;
@@ -287,48 +287,48 @@
   margin-left: auto !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-btn-memorize:hover {
+.lingrove-tooltip .lingrove-btn-memorize:hover {
   background: #ec4899 !important;
   color: white !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-btn-memorize.active {
+.lingrove-tooltip .lingrove-btn-memorize.active {
   background: #ec4899 !important;
   color: white !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-btn-learned:hover {
+.lingrove-tooltip .lingrove-btn-learned:hover {
   background: #22c55e !important;
   color: white !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-btn-retranslate:hover {
+.lingrove-tooltip .lingrove-btn-retranslate:hover {
   background: #f59e0b !important;
   color: white !important;
 }
 
 /* Light theme button styles */
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-actions {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-actions {
   border-top: 1px solid #e2e8f0 !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-btn {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-btn {
   background: #f1f5f9 !important;
   color: #64748b !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-btn:hover {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-btn:hover {
   background: #e2e8f0 !important;
   color: #1e293b !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-btn:hover {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-btn:hover {
   background: #e2e8f0 !important;
   color: #1e293b !important;
 }
 
 /* Dictionary styles */
-.vocabmeld-tooltip .vocabmeld-tooltip-dict {
+.lingrove-tooltip .lingrove-tooltip-dict {
   margin: 8px 0 !important;
   padding: 8px 0 !important;
   border-top: 1px solid #334155 !important;
@@ -339,56 +339,56 @@
   scrollbar-color: #475569 transparent !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-dict::-webkit-scrollbar {
+.lingrove-tooltip .lingrove-tooltip-dict::-webkit-scrollbar {
   width: 6px !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-dict::-webkit-scrollbar-track {
+.lingrove-tooltip .lingrove-tooltip-dict::-webkit-scrollbar-track {
   background: transparent !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-dict::-webkit-scrollbar-thumb {
+.lingrove-tooltip .lingrove-tooltip-dict::-webkit-scrollbar-thumb {
   background: #475569 !important;
   border-radius: 3px !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-tooltip-dict::-webkit-scrollbar-thumb:hover {
+.lingrove-tooltip .lingrove-tooltip-dict::-webkit-scrollbar-thumb:hover {
   background: #64748b !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-dict {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-dict {
   scrollbar-color: #cbd5e1 transparent !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-dict::-webkit-scrollbar-thumb {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-dict::-webkit-scrollbar-thumb {
   background: #cbd5e1 !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-dict::-webkit-scrollbar-thumb:hover {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-dict::-webkit-scrollbar-thumb:hover {
   background: #94a3b8 !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-dict {
+.lingrove-tooltip[data-theme="light"] .lingrove-tooltip-dict {
   border-top: 1px solid #e2e8f0 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-dict-loading,
-.vocabmeld-tooltip .vocabmeld-dict-empty {
+.lingrove-tooltip .lingrove-dict-loading,
+.lingrove-tooltip .lingrove-dict-empty {
   color: #64748b !important;
   font-style: italic !important;
   text-align: center !important;
   padding: 4px 0 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-dict-entry {
+.lingrove-tooltip .lingrove-dict-entry {
   margin-bottom: 6px !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-dict-entry:last-child {
+.lingrove-tooltip .lingrove-dict-entry:last-child {
   margin-bottom: 0 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-dict-pos {
+.lingrove-tooltip .lingrove-dict-pos {
   display: inline-block !important;
   background: #475569 !important;
   color: #e2e8f0 !important;
@@ -400,28 +400,28 @@
   margin-bottom: 4px !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-dict-pos {
+.lingrove-tooltip[data-theme="light"] .lingrove-dict-pos {
   background: #e2e8f0 !important;
   color: #475569 !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-dict-defs {
+.lingrove-tooltip .lingrove-dict-defs {
   margin: 4px 0 0 16px !important;
   padding: 0 !important;
   list-style: disc !important;
 }
 
-.vocabmeld-tooltip .vocabmeld-dict-defs li {
+.lingrove-tooltip .lingrove-dict-defs li {
   color: #94a3b8 !important;
   margin-bottom: 2px !important;
   line-height: 1.4 !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-dict-defs li {
+.lingrove-tooltip[data-theme="light"] .lingrove-dict-defs li {
   color: #64748b !important;
 }
 
-.vocabmeld-toast {
+.lingrove-toast {
   position: fixed !important;
   z-index: 2147483647 !important;
   background: #1e293b !important;
@@ -434,7 +434,7 @@
   border: 1px solid #334155 !important;
 }
 
-.vocabmeld-selection-popup {
+.lingrove-selection-popup {
   position: absolute !important;
   z-index: 2147483647 !important;
   background: #1e293b !important;
@@ -446,18 +446,18 @@
 
 /* 打印时隐藏 */
 @media print {
-  .vocabmeld-tooltip,
-  .vocabmeld-toast,
-  .vocabmeld-selection-popup {
+  .lingrove-tooltip,
+  .lingrove-toast,
+  .lingrove-selection-popup {
     display: none !important;
   }
   
-  .vocabmeld-translated .vocabmeld-word {
+  .lingrove-translated .lingrove-word {
     color: inherit;
     text-decoration: none;
   }
   
-  .vocabmeld-translated .vocabmeld-original {
+  .lingrove-translated .lingrove-original {
     display: none;
   }
 }

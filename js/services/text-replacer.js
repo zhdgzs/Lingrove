@@ -1,5 +1,5 @@
 /**
- * VocabMeld 文本替换器模块
+ * Lingrove 文本替换器模块
  * 使用 Range API 精确替换文本节点
  */
 
@@ -44,7 +44,7 @@ class TextReplacer {
 
     // 标记元素已处理
     if (count > 0) {
-      element.setAttribute('data-vocabmeld-processed', 'true');
+      element.setAttribute('data-lingrove-processed', 'true');
     }
 
     return count;
@@ -133,7 +133,7 @@ class TextReplacer {
 
       return true;
     } catch (error) {
-      console.error('[VocabMeld] Replacement error:', error);
+      console.error('[Lingrove] Replacement error:', error);
       return false;
     }
   }
@@ -148,14 +148,14 @@ class TextReplacer {
    */
   createReplacementElement(original, translation, phonetic, difficulty) {
     const wrapper = document.createElement('span');
-    wrapper.className = 'vocabmeld-translated';
+    wrapper.className = 'lingrove-translated';
     wrapper.setAttribute('data-original', original);
     wrapper.setAttribute('data-translation', translation);
     wrapper.setAttribute('data-phonetic', phonetic || '');
     wrapper.setAttribute('data-difficulty', difficulty || 'B1');
     
     // 显示格式: translated(original)
-    wrapper.innerHTML = `<span class="vocabmeld-word">${translation}</span><span class="vocabmeld-original">(${original})</span>`;
+    wrapper.innerHTML = `<span class="lingrove-word">${translation}</span><span class="lingrove-original">(${original})</span>`;
     
     return wrapper;
   }
@@ -165,7 +165,7 @@ class TextReplacer {
    * @param {Element} element - 替换元素
    */
   restoreOriginal(element) {
-    if (!element.classList.contains('vocabmeld-translated')) {
+    if (!element.classList.contains('lingrove-translated')) {
       return;
     }
 
@@ -179,12 +179,12 @@ class TextReplacer {
    * @param {Element} root - 根元素
    */
   restoreAll(root = document.body) {
-    const elements = root.querySelectorAll('.vocabmeld-translated');
+    const elements = root.querySelectorAll('.lingrove-translated');
     elements.forEach(el => this.restoreOriginal(el));
     
     // 清除处理标记
-    root.querySelectorAll('[data-vocabmeld-processed]').forEach(el => {
-      el.removeAttribute('data-vocabmeld-processed');
+    root.querySelectorAll('[data-lingrove-processed]').forEach(el => {
+      el.removeAttribute('data-lingrove-processed');
     });
   }
 
@@ -194,7 +194,7 @@ class TextReplacer {
    * @returns {Promise<void>}
    */
   async markAsLearned(element) {
-    if (!element.classList.contains('vocabmeld-translated')) {
+    if (!element.classList.contains('lingrove-translated')) {
       return;
     }
 
@@ -217,16 +217,16 @@ class TextReplacer {
    */
   showToast(message) {
     const toast = document.createElement('div');
-    toast.className = 'vocabmeld-toast';
+    toast.className = 'lingrove-toast';
     toast.textContent = message;
     document.body.appendChild(toast);
 
     setTimeout(() => {
-      toast.classList.add('vocabmeld-toast-show');
+      toast.classList.add('lingrove-toast-show');
     }, 10);
 
     setTimeout(() => {
-      toast.classList.remove('vocabmeld-toast-show');
+      toast.classList.remove('lingrove-toast-show');
       setTimeout(() => toast.remove(), 300);
     }, 2000);
   }

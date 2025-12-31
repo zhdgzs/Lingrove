@@ -1,7 +1,7 @@
-# VocabMeld - 沉浸式语言学习 Chrome 插件
+# Lingrove - 沉浸式语言学习 Chrome 插件
 
 <p align="center">
-  <img src="icons/icon.svg" width="128" height="128" alt="VocabMeld Logo">
+  <img src="icons/icon.svg" width="128" height="128" alt="Lingrove Logo">
 </p>
 
 <p align="center">
@@ -14,13 +14,15 @@
 </p>
 
 <p align="center">
-  <img src="assets/preview.png" alt="VocabMeld Preview" width="100%">
+  <img src="assets/preview.png" alt="Lingrove Preview" width="100%">
 </p>
 
 ---
 
 >
-> 为保证代码质量，本项目完全使用 **Claude Opus 4.5** 开发，价格非常昂贵。如果这个项目对你有帮助，欢迎在页面底部扫码打赏支持，你的支持是我继续更新的动力！⭐
+> 本项目基于 [VocabMeld](https://github.com/lzskyline/VocabMeld) 二次开发。
+>
+> 由于原项目存在一些问题，功能不完善且迭代更新较慢，故自行 fork 进行维护和功能改进。
 
 ---
 
@@ -117,19 +119,9 @@
 
 ---
 
-## ☕ 打赏
-
-本项目完全开源，如果对你有帮助，欢迎打赏支持！
-
-<p align="center">
-  <img src="assets/wechat.jpg" alt="微信打赏" width="300">
-</p>
-
----
-
 ## 📈 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=lzskyline/VocabMeld&type=Date)](https://star-history.com/#lzskyline/VocabMeld&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=zhdgzs/Lingrove&type=Date)](https://star-history.com/#zhdgzs/Lingrove&Date)
 
 ---
 
@@ -139,8 +131,4 @@
 
 你可以自由地使用、复制、修改、分发本项目，包括商业用途。唯一要求是保留原版权声明和许可证。
 
-如果你基于本项目进行了二次开发，欢迎标注：
-
-```
-Based on VocabMeld (https://github.com/lzskyline/VocabMeld)
-```
+原项目：[VocabMeld](https://github.com/lzskyline/VocabMeld)

@@ -1,5 +1,5 @@
 /**
- * VocabMeld 内容脚本
+ * Lingrove 内容脚本
  * 注入到网页中，处理词汇替换和用户交互
  */
 
@@ -16,7 +16,7 @@
     high: { maxPerParagraph: 14 }
   };
   const SKIP_TAGS = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'CODE', 'PRE', 'KBD', 'TEXTAREA', 'INPUT', 'SELECT', 'BUTTON'];
-  const SKIP_CLASSES = ['vocabmeld-translated', 'vocabmeld-tooltip', 'hljs', 'code', 'syntax'];
+  const SKIP_CLASSES = ['lingrove-translated', 'lingrove-tooltip', 'hljs', 'code', 'syntax'];
   const DEFAULT_CACHE_MAX_SIZE = 2000;
 
   // 内置主题配置（可被用户自定义覆盖）
@@ -231,10 +231,10 @@
     const theme = themeId === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[themeId] || BUILT_IN_THEMES.default;
     
     // 创建或更新样式元素
-    let styleEl = document.getElementById('vocabmeld-theme-style');
+    let styleEl = document.getElementById('lingrove-theme-style');
     if (!styleEl) {
       styleEl = document.createElement('style');
-      styleEl.id = 'vocabmeld-theme-style';
+      styleEl.id = 'lingrove-theme-style';
       document.head.appendChild(styleEl);
     }
     
@@ -261,26 +261,26 @@
     const originalColorStyle = theme.originalColor ? `color: ${theme.originalColor} !important;` : '';
     
     styleEl.textContent = `
-      .vocabmeld-translated {
+      .lingrove-translated {
         border-bottom: ${underlineWidth} ${underlineStyle} ${theme.underline} !important;
         text-decoration: none !important;
       }
-      .vocabmeld-translated:hover {
+      .lingrove-translated:hover {
         background: ${theme.hoverBg} !important;
       }
-      ${wordColorStyle ? `.vocabmeld-translated .vocabmeld-word { ${wordColorStyle} }` : ''}
-      ${originalColorStyle ? `.vocabmeld-translated .vocabmeld-original { ${originalColorStyle} }` : ''}
-      .vocabmeld-tooltip .vocabmeld-tooltip-word {
+      ${wordColorStyle ? `.lingrove-translated .lingrove-word { ${wordColorStyle} }` : ''}
+      ${originalColorStyle ? `.lingrove-translated .lingrove-original { ${originalColorStyle} }` : ''}
+      .lingrove-tooltip .lingrove-tooltip-word {
         color: ${theme.tooltipWord} !important;
       }
-      .vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-word {
+      .lingrove-tooltip[data-theme="light"] .lingrove-tooltip-word {
         color: ${theme.primary} !important;
       }
-      .vocabmeld-tooltip {
+      .lingrove-tooltip {
         background: ${cardBgDark} !important;
         border-color: ${cardBorderDark} !important;
       }
-      .vocabmeld-tooltip[data-theme="light"] {
+      .lingrove-tooltip[data-theme="light"] {
         background: ${cardBgLight} !important;
         border-color: ${cardBorderLight} !important;
       }
@@ -300,8 +300,8 @@
 
   async function loadWordCache() {
     return new Promise((resolve) => {
-      chrome.storage.local.get('vocabmeld_word_cache', (result) => {
-        const cached = result.vocabmeld_word_cache;
+      chrome.storage.local.get('lingrove_word_cache', (result) => {
+        const cached = result.lingrove_word_cache;
         if (cached && Array.isArray(cached)) {
           cached.forEach(item => {
             wordCache.set(item.key, {
@@ -327,9 +327,9 @@
       }
     }
     return new Promise((resolve, reject) => {
-      chrome.storage.local.set({ vocabmeld_word_cache: data }, () => {
+      chrome.storage.local.set({ lingrove_word_cache: data }, () => {
         if (chrome.runtime.lastError) {
-          console.error('[VocabMeld] Failed to save cache:', chrome.runtime.lastError);
+          console.error('[Lingrove] Failed to save cache:', chrome.runtime.lastError);
           reject(chrome.runtime.lastError);
         } else {
           resolve();
@@ -375,7 +375,7 @@
 
   async function addToMemorizeList(word) {
     if (!word || !word.trim()) {
-      console.warn('[VocabMeld] Invalid word for memorize list:', word);
+      console.warn('[Lingrove] Invalid word for memorize list:', word);
       return;
     }
 
@@ -412,12 +412,12 @@
             await translateSpecificWords([trimmedWord]);
             showToast(`"${trimmedWord}" 已添加到记忆列表`);
           } catch (error) {
-            console.error('[VocabMeld] Error translating word:', trimmedWord, error);
+            console.error('[Lingrove] Error translating word:', trimmedWord, error);
             showToast(`"${trimmedWord}" 已添加到记忆列表`);
           }
         }
       } catch (error) {
-        console.error('[VocabMeld] Error processing word:', trimmedWord, error);
+        console.error('[Lingrove] Error processing word:', trimmedWord, error);
         showToast(`"${trimmedWord}" 已添加到记忆列表`);
       }
     } else {
@@ -464,7 +464,7 @@
     }
 
     if (element.isContentEditable) return true;
-    if (element.hasAttribute('data-vocabmeld-processed')) return true;
+    if (element.hasAttribute('data-lingrove-processed')) return true;
 
     return false;
   }
@@ -560,7 +560,7 @@
   // ============ 文本替换 ============
   function createReplacementElement(original, translation, phonetic, difficulty) {
     const wrapper = document.createElement('span');
-    wrapper.className = 'vocabmeld-translated';
+    wrapper.className = 'lingrove-translated';
     wrapper.setAttribute('data-original', original);
     wrapper.setAttribute('data-translation', translation);
     wrapper.setAttribute('data-phonetic', phonetic || '');
@@ -573,16 +573,16 @@
     switch (style) {
       case 'translation-only':
         // 只显示译文
-        innerHTML = `<span class="vocabmeld-word">${translation}</span>`;
+        innerHTML = `<span class="lingrove-word">${translation}</span>`;
         break;
       case 'original-translation':
         // 原文(译文)
-        innerHTML = `<span class="vocabmeld-original">${original}</span><span class="vocabmeld-word">(${translation})</span>`;
+        innerHTML = `<span class="lingrove-original">${original}</span><span class="lingrove-word">(${translation})</span>`;
         break;
       case 'translation-original':
       default:
         // 译文(原文) - 默认样式
-        innerHTML = `<span class="vocabmeld-word">${translation}</span><span class="vocabmeld-original">(${original})</span>`;
+        innerHTML = `<span class="lingrove-word">${translation}</span><span class="lingrove-original">(${original})</span>`;
         break;
     }
     
@@ -604,7 +604,7 @@
           if (!parent) return NodeFilter.FILTER_REJECT;
           
           // 跳过已翻译的元素
-          if (parent.classList?.contains('vocabmeld-translated')) {
+          if (parent.classList?.contains('lingrove-translated')) {
             return NodeFilter.FILTER_REJECT;
           }
           
@@ -613,7 +613,7 @@
           
           // 跳过代码相关的类
           const classList = parent.className?.toString() || '';
-          if (SKIP_CLASSES.some(cls => classList.includes(cls) && cls !== 'vocabmeld-translated')) {
+          if (SKIP_CLASSES.some(cls => classList.includes(cls) && cls !== 'lingrove-translated')) {
             return NodeFilter.FILTER_REJECT;
           }
           
@@ -688,7 +688,7 @@
           let parent = textNode.parentElement;
           let isAlreadyReplaced = false;
           while (parent && parent !== element) {
-            if (parent.classList?.contains('vocabmeld-translated')) {
+            if (parent.classList?.contains('lingrove-translated')) {
               isAlreadyReplaced = true;
               break;
             }
@@ -705,17 +705,17 @@
           // 找到匹配后立即跳出，因为DOM结构已改变，需要重新获取节点
           break;
         } catch (e) {
-          console.error('[VocabMeld] Replacement error:', e, original);
+          console.error('[Lingrove] Replacement error:', e, original);
         }
       }
     }
 
-    if (count > 0) element.setAttribute('data-vocabmeld-processed', 'true');
+    if (count > 0) element.setAttribute('data-lingrove-processed', 'true');
     return count;
   }
 
   function restoreOriginal(element) {
-    if (!element.classList?.contains('vocabmeld-translated')) return;
+    if (!element.classList?.contains('lingrove-translated')) return;
     const original = element.getAttribute('data-original');
     const textNode = document.createTextNode(original);
     element.parentNode.replaceChild(textNode, element);
@@ -723,7 +723,7 @@
 
   // 恢复页面上所有相同单词的原文
   function restoreAllSameWord(originalWord) {
-    document.querySelectorAll('.vocabmeld-translated').forEach(el => {
+    document.querySelectorAll('.lingrove-translated').forEach(el => {
       if (el.getAttribute('data-original')?.toLowerCase() === originalWord.toLowerCase()) {
         restoreOriginal(el);
       }
@@ -731,9 +731,9 @@
   }
 
   function restoreAll() {
-    document.querySelectorAll('.vocabmeld-translated').forEach(restoreOriginal);
-    document.querySelectorAll('[data-vocabmeld-processed]').forEach(el => el.removeAttribute('data-vocabmeld-processed'));
-    document.querySelectorAll('[data-vocabmeld-observing]').forEach(el => el.removeAttribute('data-vocabmeld-observing'));
+    document.querySelectorAll('.lingrove-translated').forEach(restoreOriginal);
+    document.querySelectorAll('[data-lingrove-processed]').forEach(el => el.removeAttribute('data-lingrove-processed'));
+    document.querySelectorAll('[data-lingrove-observing]').forEach(el => el.removeAttribute('data-lingrove-observing'));
     processedFingerprints.clear();
     pendingContainers.clear();
   }
@@ -1055,7 +1055,7 @@ ${filteredText}
         return mergedResults.slice(0, maxAsyncReplacements);
 
       } catch (error) {
-        console.error('[VocabMeld] Async API Error:', error);
+        console.error('[Lingrove] Async API Error:', error);
         // API失败时返回空数组，不影响已显示的缓存结果
         return [];
       }
@@ -1205,7 +1205,7 @@ ${uncached.join(', ')}
         updateStats({ newWords: apiResults.length, cacheHits: cached.length, cacheMisses: 1 });
 
       } catch (error) {
-        console.error('[VocabMeld] API Error for specific words:', error);
+        console.error('[Lingrove] API Error for specific words:', error);
         // 如果API失败，至少返回缓存的结果
       }
     }
@@ -1221,7 +1221,7 @@ ${uncached.join(', ')}
     }
     
     // 找到包含该单词的元素，获取上下文
-    const elements = document.querySelectorAll('.vocabmeld-translated');
+    const elements = document.querySelectorAll('.lingrove-translated');
     let contextSentence = '';
     let targetElement = null;
     
@@ -1339,7 +1339,7 @@ ${originalWord}
       fetchDictionaryData(originalWord).catch(() => {});
       
       // 更新页面上所有相同单词的显示
-      document.querySelectorAll('.vocabmeld-translated').forEach(el => {
+      document.querySelectorAll('.lingrove-translated').forEach(el => {
         if (el.getAttribute('data-original')?.toLowerCase() === originalWord.toLowerCase()) {
           el.setAttribute('data-translation', result.translation);
           el.setAttribute('data-phonetic', result.phonetic || '');
@@ -1350,13 +1350,13 @@ ${originalWord}
           let innerHTML = '';
           switch (style) {
             case 'translation-only':
-              innerHTML = `<span class="vocabmeld-word">${result.translation}</span>`;
+              innerHTML = `<span class="lingrove-word">${result.translation}</span>`;
               break;
             case 'original-translation':
-              innerHTML = `<span class="vocabmeld-original">${originalWord}</span><span class="vocabmeld-word">(${result.translation})</span>`;
+              innerHTML = `<span class="lingrove-original">${originalWord}</span><span class="lingrove-word">(${result.translation})</span>`;
               break;
             default:
-              innerHTML = `<span class="vocabmeld-word">${result.translation}</span><span class="vocabmeld-original">(${originalWord})</span>`;
+              innerHTML = `<span class="lingrove-word">${result.translation}</span><span class="lingrove-original">(${originalWord})</span>`;
           }
           el.innerHTML = innerHTML;
         }
@@ -1366,7 +1366,7 @@ ${originalWord}
       showToast(`已更新翻译: ${result.translation}`);
       
     } catch (error) {
-      console.error('[VocabMeld] Retranslate error:', error);
+      console.error('[Lingrove] Retranslate error:', error);
       showToast('重新翻译失败');
     }
   }
@@ -1381,7 +1381,7 @@ ${originalWord}
 
     // 首先检查已翻译的元素，看是否有目标单词已经被翻译了
     const alreadyTranslated = [];
-    document.querySelectorAll('.vocabmeld-translated').forEach(el => {
+    document.querySelectorAll('.lingrove-translated').forEach(el => {
       const original = el.getAttribute('data-original');
       if (original && targetWordSet.has(original.toLowerCase())) {
         alreadyTranslated.push(original.toLowerCase());
@@ -1401,7 +1401,7 @@ ${originalWord}
         
         // 跳过代码相关的类
         const classList = parent.className?.toString() || '';
-        if (SKIP_CLASSES.some(cls => classList.includes(cls) && cls !== 'vocabmeld-translated')) {
+        if (SKIP_CLASSES.some(cls => classList.includes(cls) && cls !== 'lingrove-translated')) {
           return NodeFilter.FILTER_REJECT;
         }
         
@@ -1474,8 +1474,8 @@ ${originalWord}
         const fingerprint = generateFingerprint(contextText, path);
         
         // 检查是否已经处理过这个段落
-        const isProcessed = container.hasAttribute('data-vocabmeld-processed') || 
-                           container.closest('[data-vocabmeld-processed]');
+        const isProcessed = container.hasAttribute('data-lingrove-processed') || 
+                           container.closest('[data-lingrove-processed]');
         
         segments.push({
           element: container,
@@ -1545,14 +1545,14 @@ ${originalWord}
         if (entry.isIntersecting) {
           const container = entry.target;
           // 跳过已处理的容器
-          if (container.hasAttribute('data-vocabmeld-processed')) {
+          if (container.hasAttribute('data-lingrove-processed')) {
             continue;
           }
           
           // 添加到待处理队列（即使已有 observing 标记，因为可能之前处理时被跳过了）
           if (!pendingContainers.has(container)) {
             pendingContainers.add(container);
-            container.setAttribute('data-vocabmeld-observing', 'true');
+            container.setAttribute('data-lingrove-observing', 'true');
             hasNewVisible = true;
           }
         }
@@ -1587,9 +1587,9 @@ ${originalWord}
       
       for (const container of containers) {
         // 移除观察标记
-        container.removeAttribute('data-vocabmeld-observing');
+        container.removeAttribute('data-lingrove-observing');
         
-        if (container.hasAttribute('data-vocabmeld-processed')) continue;
+        if (container.hasAttribute('data-lingrove-processed')) continue;
         
         const text = getTextContent(container);
         if (!text || text.length < 50) continue;
@@ -1668,7 +1668,7 @@ ${originalWord}
             for (const segment of segments) {
               const segmentText = segment.text.toLowerCase();
               const alreadyReplaced = new Set();
-              segment.element.querySelectorAll('.vocabmeld-translated').forEach(el => {
+              segment.element.querySelectorAll('.lingrove-translated').forEach(el => {
                 const original = el.getAttribute('data-original');
                 if (original) alreadyReplaced.add(original.toLowerCase());
               });
@@ -1688,11 +1688,11 @@ ${originalWord}
             }
           }
         }).catch(error => {
-          console.error('[VocabMeld] Async translation error:', error);
+          console.error('[Lingrove] Async translation error:', error);
         });
       }
     } catch (e) {
-      console.error('[VocabMeld] Batch processing error:', e);
+      console.error('[Lingrove] Batch processing error:', e);
     }
   }
 
@@ -1733,16 +1733,16 @@ ${originalWord}
     
     for (const container of containers) {
       // 跳过已处理的容器
-      if (container.hasAttribute('data-vocabmeld-processed')) {
+      if (container.hasAttribute('data-lingrove-processed')) {
         continue;
       }
       
       // 检查是否在视口内且未被处理
       if (isInViewport(container)) {
         // 已经在视口内的容器，直接添加到待处理队列
-        if (!container.hasAttribute('data-vocabmeld-observing')) {
+        if (!container.hasAttribute('data-lingrove-observing')) {
           pendingContainers.add(container);
-          container.setAttribute('data-vocabmeld-observing', 'true');
+          container.setAttribute('data-lingrove-observing', 'true');
           hasVisibleUnprocessed = true;
         }
       }
@@ -1794,7 +1794,7 @@ ${originalWord}
     if (tooltip) return;
     
     tooltip = document.createElement('div');
-    tooltip.className = 'vocabmeld-tooltip';
+    tooltip.className = 'lingrove-tooltip';
     tooltip.setAttribute('data-theme', config?.theme || 'dark');
     tooltip.style.display = 'none';
     document.body.appendChild(tooltip);
@@ -1802,7 +1802,7 @@ ${originalWord}
 
   // 词典缓存
   const dictCache = new Map();
-  const DICT_CACHE_STORAGE_KEY = 'vocabmeld_dict_cache';
+  const DICT_CACHE_STORAGE_KEY = 'lingrove_dict_cache';
   const DICT_CACHE_MAX_SIZE = 500;
   let persistentDictCache = null;
   let dictCacheInitPromise = null;
@@ -1935,7 +1935,7 @@ ${originalWord}
       
       return { word, phonetic, meanings };
     } catch (e) {
-      console.error('[VocabMeld] Youdao fetch error:', e);
+      console.error('[Lingrove] Youdao fetch error:', e);
       return null;
     }
   }
@@ -2048,7 +2048,7 @@ ${originalWord}
       if (meanings.length === 0) return null;
       return { word, phonetic, meanings };
     } catch (e) {
-      console.error('[VocabMeld] Wiktionary fetch error:', e);
+      console.error('[Lingrove] Wiktionary fetch error:', e);
       return null;
     }
   }
@@ -2085,7 +2085,7 @@ ${originalWord}
       await setDictCacheValue(cacheKey, result);
       return result;
     } catch (e) {
-      console.error('[VocabMeld] Dictionary fetch error:', e);
+      console.error('[Lingrove] Dictionary fetch error:', e);
       dictCache.set(cacheKey, null);
       setDictCacheValue(cacheKey, null);
       return null;
@@ -2114,28 +2114,28 @@ ${originalWord}
   function updateTooltipDictionary(dictData) {
     if (!tooltip || !dictData) return;
     
-    const dictContainer = tooltip.querySelector('.vocabmeld-tooltip-dict');
+    const dictContainer = tooltip.querySelector('.lingrove-tooltip-dict');
     if (!dictContainer) return;
     
     let html = '';
     for (const meaning of dictData.meanings) {
-      html += `<div class="vocabmeld-dict-entry">`;
+      html += `<div class="lingrove-dict-entry">`;
       // 只有当词性非空时才显示词性标签
       if (meaning.partOfSpeech) {
-        html += `<span class="vocabmeld-dict-pos">${meaning.partOfSpeech}</span>`;
+        html += `<span class="lingrove-dict-pos">${meaning.partOfSpeech}</span>`;
       }
-      html += `<ul class="vocabmeld-dict-defs">`;
+      html += `<ul class="lingrove-dict-defs">`;
       for (const def of meaning.definitions) {
         html += `<li>${def}</li>`;
       }
       html += `</ul></div>`;
     }
     
-    dictContainer.innerHTML = html || '<div class="vocabmeld-dict-empty">暂无词典数据</div>';
+    dictContainer.innerHTML = html || '<div class="lingrove-dict-empty">暂无词典数据</div>';
   }
 
   function showTooltip(element, mouseX, mouseY) {
-    if (!tooltip || !element.classList?.contains('vocabmeld-translated')) return;
+    if (!tooltip || !element.classList?.contains('lingrove-translated')) return;
     
     // 如果是同一个元素且 tooltip 已显示，不重新计算位置
     if (currentTooltipElement === element && tooltip.style.display === 'block') {
@@ -2174,10 +2174,10 @@ ${originalWord}
     const dictWord = isOriginalTargetLang ? original : (isTranslationTargetLang ? translation : null);
 
     tooltip.innerHTML = `
-      <div class="vocabmeld-tooltip-header">
-        <span class="vocabmeld-tooltip-word">${translation}</span>
-        <span class="vocabmeld-tooltip-badge" data-difficulty="${difficulty}">${difficulty}</span>
-        <button class="vocabmeld-tooltip-btn vocabmeld-btn-memorize ${isInMemorizeList ? 'active' : ''}" data-original="${original}" title="${isInMemorizeList ? '已在记忆列表' : '添加到记忆列表'}">
+      <div class="lingrove-tooltip-header">
+        <span class="lingrove-tooltip-word">${translation}</span>
+        <span class="lingrove-tooltip-badge" data-difficulty="${difficulty}">${difficulty}</span>
+        <button class="lingrove-tooltip-btn lingrove-btn-memorize ${isInMemorizeList ? 'active' : ''}" data-original="${original}" title="${isInMemorizeList ? '已在记忆列表' : '添加到记忆列表'}">
           <svg viewBox="0 0 24 24" width="16" height="16">
             ${isInMemorizeList 
               ? '<path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>'
@@ -2187,22 +2187,22 @@ ${originalWord}
         </button>
       </div>
       ${phonetic && config.showPhonetic ? `
-      <div class="vocabmeld-tooltip-phonetic vocabmeld-btn-speak" data-original="${original}" data-translation="${translation}" title="点击发音">
+      <div class="lingrove-tooltip-phonetic lingrove-btn-speak" data-original="${original}" data-translation="${translation}" title="点击发音">
         <svg viewBox="0 0 24 24" width="12" height="12">
           <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
         </svg>
         <span>${phonetic}</span>
       </div>
       ` : ''}
-      <div class="vocabmeld-tooltip-original">原文: ${original}</div>
-      <div class="vocabmeld-tooltip-dict"></div>
-      <div class="vocabmeld-tooltip-actions">
-        <button class="vocabmeld-tooltip-btn vocabmeld-btn-learned" data-original="${original}" data-translation="${translation}" data-difficulty="${difficulty}" title="标记已学会">
+      <div class="lingrove-tooltip-original">原文: ${original}</div>
+      <div class="lingrove-tooltip-dict"></div>
+      <div class="lingrove-tooltip-actions">
+        <button class="lingrove-tooltip-btn lingrove-btn-learned" data-original="${original}" data-translation="${translation}" data-difficulty="${difficulty}" title="标记已学会">
           <svg viewBox="0 0 24 24" width="16" height="16">
             <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
           </svg>
         </button>
-        <button class="vocabmeld-tooltip-btn vocabmeld-btn-retranslate" data-original="${original}" title="根据上下文重新翻译">
+        <button class="lingrove-tooltip-btn lingrove-btn-retranslate" data-original="${original}" title="根据上下文重新翻译">
           <svg viewBox="0 0 24 24" width="16" height="16">
             <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
           </svg>
@@ -2257,7 +2257,7 @@ ${originalWord}
     
     // 显示词典数据（优先从缓存获取）
     const dictionaryType = config.dictionaryType || 'en-en';
-    const dictContainer = tooltip.querySelector('.vocabmeld-tooltip-dict');
+    const dictContainer = tooltip.querySelector('.lingrove-tooltip-dict');
     if (dictContainer) {
       if (dictWord) {
         const cacheKey = `${dictWord.toLowerCase()}_${dictionaryType}`;
@@ -2267,20 +2267,20 @@ ${originalWord}
           updateTooltipDictionary(cachedData);
         } else {
           // 缓存未命中，显示加载中并异步获取
-          dictContainer.innerHTML = '<div class="vocabmeld-dict-loading">加载词典...</div>';
+          dictContainer.innerHTML = '<div class="lingrove-dict-loading">加载词典...</div>';
           fetchDictionaryData(dictWord).then(dictData => {
             if (tooltip.style.display !== 'none') {
               if (dictData) {
                 updateTooltipDictionary(dictData);
               } else {
-                dictContainer.innerHTML = '<div class="vocabmeld-dict-empty">暂无词典数据</div>';
+                dictContainer.innerHTML = '<div class="lingrove-dict-empty">暂无词典数据</div>';
               }
             }
           });
         }
       } else {
         // 非英文单词
-        dictContainer.innerHTML = '<div class="vocabmeld-dict-empty">暂无词典数据</div>';
+        dictContainer.innerHTML = '<div class="lingrove-dict-empty">暂无词典数据</div>';
       }
     }
   }
@@ -2305,12 +2305,12 @@ ${originalWord}
 
   function showToast(message) {
     const toast = document.createElement('div');
-    toast.className = 'vocabmeld-toast';
+    toast.className = 'lingrove-toast';
     toast.textContent = message;
     document.body.appendChild(toast);
-    setTimeout(() => toast.classList.add('vocabmeld-toast-show'), 10);
+    setTimeout(() => toast.classList.add('lingrove-toast-show'), 10);
     setTimeout(() => {
-      toast.classList.remove('vocabmeld-toast-show');
+      toast.classList.remove('lingrove-toast-show');
       setTimeout(() => toast.remove(), 300);
     }, 2000);
   }
@@ -2319,10 +2319,10 @@ ${originalWord}
     if (selectionPopup) return;
     
     selectionPopup = document.createElement('div');
-    selectionPopup.className = 'vocabmeld-selection-popup';
+    selectionPopup.className = 'lingrove-selection-popup';
     selectionPopup.setAttribute('data-theme', config?.theme || 'dark');
     selectionPopup.style.display = 'none';
-    selectionPopup.innerHTML = '<button class="vocabmeld-add-memorize">添加到需记忆</button>';
+    selectionPopup.innerHTML = '<button class="lingrove-add-memorize">添加到需记忆</button>';
     document.body.appendChild(selectionPopup);
 
     selectionPopup.querySelector('button').addEventListener('click', async () => {
@@ -2340,8 +2340,8 @@ ${originalWord}
   function setupEventListeners() {
     // 悬停显示提示
     document.addEventListener('mouseover', (e) => {
-      const target = e.target.closest('.vocabmeld-translated');
-      const tooltipTarget = e.target.closest('.vocabmeld-tooltip');
+      const target = e.target.closest('.lingrove-translated');
+      const tooltipTarget = e.target.closest('.lingrove-tooltip');
       
       if (target) {
         cancelHideTooltip();
@@ -2353,21 +2353,21 @@ ${originalWord}
     });
 
     document.addEventListener('mouseout', (e) => {
-      const target = e.target.closest('.vocabmeld-translated');
-      const tooltipTarget = e.target.closest('.vocabmeld-tooltip');
+      const target = e.target.closest('.lingrove-translated');
+      const tooltipTarget = e.target.closest('.lingrove-tooltip');
       const relatedTarget = e.relatedTarget;
       
       // 从翻译元素移出时，延迟隐藏
       if (target && 
-          !relatedTarget?.closest('.vocabmeld-translated') && 
-          !relatedTarget?.closest('.vocabmeld-tooltip')) {
+          !relatedTarget?.closest('.lingrove-translated') && 
+          !relatedTarget?.closest('.lingrove-tooltip')) {
         hideTooltip();
       }
       
       // 从 tooltip 移出时，延迟隐藏
       if (tooltipTarget && 
-          !relatedTarget?.closest('.vocabmeld-tooltip') &&
-          !relatedTarget?.closest('.vocabmeld-translated')) {
+          !relatedTarget?.closest('.lingrove-tooltip') &&
+          !relatedTarget?.closest('.lingrove-translated')) {
         hideTooltip();
       }
     });
@@ -2375,7 +2375,7 @@ ${originalWord}
     // tooltip 按钮点击事件
     document.addEventListener('click', (e) => {
       // 发音按钮
-      const speakBtn = e.target.closest('.vocabmeld-btn-speak');
+      const speakBtn = e.target.closest('.lingrove-btn-speak');
       if (speakBtn) {
         e.preventDefault();
         e.stopPropagation();
@@ -2401,7 +2401,7 @@ ${originalWord}
       }
       
       // 收藏/记忆按钮
-      const memorizeBtn = e.target.closest('.vocabmeld-btn-memorize');
+      const memorizeBtn = e.target.closest('.lingrove-btn-memorize');
       if (memorizeBtn) {
         e.preventDefault();
         e.stopPropagation();
@@ -2433,7 +2433,7 @@ ${originalWord}
       }
       
       // 已学会按钮
-      const learnedBtn = e.target.closest('.vocabmeld-btn-learned');
+      const learnedBtn = e.target.closest('.lingrove-btn-learned');
       if (learnedBtn) {
         e.preventDefault();
         e.stopPropagation();
@@ -2449,7 +2449,7 @@ ${originalWord}
       }
       
       // 重新翻译按钮
-      const retranslateBtn = e.target.closest('.vocabmeld-btn-retranslate');
+      const retranslateBtn = e.target.closest('.lingrove-btn-retranslate');
       if (retranslateBtn) {
         e.preventDefault();
         e.stopPropagation();
@@ -2461,7 +2461,7 @@ ${originalWord}
 
     // 选择文本显示添加按钮
     document.addEventListener('mouseup', (e) => {
-      if (e.target.closest('.vocabmeld-selection-popup')) return;
+      if (e.target.closest('.lingrove-selection-popup')) return;
       
       // 如果关闭了选中添加功能，直接隐藏弹窗
       if (!config?.showAddMemorize) {
@@ -2473,7 +2473,7 @@ ${originalWord}
         const selection = window.getSelection();
         const text = selection.toString().trim();
         
-        if (text && text.length > 1 && text.length < 50 && !e.target.closest('.vocabmeld-translated')) {
+        if (text && text.length > 1 && text.length < 50 && !e.target.closest('.lingrove-translated')) {
           const range = selection.getRangeAt(0);
           const rect = range.getBoundingClientRect();
           
@@ -2561,7 +2561,7 @@ ${originalWord}
           processSpecificWords(words).then(count => {
             sendResponse({ success: true, count });
           }).catch(error => {
-            console.error('[VocabMeld] Error processing specific words:', error);
+            console.error('[Lingrove] Error processing specific words:', error);
             sendResponse({ success: false, error: error.message });
           });
           return true; // 保持消息通道开放以支持异步响应
