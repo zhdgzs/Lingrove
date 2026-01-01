@@ -66,22 +66,33 @@
 ### API Configuration
 
 1. Click the extension icon → Settings
-2. Choose a preset service (DeepSeek recommended) or custom configuration
+2. Choose a preset service (**ModelScope Community recommended**, generous free quota) or custom configuration
 3. Enter your API key and test the connection
 
 <p align="center">
   <img src="assets/setting-api.png" alt="API Configuration" width="80%">
 </p>
 
+> **ModelScope Community Usage Note**:
+>
+> ModelScope Community offers 2,000 free calls/day per account, but limits 500 calls/day per model. You can configure 4 nodes with different models (e.g., DeepSeek-V3, DeepSeek-V3.2, Qwen2.5-72B, Qwen3-235B) to fully utilize the 2,000 daily quota.
+>
+> You must select models that support "Inference API-Inference" to use this service, as shown below:
+>
+> <p align="center">
+>   <img src="assets/modelscope.png" alt="ModelScope Model Selection" width="80%">
+> </p>
+
 ### Supported API Services
 
-| Provider | Endpoint | Recommended Model |
-|----------|----------|-------------------|
-| DeepSeek | `https://api.deepseek.com/chat/completions` | deepseek-chat |
-| OpenAI | `https://api.openai.com/v1/chat/completions` | gpt-4o-mini |
-| Moonshot | `https://api.moonshot.cn/v1/chat/completions` | moonshot-v1-8k |
-| Groq | `https://api.groq.com/openai/v1/chat/completions` | llama-3.1-8b-instant |
-| Ollama | `http://localhost:11434/v1/chat/completions` | qwen2.5:7b |
+| Provider | Endpoint | Recommended Model | Notes |
+|----------|----------|-------------------|-------|
+| **ModelScope** ⭐ | `https://api-inference.modelscope.cn/v1/chat/completions` | deepseek-ai/DeepSeek-V3.2 | Generous free quota, recommended |
+| DeepSeek | `https://api.deepseek.com/chat/completions` | deepseek-chat | |
+| OpenAI | `https://api.openai.com/v1/chat/completions` | gpt-4o-mini | |
+| Moonshot | `https://api.moonshot.cn/v1/chat/completions` | moonshot-v1-8k | |
+| Groq | `https://api.groq.com/openai/v1/chat/completions` | llama-3.1-8b-instant | |
+| Ollama | `http://localhost:11434/v1/chat/completions` | qwen2.5:7b | Local deployment |
 
 ---
 
@@ -135,8 +146,8 @@ Configure multiple API nodes for intelligent failover and load balancing:
 - **Health Check** — Mark node as unhealthy after 3 failures in 5 minutes, auto-recover periodically
 
 **Typical Use Cases**:
-- Register multiple ModelScope accounts (2,000 free calls/day each), enable rotation to stack free quotas
-- Configure different providers (DeepSeek + Moonshot) as mutual backups for high availability
+- If not enough, register multiple ModelScope accounts (2,000 free calls/day each), enable rotation to stack free quotas
+- Configure different providers (DeepSeek + ModelScope) as mutual backups for high availability
 - Prioritize free nodes, auto-fallback to paid nodes when quota runs out
 
 ---
