@@ -36,7 +36,19 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["js/content.js"],
+      "js": [
+        "js/content/constants.js",
+        "js/content/prompt-rules.js",
+        "js/content/themes.js",
+        "js/content/utils.js",
+        "js/content/storage.js",
+        "js/content/dom-handler.js",
+        "js/content/ui-components.js",
+        "js/content/text-replacer.js",
+        "js/content/api-client.js",
+        "js/content/event-handlers.js",
+        "js/content/main.js"
+      ],
       "css": ["css/content.css"],
       "run_at": "document_idle"
     }
