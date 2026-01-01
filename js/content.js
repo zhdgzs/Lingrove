@@ -19,6 +19,14 @@
   const SKIP_CLASSES = ['lingrove-translated', 'lingrove-tooltip', 'hljs', 'code', 'syntax'];
   const DEFAULT_CACHE_MAX_SIZE = 2000;
 
+  // 各语言最小文本长度阈值（字符数）
+  const MIN_LENGTH_CONFIG = {
+    'zh': 20,  // 中文：20 字符
+    'ja': 20,  // 日文：20 字符
+    'ko': 20,  // 韩文：20 字符
+    'en': 50   // 英文：50 字符
+  };
+
   // ============ 提示词规则 ============
   // 默认自定义提示词
   const DEFAULT_CUSTOM_PROMPT = `## 额外规则：
@@ -357,6 +365,12 @@ ${userRule}
     if (koreanCount / total > 0.1) return 'ko';
     if (chineseCount / total > 0.3) return 'zh'; // 返回通用中文标识
     return 'en';
+  }
+
+  // 根据文本语言获取最小长度阈值
+  function getMinTextLength(text) {
+    const lang = detectLanguage(text);
+    return MIN_LENGTH_CONFIG[lang] || 40;
   }
 
   // 判断检测到的语言是否与用户设置的母语匹配
@@ -786,7 +800,7 @@ ${userRule}
       }
 
       const text = getTextContent(container);
-      if (!text || text.length < 50) continue;
+      if (!text || text.length < getMinTextLength(text)) continue;
       if (isCodeText(text)) continue;
 
       const path = getElementPath(container);
@@ -1792,21 +1806,23 @@ ${userRule}
         if (container.hasAttribute('data-lingrove-processed')) continue;
         
         const text = getTextContent(container);
-        if (!text || text.length < 50) continue;
+        if (!text || text.length < getMinTextLength(text)) continue;
         if (isCodeText(text)) continue;
-        
+
         const path = getElementPath(container);
         const fingerprint = generateFingerprint(text, path);
         if (processedFingerprints.has(fingerprint)) continue;
-        
+
         // 过滤白名单词汇
         let filteredText = text;
         for (const word of whitelistWords) {
           const regex = new RegExp(`\\b${word}\\b`, 'gi');
           filteredText = filteredText.replace(regex, '');
         }
-        
-        if (filteredText.trim().length >= 30) {
+
+        // 过滤后的文本也需要根据语言判断最小长度
+        const minFilteredLength = getMinTextLength(filteredText);
+        if (filteredText.trim().length >= minFilteredLength) {
           segments.push({ element: container, text: text.slice(0, 2000), filteredText, fingerprint, path });
         }
       }
