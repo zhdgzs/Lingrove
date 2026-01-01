@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx openspec list:*)",
+      "Bash(npx openspec archive improve-semantic-segmentation:*)",
+      "Bash(npx openspec validate:*)"
+    ]
+  }
+}

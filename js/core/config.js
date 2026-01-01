@@ -63,6 +63,11 @@ export const API_PRESETS = {
   }
 };
 
+// 默认自定义提示词
+export const DEFAULT_CUSTOM_PROMPT = `## 额外规则：
+- 优先选择日常实用词汇
+- 注意词汇的使用频率和实用性`;
+
 // 默认配置
 export const DEFAULT_CONFIG = {
   // API 配置
@@ -79,22 +84,25 @@ export const DEFAULT_CONFIG = {
   targetLanguage: 'en',
   difficultyLevel: 'B1',
   intensity: 'medium',
-  
+
   // 行为设置
   autoProcess: false,
   showPhonetic: true,
   dictionaryType: 'zh-en', // 'zh-en' 中英, 'en-en' 英英
   enabled: true,
-  
+
+  // 提示词设置
+  customPromptRules: DEFAULT_CUSTOM_PROMPT,
+
   // 站点规则
   blacklist: [],
   whitelist: [],
-  
+
   // 统计数据
   totalWords: 0,
   todayWords: 0,
   lastResetDate: new Date().toISOString().split('T')[0],
-  
+
   // 缓存统计
   cacheHits: 0,
   cacheMisses: 0

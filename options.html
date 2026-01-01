@@ -327,7 +327,144 @@
             </div>
           </div>
         </div>
+
+        <!-- 提示词设置（折叠面板，默认展开） -->
+        <div class="form-group">
+          <div class="collapsible-header expanded" id="promptSettingsHeader">
+            <label>
+              <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align: middle; margin-right: 6px;">
+                <path fill="currentColor" d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M6,9H18V11H6M14,14H6V12H14M18,8H6V6H18"/>
+              </svg>
+              提示词设置
+            </label>
+            <svg class="collapse-icon" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+            </svg>
+          </div>
+          <div class="collapsible-content expanded" id="promptSettingsContent">
+            <!-- Token 消耗提示（置顶） -->
+            <p class="help-text token-warning" style="margin-bottom: 16px;">
+              <svg viewBox="0 0 24 24" width="14" height="14">
+                <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+              </svg>
+              自定义提示词会增加每次 API 调用的 Token 消耗，建议保持简洁。
+            </p>
+
+            <!-- 当前语言配置 + 总预览按钮 -->
+            <div class="prompt-language-row">
+              <div class="prompt-language-info">
+                <span class="prompt-lang-badge">
+                  <span class="lang-label">源语言</span>
+                  <span class="lang-value" id="promptSourceLang">简体中文</span>
+                </span>
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"/>
+                </svg>
+                <span class="prompt-lang-badge">
+                  <span class="lang-label">目标语言</span>
+                  <span class="lang-value" id="promptTargetLang">English</span>
+                </span>
+              </div>
+              <button type="button" class="btn btn-outline btn-sm" id="showFullPromptBtn">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path fill="currentColor" d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                </svg>
+                预览完整提示词
+              </button>
+            </div>
+
+            <!-- 自定义规则 -->
+            <div class="prompt-section">
+              <div class="prompt-section-header">
+                <label for="customPromptRules">自定义规则</label>
+              </div>
+              <textarea id="customPromptRules" class="prompt-textarea" rows="4" placeholder="## 额外规则：
+- 优先选择日常实用词汇
+- 注意词汇的使用频率和实用性"></textarea>
+              <div class="prompt-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="resetPromptBtn">
+                  <svg viewBox="0 0 24 24" width="14" height="14">
+                    <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+                  </svg>
+                  重置
+                </button>
+                <span class="prompt-hint" id="promptSaveStatus"></span>
+              </div>
+            </div>
+
+            <!-- 源语言规则（可编辑） -->
+            <div class="prompt-section">
+              <div class="prompt-section-header">
+                <label>源语言规则 (<span id="sourceRuleLangName">简体中文</span>)</label>
+                <div class="prompt-section-actions">
+                  <button type="button" class="btn btn-text btn-sm" id="editSourceRuleBtn">
+                    <svg viewBox="0 0 24 24" width="14" height="14">
+                      <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
+                    </svg>
+                    修改
+                  </button>
+                  <button type="button" class="btn btn-text btn-sm hidden" id="resetSourceRuleBtn">
+                    <svg viewBox="0 0 24 24" width="14" height="14">
+                      <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+                    </svg>
+                    重置
+                  </button>
+                </div>
+              </div>
+              <textarea id="sourceLanguageRule" class="prompt-textarea prompt-readonly" rows="4" readonly></textarea>
+            </div>
+
+            <!-- 目标语言规则（可编辑） -->
+            <div class="prompt-section">
+              <div class="prompt-section-header">
+                <label>目标语言规则 (<span id="targetRuleLangName">English</span>)</label>
+                <div class="prompt-section-actions">
+                  <button type="button" class="btn btn-text btn-sm" id="editTargetRuleBtn">
+                    <svg viewBox="0 0 24 24" width="14" height="14">
+                      <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
+                    </svg>
+                    修改
+                  </button>
+                  <button type="button" class="btn btn-text btn-sm hidden" id="resetTargetRuleBtn">
+                    <svg viewBox="0 0 24 24" width="14" height="14">
+                      <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+                    </svg>
+                    重置
+                  </button>
+                </div>
+              </div>
+              <textarea id="targetLanguageRule" class="prompt-textarea prompt-readonly" rows="4" readonly></textarea>
+            </div>
+          </div>
+        </div>
       </section>
+
+      <!-- 总提示词预览弹框 -->
+      <div class="modal-overlay" id="promptPreviewModal" style="display: none;">
+        <div class="modal-content modal-large">
+          <div class="modal-header">
+            <h3>完整提示词预览</h3>
+            <button type="button" class="modal-close" id="closePromptPreviewModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p class="help-text" style="margin-bottom: 12px;">
+              以下是发送给 AI 的完整提示词，包含核心规则、语言规则和自定义规则。
+            </p>
+            <div class="full-prompt-modal-content">
+              <pre id="fullPromptContent"></pre>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="copyPromptBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+              </svg>
+              复制
+            </button>
+            <button type="button" class="btn btn-primary" id="closePromptPreviewBtn">关闭</button>
+          </div>
+        </div>
+      </div>
 
       <!-- 行为设置 -->
       <section id="behavior" class="settings-section">

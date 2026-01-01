@@ -9,7 +9,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   let saveTimeout;
   function debouncedSave(delay = 500) {
     clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(saveSettings, delay);
+    saveTimeout = setTimeout(async () => {
+      await saveSettings();
+      // 更新提示词保存状态（如果正在编辑提示词）
+      const promptSaveStatus = document.getElementById('promptSaveStatus');
+      if (promptSaveStatus && promptSaveStatus.classList.contains('visible')) {
+        promptSaveStatus.textContent = '已保存';
+        setTimeout(() => {
+          promptSaveStatus.classList.remove('visible');
+        }, 2000);
+      }
+    }, delay);
   }
 
   // DOM 元素
@@ -129,7 +139,137 @@ document.addEventListener('DOMContentLoaded', async () => {
     exportSettings: document.getElementById('exportSettings'),
     exportWords: document.getElementById('exportWords'),
     exportStats: document.getElementById('exportStats'),
-    exportCache: document.getElementById('exportCache')
+    exportCache: document.getElementById('exportCache'),
+
+    // 提示词设置
+    customPromptRules: document.getElementById('customPromptRules'),
+    resetPromptBtn: document.getElementById('resetPromptBtn'),
+    promptSaveStatus: document.getElementById('promptSaveStatus'),
+    promptPreviewTabs: document.querySelectorAll('.prompt-preview-tab'),
+    promptPreviewCore: document.getElementById('promptPreviewCore'),
+    promptPreviewSource: document.getElementById('promptPreviewSource'),
+    promptPreviewTarget: document.getElementById('promptPreviewTarget'),
+    // 提示词折叠面板
+    promptSettingsHeader: document.getElementById('promptSettingsHeader'),
+    promptSettingsContent: document.getElementById('promptSettingsContent'),
+    promptSourceLang: document.getElementById('promptSourceLang'),
+    promptTargetLang: document.getElementById('promptTargetLang'),
+    // 源语言规则编辑
+    sourceLanguageRule: document.getElementById('sourceLanguageRule'),
+    sourceRuleLangName: document.getElementById('sourceRuleLangName'),
+    editSourceRuleBtn: document.getElementById('editSourceRuleBtn'),
+    resetSourceRuleBtn: document.getElementById('resetSourceRuleBtn'),
+    // 目标语言规则编辑
+    targetLanguageRule: document.getElementById('targetLanguageRule'),
+    targetRuleLangName: document.getElementById('targetRuleLangName'),
+    editTargetRuleBtn: document.getElementById('editTargetRuleBtn'),
+    resetTargetRuleBtn: document.getElementById('resetTargetRuleBtn'),
+    // 总提示词预览弹框
+    showFullPromptBtn: document.getElementById('showFullPromptBtn'),
+    promptPreviewModal: document.getElementById('promptPreviewModal'),
+    closePromptPreviewModal: document.getElementById('closePromptPreviewModal'),
+    closePromptPreviewBtn: document.getElementById('closePromptPreviewBtn'),
+    copyPromptBtn: document.getElementById('copyPromptBtn'),
+    fullPromptContent: document.getElementById('fullPromptContent')
+  };
+
+  // 自定义语言规则存储
+  let customSourceRules = {};
+  let customTargetRules = {};
+
+  // ============ 提示词规则常量 ============
+  // 核心提示词（系统固定，不可修改）
+  const CORE_PROMPT = `你是一个语言学习助手。请分析以下文本，选择适合学习的词汇进行翻译。
+
+## 核心规则：
+1. 优先选择：有学习价值的词汇、不同难度级别的词汇
+2. 翻译倾向：结合上下文只翻译成最合适的词汇，而不是多个含义
+3. 不要翻译专有名词、缩写、数字、代码等内容
+
+## CEFR等级从简单到复杂依次为：A1-C2`;
+
+  // 默认自定义提示词
+  const DEFAULT_CUSTOM_PROMPT = `## 额外规则：
+- 优先选择日常实用词汇
+- 注意词汇的使用频率和实用性`;
+
+  // 源语言规则
+  const SOURCE_LANGUAGE_RULES = {
+    'zh-CN': `## 中文语义分词规则：
+- 按语义边界识别词汇，而非机械切分
+- 注意区分同形异义词组，如「对方面无表情」应识别为「对方」「面无表情」而非「方面」
+- 优先识别完整的成语、惯用语、固定搭配
+- 避免将动宾结构拆分，如「吃饭」「睡觉」应作为整体
+- 注意前后文语境，正确识别多音多义字的含义`,
+
+    'zh-TW': `## 繁體中文語義分詞規則：
+- 按語義邊界識別詞彙，而非機械切分
+- 注意區分同形異義詞組
+- 優先識別完整的成語、慣用語、固定搭配
+- 避免將動賓結構拆分
+- 注意前後文語境，正確識別多音多義字的含義`,
+
+    'en': `## English Semantic Segmentation Rules:
+- Identify phrasal verbs as complete units (e.g., "give up", "look forward to")
+- Recognize idiomatic expressions and collocations as single units
+- Keep compound nouns together (e.g., "ice cream", "high school")
+- Identify multi-word verbs and their particles correctly
+- Consider context to distinguish homographs and polysemous words`,
+
+    'ja': `## 日本語の語義分割ルール：
+- 複合語は意味のまとまりとして認識する
+- 慣用句・熟語は分割しない
+- 動詞の活用形を正しく認識する
+- 文脈に応じて同音異義語を区別する`,
+
+    'ko': `## 한국어 의미 분할 규칙:
+- 복합어는 의미 단위로 인식
+- 관용구와 숙어는 분리하지 않음
+- 동사 활용형을 올바르게 인식
+- 문맥에 따라 동음이의어 구별`
+  };
+
+  // 目标语言规则
+  const TARGET_LANGUAGE_RULES = {
+    'zh-CN': `## 中文输出规则：
+- 使用简体中文
+- 翻译应自然流畅，符合中文表达习惯
+- 避免生硬的直译`,
+
+    'zh-TW': `## 繁體中文輸出規則：
+- 使用繁體中文
+- 翻譯應自然流暢，符合中文表達習慣
+- 避免生硬的直譯`,
+
+    'en': `## English Output Rules:
+- Use natural, fluent English
+- Avoid overly literal translations
+- Match the appropriate register and formality level`,
+
+    'ja': `## 日本語出力ルール：
+- 自然で流暢な日本語を使用
+- 直訳を避ける
+- 適切な敬語レベルを維持`,
+
+    'ko': `## 한국어 출력 규칙:
+- 자연스럽고 유창한 한국어 사용
+- 직역 피하기
+- 적절한 존댓말 수준 유지`,
+
+    'fr': `## Règles de sortie française:
+- Utiliser un français naturel et fluide
+- Éviter les traductions trop littérales
+- Adapter le registre de langue`,
+
+    'de': `## Deutsche Ausgaberegeln:
+- Natürliches, flüssiges Deutsch verwenden
+- Zu wörtliche Übersetzungen vermeiden
+- Angemessenes Sprachregister wählen`,
+
+    'es': `## Reglas de salida española:
+- Usar español natural y fluido
+- Evitar traducciones demasiado literales
+- Adaptar el registro lingüístico`
   };
 
   // ============ 内置主题配置 ============
@@ -1324,10 +1464,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 发音设置
       elements.ttsRate.value = result.ttsRate || 1.0;
       elements.ttsRateValue.textContent = (result.ttsRate || 1.0).toFixed(1);
-      
+
       // 加载可用声音列表
       loadVoices(result.ttsVoice || '');
-      
+
+      // 提示词设置
+      if (elements.customPromptRules) {
+        elements.customPromptRules.value = result.customPromptRules || DEFAULT_CUSTOM_PROMPT;
+      }
+      // 加载自定义源语言和目标语言规则
+      customSourceRules = result.customSourceRules || {};
+      customTargetRules = result.customTargetRules || {};
+      // 更新提示词预览
+      updatePromptPreview();
+
       // 加载词汇列表和统计（从 local 获取词汇列表）
       chrome.storage.local.get(['learnedWords', 'memorizeList'], (localResult) => {
         loadWordLists(result, localResult.learnedWords || [], localResult.memorizeList || []);
@@ -1619,7 +1769,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         ocean: BUILT_IN_THEMES.ocean,
         forest: BUILT_IN_THEMES.forest,
         sunset: BUILT_IN_THEMES.sunset
-      }
+      },
+      // 提示词设置
+      customPromptRules: elements.customPromptRules?.value || DEFAULT_CUSTOM_PROMPT,
+      customSourceRules: customSourceRules,
+      customTargetRules: customTargetRules
     };
 
     try {
@@ -2222,8 +2376,356 @@ document.addEventListener('DOMContentLoaded', async () => {
       saveSettings();
     });
 
+    // ============ 提示词设置事件 ============
+    // 折叠面板切换
+    elements.promptSettingsHeader?.addEventListener('click', () => {
+      const content = elements.promptSettingsContent;
+      const header = elements.promptSettingsHeader;
+      if (content && header) {
+        const isExpanded = content.classList.contains('expanded');
+        content.classList.toggle('expanded');
+        header.classList.toggle('expanded');
+      }
+    });
+
+    // 源语言规则编辑按钮
+    elements.editSourceRuleBtn?.addEventListener('click', () => {
+      const nativeLang = elements.nativeLanguage?.value || 'zh-CN';
+      if (confirm('修改系统规则可能导致翻译效果异常。\n\n确定要修改源语言规则吗？')) {
+        // 获取当前默认规则
+        const defaultRule = SOURCE_LANGUAGE_RULES[nativeLang] ||
+                            SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
+        customSourceRules[nativeLang] = elements.sourceLanguageRule?.value || defaultRule;
+        updateRuleButtonsState(nativeLang, elements.targetLanguage?.value || 'en');
+        elements.sourceLanguageRule?.focus();
+      }
+    });
+
+    // 源语言规则重置按钮
+    elements.resetSourceRuleBtn?.addEventListener('click', () => {
+      const nativeLang = elements.nativeLanguage?.value || 'zh-CN';
+      if (confirm('确定要重置为默认的源语言规则吗？')) {
+        delete customSourceRules[nativeLang];
+        updatePromptPreview();
+        debouncedSave(200);
+      }
+    });
+
+    // 源语言规则输入
+    elements.sourceLanguageRule?.addEventListener('input', () => {
+      const nativeLang = elements.nativeLanguage?.value || 'zh-CN';
+      if (customSourceRules[nativeLang] !== undefined) {
+        customSourceRules[nativeLang] = elements.sourceLanguageRule.value;
+        updateFullPromptPreview();
+        debouncedSave(800);
+      }
+    });
+
+    // 目标语言规则编辑按钮
+    elements.editTargetRuleBtn?.addEventListener('click', () => {
+      const targetLang = elements.targetLanguage?.value || 'en';
+      if (confirm('修改系统规则可能导致翻译效果异常。\n\n确定要修改目标语言规则吗？')) {
+        // 获取当前默认规则
+        const defaultRule = TARGET_LANGUAGE_RULES[targetLang] ||
+                            TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
+        customTargetRules[targetLang] = elements.targetLanguageRule?.value || defaultRule;
+        updateRuleButtonsState(elements.nativeLanguage?.value || 'zh-CN', targetLang);
+        elements.targetLanguageRule?.focus();
+      }
+    });
+
+    // 目标语言规则重置按钮
+    elements.resetTargetRuleBtn?.addEventListener('click', () => {
+      const targetLang = elements.targetLanguage?.value || 'en';
+      if (confirm('确定要重置为默认的目标语言规则吗？')) {
+        delete customTargetRules[targetLang];
+        updatePromptPreview();
+        debouncedSave(200);
+      }
+    });
+
+    // 目标语言规则输入
+    elements.targetLanguageRule?.addEventListener('input', () => {
+      const targetLang = elements.targetLanguage?.value || 'en';
+      if (customTargetRules[targetLang] !== undefined) {
+        customTargetRules[targetLang] = elements.targetLanguageRule.value;
+        updateFullPromptPreview();
+        debouncedSave(800);
+      }
+    });
+
+    // 总提示词预览弹框
+    elements.showFullPromptBtn?.addEventListener('click', () => {
+      updateFullPromptPreview();
+      if (elements.promptPreviewModal) {
+        elements.promptPreviewModal.style.display = 'flex';
+      }
+    });
+
+    // 关闭弹框
+    const closePromptModal = () => {
+      if (elements.promptPreviewModal) {
+        elements.promptPreviewModal.style.display = 'none';
+      }
+    };
+    elements.closePromptPreviewModal?.addEventListener('click', closePromptModal);
+    elements.closePromptPreviewBtn?.addEventListener('click', closePromptModal);
+    elements.promptPreviewModal?.addEventListener('click', (e) => {
+      if (e.target === elements.promptPreviewModal) {
+        closePromptModal();
+      }
+    });
+
+    // 复制提示词
+    elements.copyPromptBtn?.addEventListener('click', async () => {
+      const text = elements.fullPromptContent?.textContent || '';
+      try {
+        await navigator.clipboard.writeText(text);
+        elements.copyPromptBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+          </svg>
+          已复制
+        `;
+        setTimeout(() => {
+          elements.copyPromptBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+            </svg>
+            复制
+          `;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    });
+
+    // 自定义规则输入时更新总预览
+    elements.customPromptRules?.addEventListener('input', () => {
+      showPromptSaveStatus('正在保存...');
+      updateFullPromptPreview();
+      debouncedSave(800);
+    });
+
+    // 提示词预览标签页切换（保留兼容）
+    elements.promptPreviewTabs?.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+
+        // 更新标签页激活状态
+        elements.promptPreviewTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // 更新预览内容显示
+        document.querySelectorAll('.prompt-preview').forEach(preview => {
+          preview.classList.remove('active');
+        });
+        const targetPreview = document.getElementById(`promptPreview${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+        if (targetPreview) {
+          targetPreview.classList.add('active');
+        }
+      });
+    });
+
+    // 重置提示词按钮
+    elements.resetPromptBtn?.addEventListener('click', () => {
+      if (confirm('确定要重置为默认提示词吗？')) {
+        elements.customPromptRules.value = DEFAULT_CUSTOM_PROMPT;
+        showPromptSaveStatus('已重置为默认');
+        updateFullPromptPreview();
+        debouncedSave(200);
+      }
+    });
+
+    elements.customPromptRules?.addEventListener('blur', () => {
+      debouncedSave(200);
+    });
+
+    // 语言变化时更新提示词预览
+    elements.nativeLanguage?.addEventListener('change', updatePromptPreview);
+    elements.targetLanguage?.addEventListener('change', updatePromptPreview);
+
     // 添加自动保存事件监听器
     addAutoSaveListeners();
+  }
+
+  // 更新提示词预览
+  function updatePromptPreview() {
+    const nativeLang = elements.nativeLanguage?.value || 'zh-CN';
+    const targetLang = elements.targetLanguage?.value || 'en';
+
+    // 语言名称映射
+    const langNames = {
+      'zh-CN': '简体中文',
+      'zh-TW': '繁体中文',
+      'en': 'English',
+      'ja': '日本語',
+      'ko': '한국어',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'es': 'Español'
+    };
+
+    // 更新语言显示标签
+    if (elements.promptSourceLang) {
+      elements.promptSourceLang.textContent = langNames[nativeLang] || nativeLang;
+    }
+    if (elements.promptTargetLang) {
+      elements.promptTargetLang.textContent = langNames[targetLang] || targetLang;
+    }
+    if (elements.sourceRuleLangName) {
+      elements.sourceRuleLangName.textContent = langNames[nativeLang] || nativeLang;
+    }
+    if (elements.targetRuleLangName) {
+      elements.targetRuleLangName.textContent = langNames[targetLang] || targetLang;
+    }
+
+    // 获取源语言规则（优先使用自定义规则）
+    const defaultSourceRule = SOURCE_LANGUAGE_RULES[nativeLang] ||
+                              SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
+    const sourceRule = customSourceRules[nativeLang] !== undefined
+                       ? customSourceRules[nativeLang]
+                       : defaultSourceRule;
+
+    // 获取目标语言规则（优先使用自定义规则）
+    const defaultTargetRule = TARGET_LANGUAGE_RULES[targetLang] ||
+                              TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
+    const targetRule = customTargetRules[targetLang] !== undefined
+                       ? customTargetRules[targetLang]
+                       : defaultTargetRule;
+
+    // 更新源语言规则文本框
+    if (elements.sourceLanguageRule) {
+      elements.sourceLanguageRule.value = sourceRule || '（当前源语言暂无特定规则）';
+    }
+
+    // 更新目标语言规则文本框
+    if (elements.targetLanguageRule) {
+      elements.targetLanguageRule.value = targetRule || '（当前目标语言暂无特定规则）';
+    }
+
+    // 更新编辑/重置按钮状态
+    updateRuleButtonsState(nativeLang, targetLang);
+
+    // 更新总提示词预览
+    updateFullPromptPreview();
+  }
+
+  // 更新规则按钮状态
+  function updateRuleButtonsState(nativeLang, targetLang) {
+    // 源语言规则按钮
+    const hasCustomSource = customSourceRules[nativeLang] !== undefined;
+    if (elements.editSourceRuleBtn) {
+      elements.editSourceRuleBtn.classList.toggle('hidden', hasCustomSource);
+    }
+    if (elements.resetSourceRuleBtn) {
+      elements.resetSourceRuleBtn.classList.toggle('hidden', !hasCustomSource);
+    }
+    if (elements.sourceLanguageRule) {
+      elements.sourceLanguageRule.classList.toggle('prompt-readonly', !hasCustomSource);
+      elements.sourceLanguageRule.readOnly = !hasCustomSource;
+    }
+
+    // 目标语言规则按钮
+    const hasCustomTarget = customTargetRules[targetLang] !== undefined;
+    if (elements.editTargetRuleBtn) {
+      elements.editTargetRuleBtn.classList.toggle('hidden', hasCustomTarget);
+    }
+    if (elements.resetTargetRuleBtn) {
+      elements.resetTargetRuleBtn.classList.toggle('hidden', !hasCustomTarget);
+    }
+    if (elements.targetLanguageRule) {
+      elements.targetLanguageRule.classList.toggle('prompt-readonly', !hasCustomTarget);
+      elements.targetLanguageRule.readOnly = !hasCustomTarget;
+    }
+  }
+
+  // 更新总提示词预览
+  function updateFullPromptPreview() {
+    const nativeLang = elements.nativeLanguage?.value || 'zh-CN';
+    const targetLang = elements.targetLanguage?.value || 'en';
+    const difficultyLevel = CEFR_LEVELS[elements.difficultyLevel?.value || 2] || 'B1';
+    const intensity = document.querySelector('input[name="intensity"]:checked')?.value || 'medium';
+
+    // 语言名称映射
+    const langNames = {
+      'zh-CN': '简体中文',
+      'zh-TW': '繁体中文',
+      'en': 'English',
+      'ja': '日本語',
+      'ko': '한국어',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'es': 'Español'
+    };
+
+    // 替换强度对应的词汇数量
+    const intensityConfig = {
+      low: { maxPerParagraph: 4 },
+      medium: { maxPerParagraph: 8 },
+      high: { maxPerParagraph: 14 }
+    };
+    const maxReplacements = intensityConfig[intensity]?.maxPerParagraph || 8;
+    const targetCount = Math.ceil(maxReplacements * 1.5);
+
+    // 获取各部分规则
+    const defaultSourceRule = SOURCE_LANGUAGE_RULES[nativeLang] ||
+                              SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
+    const sourceRule = customSourceRules[nativeLang] !== undefined
+                       ? customSourceRules[nativeLang]
+                       : defaultSourceRule;
+
+    const defaultTargetRule = TARGET_LANGUAGE_RULES[targetLang] ||
+                              TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
+    const targetRule = customTargetRules[targetLang] !== undefined
+                       ? customTargetRules[targetLang]
+                       : defaultTargetRule;
+
+    const customPrompt = elements.customPromptRules?.value || '';
+
+    // 组装完整提示词（与 content.js 中的 buildTranslationPrompt 保持一致）
+    const fullPrompt = `${CORE_PROMPT}
+${sourceRule}
+${targetRule}
+${customPrompt}
+
+## 任务参数：
+1. 选择约 ${targetCount} 个词汇（实际返回数量可以根据文本内容灵活调整，但不要超过 ${maxReplacements * 2} 个）
+2. 翻译方向：从 ${langNames[nativeLang] || nativeLang} 翻译到 ${langNames[targetLang] || targetLang}
+3. 不要重复翻译已经是${langNames[targetLang] || targetLang}的内容
+4. 难度筛选：优先选择 ${difficultyLevel} 及以上难度的词汇
+
+## 输出格式：
+返回 JSON 数组，每个元素包含：
+- original: 原词
+- translation: 翻译结果
+- phonetic: 学习语言(${langNames[targetLang] || targetLang})的音标/发音
+- difficulty: CEFR 难度等级 (A1/A2/B1/B2/C1/C2)，请谨慎评估
+
+## 文本：
+[待翻译的网页文本内容]
+
+## 输出：
+只返回 JSON 数组，不要其他内容。`;
+
+    if (elements.fullPromptContent) {
+      elements.fullPromptContent.textContent = fullPrompt;
+    }
+  }
+
+  // 显示提示词保存状态
+  function showPromptSaveStatus(message) {
+    if (elements.promptSaveStatus) {
+      elements.promptSaveStatus.textContent = message;
+      elements.promptSaveStatus.classList.add('visible');
+
+      // 如果是保存成功消息，3秒后隐藏
+      if (message !== '正在保存...') {
+        setTimeout(() => {
+          elements.promptSaveStatus.classList.remove('visible');
+        }, 3000);
+      }
+    }
   }
 
   // 初始化

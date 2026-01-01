@@ -1,0 +1,57 @@
+# prompt-system Specification
+
+## Purpose
+TBD - created by archiving change improve-semantic-segmentation. Update Purpose after archive.
+## Requirements
+### Requirement: 分层提示词架构
+
+系统 SHALL 采用分层提示词架构，按以下顺序组装最终提示词：
+1. 核心提示词（系统固定）
+2. 源语言规则（根据源语言动态注入）
+3. 目标语言规则（根据目标语言动态注入）
+4. 用户自定义规则（可选）
+
+#### Scenario: 中译英提示词组装
+- **WHEN** 用户配置源语言为中文、目标语言为英文
+- **THEN** 系统组装提示词包含：核心提示词 + 中文分词规则 + 英文输出规则 + 用户自定义规则
+
+#### Scenario: 英译中提示词组装
+- **WHEN** 用户配置源语言为英文、目标语言为中文
+- **THEN** 系统组装提示词包含：核心提示词 + 英文词组规则 + 中文输出规则 + 用户自定义规则
+
+### Requirement: 语义分词规则
+
+系统 SHALL 为每种支持的源语言提供语义分词指导规则，确保 AI 按语义边界识别词汇。
+
+#### Scenario: 中文语义分词
+- **WHEN** 处理中文文本「对方面无表情」
+- **THEN** AI 应识别「对方」「面无表情」而非「方面」
+
+#### Scenario: 英文短语动词识别
+- **WHEN** 处理英文文本包含 "give up"
+- **THEN** AI 应将 "give up" 作为整体识别，而非拆分为 "give" 和 "up"
+
+### Requirement: 用户自定义提示词
+
+系统 SHALL 允许用户在设置界面自定义额外的提示词规则。
+
+#### Scenario: 自定义规则保存
+- **WHEN** 用户在「提示词设置」标签页编辑自定义规则
+- **THEN** 系统自动保存用户输入内容
+
+#### Scenario: 重置为默认
+- **WHEN** 用户点击「重置为默认」按钮
+- **THEN** 自定义规则恢复为系统默认预设内容
+
+### Requirement: 提示词设置界面
+
+系统 SHALL 在设置页面提供独立的「提示词设置」标签页。
+
+#### Scenario: 标签页展示
+- **WHEN** 用户打开设置页面
+- **THEN** 显示「提示词设置」标签页入口
+
+#### Scenario: 界面元素
+- **WHEN** 用户进入「提示词设置」标签页
+- **THEN** 显示自定义规则文本框、重置按钮、Token 消耗提示
+
