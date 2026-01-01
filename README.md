@@ -14,7 +14,13 @@
 </p>
 
 <p align="center">
-  <img src="assets/preview.png" alt="Lingrove Preview" width="100%">
+  <img src="assets/demo.png" alt="Lingrove 演示" width="100%">
+</p>
+
+## 📸 功能展示
+
+<p align="center">
+  <img src="assets/demo2.png" alt="翻译效果展示" width="100%">
 </p>
 
 ---
@@ -44,15 +50,31 @@
 
 ### 安装
 
-1. 打开 Chrome，访问 `chrome://extensions/`
-2. 开启"开发者模式"
-3. 点击"加载已解压的扩展程序"，选择本项目文件夹
+#### 方式一：从 Release 安装（推荐）
+
+1. 前往 [Releases 页面](https://github.com/zhdgzs/Lingrove/releases) 下载最新版本的 zip 文件
+2. 解压下载的 zip 文件到本地目录
+3. 打开 Chrome，访问 `chrome://extensions/`
+4. 开启右上角"开发者模式"
+5. 点击"加载已解压的扩展程序"，选择解压后的文件夹
+
+#### 方式二：从源码安装
+
+1. 克隆本仓库：`git clone https://github.com/zhdgzs/Lingrove.git`
+2. 安装依赖并构建：`npm install && npm run build`
+3. 打开 Chrome，访问 `chrome://extensions/`
+4. 开启"开发者模式"
+5. 点击"加载已解压的扩展程序"，选择项目文件夹
 
 ### 配置 API
 
 1. 点击扩展图标 → 设置
 2. 选择预设服务（推荐 DeepSeek）或自定义配置
 3. 填入 API 密钥，测试连接
+
+<p align="center">
+  <img src="assets/setting-api.png" alt="API 配置界面" width="80%">
+</p>
 
 ### 支持的 API 服务
 
@@ -116,6 +138,10 @@
 - **规则可编辑** — 源语言和目标语言规则支持自定义修改
 - **完整预览** — 可预览发送给 AI 的完整提示词，包含所有动态参数
 
+<p align="center">
+  <img src="assets/setting-prompt.png" alt="提示词设置界面" width="80%">
+</p>
+
 ### 多节点管理
 
 支持配置多个 API 节点，实现智能故障转移和负载均衡：
@@ -161,3 +187,11 @@
 你可以自由地使用、复制、修改、分发本项目，包括商业用途。唯一要求是保留原版权声明和许可证。
 
 原项目：[VocabMeld](https://github.com/lzskyline/VocabMeld)
+
+---
+
+## ☕ 赞赏支持
+
+<p align="center">
+  <img src="assets/sponsor.png" alt="赞赏码" width="300">
+</p>

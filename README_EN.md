@@ -14,7 +14,13 @@
 </p>
 
 <p align="center">
-  <img src="assets/preview.png" alt="Lingrove Preview" width="100%">
+  <img src="assets/demo.png" alt="Lingrove Demo" width="100%">
+</p>
+
+## 📸 Features Showcase
+
+<p align="center">
+  <img src="assets/demo2.png" alt="Translation Effect" width="100%">
 </p>
 
 ---
@@ -41,15 +47,31 @@
 
 ### Installation
 
-1. Open Chrome, navigate to `chrome://extensions/`
-2. Enable "Developer mode"
-3. Click "Load unpacked" and select this project folder
+#### Option 1: Install from Release (Recommended)
+
+1. Go to [Releases page](https://github.com/zhdgzs/Lingrove/releases) and download the latest zip file
+2. Extract the downloaded zip file to a local directory
+3. Open Chrome and navigate to `chrome://extensions/`
+4. Enable "Developer mode" in the top right corner
+5. Click "Load unpacked" and select the extracted folder
+
+#### Option 2: Install from Source
+
+1. Clone this repository: `git clone https://github.com/zhdgzs/Lingrove.git`
+2. Install dependencies and build: `npm install && npm run build`
+3. Open Chrome and navigate to `chrome://extensions/`
+4. Enable "Developer mode"
+5. Click "Load unpacked" and select the project folder
 
 ### API Configuration
 
 1. Click the extension icon → Settings
 2. Choose a preset service (DeepSeek recommended) or custom configuration
 3. Enter your API key and test the connection
+
+<p align="center">
+  <img src="assets/setting-api.png" alt="API Configuration" width="80%">
+</p>
 
 ### Supported API Services
 
@@ -147,3 +169,11 @@ This project is open source under the [MIT License](LICENSE).
 You are free to use, copy, modify, and distribute this project, including for commercial purposes. The only requirement is to retain the original copyright notice and license.
 
 Original project: [VocabMeld](https://github.com/lzskyline/VocabMeld)
+
+---
+
+## ☕ Sponsor
+
+<p align="center">
+  <img src="assets/sponsor.png" alt="Sponsor QR Code" width="300">
+</p>
