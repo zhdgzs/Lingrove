@@ -809,6 +809,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // API 预设配置
   const API_PRESETS = {
+    modelscope: { name: '魔搭', endpoint: 'https://api-inference.modelscope.cn/v1/chat/completions', model: 'deepseek-ai/DeepSeek-V3.2' },
     deepseek: { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat' },
     openai: { name: 'OpenAI', endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini' },
     moonshot: { name: 'Moonshot', endpoint: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' },
@@ -1298,9 +1299,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 关闭弹窗
     elements.nodeModalClose?.addEventListener('click', closeNodeModal);
     elements.cancelNodeBtn?.addEventListener('click', closeNodeModal);
-    elements.nodeModalOverlay?.addEventListener('click', (e) => {
-      if (e.target === elements.nodeModalOverlay) closeNodeModal();
-    });
 
     // 保存节点
     elements.saveNodeBtn?.addEventListener('click', saveNode);

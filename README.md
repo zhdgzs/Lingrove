@@ -69,22 +69,33 @@
 ### 配置 API
 
 1. 点击扩展图标 → 设置
-2. 选择预设服务（推荐 DeepSeek）或自定义配置
+2. 选择预设服务（**推荐魔搭社区**，免费额度充足）或自定义配置
 3. 填入 API 密钥，测试连接
 
 <p align="center">
   <img src="assets/setting-api.png" alt="API 配置界面" width="80%">
 </p>
 
+> **魔搭社区使用说明**：
+>
+> 魔搭社区单账号每天 2000 次总额度，但单模型限制 500 次。可以配置 4 个节点使用不同模型（如 DeepSeek-V3、DeepSeek-V3.2、Qwen2.5-72B、Qwen3-235B），充分利用 2000 次额度
+> 
+> 必须选择支持"推理 API-Inference"的模型才可使用，如下图所示：
+>
+> <p align="center">
+>   <img src="assets/modelscope.png" alt="魔搭社区模型选择" width="80%">
+> </p>
+
 ### 支持的 API 服务
 
-| 服务商 | 端点 | 推荐模型 |
-|--------|------|----------|
-| DeepSeek | `https://api.deepseek.com/chat/completions` | deepseek-chat |
-| OpenAI | `https://api.openai.com/v1/chat/completions` | gpt-4o-mini |
-| Moonshot | `https://api.moonshot.cn/v1/chat/completions` | moonshot-v1-8k |
-| Groq | `https://api.groq.com/openai/v1/chat/completions` | llama-3.1-8b-instant |
-| Ollama | `http://localhost:11434/v1/chat/completions` | qwen2.5:7b |
+| 服务商 | 端点 | 推荐模型 | 备注 |
+|--------|------|----------|------|
+| **魔搭社区** ⭐ | `https://api-inference.modelscope.cn/v1/chat/completions` | deepseek-ai/DeepSeek-V3.2 | 免费额度充足，推荐 |
+| DeepSeek | `https://api.deepseek.com/chat/completions` | deepseek-chat | |
+| OpenAI | `https://api.openai.com/v1/chat/completions` | gpt-4o-mini | |
+| Moonshot | `https://api.moonshot.cn/v1/chat/completions` | moonshot-v1-8k | |
+| Groq | `https://api.groq.com/openai/v1/chat/completions` | llama-3.1-8b-instant | |
+| Ollama | `http://localhost:11434/v1/chat/completions` | qwen2.5:7b | 本地部署 |
 
 ---
 
@@ -153,8 +164,8 @@
 - **健康检查** — 5 分钟内 3 次失败标记异常，定期自动恢复
 
 **典型场景**：
-- 申请多个魔搭社区账号（每天 2000 次/账号），配置轮询叠加免费额度
-- 配置不同服务商（DeepSeek + Moonshot）互为备份，提升可用性
+- 不够用，可以申请多个魔搭社区账号（每天 2000 次/账号），配置轮询叠加免费额度
+- 配置不同服务商（DeepSeek + 魔搭）互为备份，提升可用性
 - 免费节点优先，额度用完自动切换付费节点兜底
 
 ---

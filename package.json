@@ -12,7 +12,7 @@
     "immersive-learning",
     "vocabulary"
   ],
-  "author": "LzSkyline",
+  "author": "zhdgzs",
   "license": "MIT",
   "devDependencies": {
     "esbuild": "^0.27.2"
