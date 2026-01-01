@@ -158,11 +158,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     sourceLanguageRule: document.getElementById('sourceLanguageRule'),
     sourceRuleLangName: document.getElementById('sourceRuleLangName'),
     editSourceRuleBtn: document.getElementById('editSourceRuleBtn'),
+    saveSourceRuleBtn: document.getElementById('saveSourceRuleBtn'),
     resetSourceRuleBtn: document.getElementById('resetSourceRuleBtn'),
     // 目标语言规则编辑
     targetLanguageRule: document.getElementById('targetLanguageRule'),
     targetRuleLangName: document.getElementById('targetRuleLangName'),
     editTargetRuleBtn: document.getElementById('editTargetRuleBtn'),
+    saveTargetRuleBtn: document.getElementById('saveTargetRuleBtn'),
     resetTargetRuleBtn: document.getElementById('resetTargetRuleBtn'),
     // 总提示词预览弹框
     showFullPromptBtn: document.getElementById('showFullPromptBtn'),
@@ -2396,9 +2398,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const defaultRule = SOURCE_LANGUAGE_RULES[nativeLang] ||
                             SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
         customSourceRules[nativeLang] = elements.sourceLanguageRule?.value || defaultRule;
+        // 将输入框设置为可编辑
+        if (elements.sourceLanguageRule) {
+          elements.sourceLanguageRule.readOnly = false;
+          elements.sourceLanguageRule.classList.remove('prompt-readonly');
+        }
         updateRuleButtonsState(nativeLang, elements.targetLanguage?.value || 'en');
         elements.sourceLanguageRule?.focus();
       }
+    });
+
+    // 源语言规则保存按钮
+    elements.saveSourceRuleBtn?.addEventListener('click', () => {
+      const nativeLang = elements.nativeLanguage?.value || 'zh-CN';
+      customSourceRules[nativeLang] = elements.sourceLanguageRule?.value || '';
+      // 保存后将输入框设置为只读
+      if (elements.sourceLanguageRule) {
+        elements.sourceLanguageRule.readOnly = true;
+        elements.sourceLanguageRule.classList.add('prompt-readonly');
+      }
+      updateRuleButtonsState(nativeLang, elements.targetLanguage?.value || 'en');
+      updateFullPromptPreview();
+      debouncedSave(200);
     });
 
     // 源语言规则重置按钮
@@ -2429,9 +2450,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const defaultRule = TARGET_LANGUAGE_RULES[targetLang] ||
                             TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
         customTargetRules[targetLang] = elements.targetLanguageRule?.value || defaultRule;
+        // 将输入框设置为可编辑
+        if (elements.targetLanguageRule) {
+          elements.targetLanguageRule.readOnly = false;
+          elements.targetLanguageRule.classList.remove('prompt-readonly');
+        }
         updateRuleButtonsState(elements.nativeLanguage?.value || 'zh-CN', targetLang);
         elements.targetLanguageRule?.focus();
       }
+    });
+
+    // 目标语言规则保存按钮
+    elements.saveTargetRuleBtn?.addEventListener('click', () => {
+      const targetLang = elements.targetLanguage?.value || 'en';
+      customTargetRules[targetLang] = elements.targetLanguageRule?.value || '';
+      // 保存后将输入框设置为只读
+      if (elements.targetLanguageRule) {
+        elements.targetLanguageRule.readOnly = true;
+        elements.targetLanguageRule.classList.add('prompt-readonly');
+      }
+      updateRuleButtonsState(elements.nativeLanguage?.value || 'zh-CN', targetLang);
+      updateFullPromptPreview();
+      debouncedSave(200);
     });
 
     // 目标语言规则重置按钮
@@ -2613,30 +2653,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 更新规则按钮状态
   function updateRuleButtonsState(nativeLang, targetLang) {
-    // 源语言规则按钮
+    // 源语言规则按钮：修改和保存互斥，重置始终显示（如果有自定义规则）
+    const isSourceEditable = !elements.sourceLanguageRule?.readOnly;
     const hasCustomSource = customSourceRules[nativeLang] !== undefined;
+
     if (elements.editSourceRuleBtn) {
-      elements.editSourceRuleBtn.classList.toggle('hidden', hasCustomSource);
+      elements.editSourceRuleBtn.classList.toggle('hidden', isSourceEditable);
+    }
+    if (elements.saveSourceRuleBtn) {
+      elements.saveSourceRuleBtn.classList.toggle('hidden', !isSourceEditable);
     }
     if (elements.resetSourceRuleBtn) {
       elements.resetSourceRuleBtn.classList.toggle('hidden', !hasCustomSource);
     }
-    if (elements.sourceLanguageRule) {
-      elements.sourceLanguageRule.classList.toggle('prompt-readonly', !hasCustomSource);
-      elements.sourceLanguageRule.readOnly = !hasCustomSource;
-    }
 
-    // 目标语言规则按钮
+    // 目标语言规则按钮：修改和保存互斥，重置始终显示（如果有自定义规则）
+    const isTargetEditable = !elements.targetLanguageRule?.readOnly;
     const hasCustomTarget = customTargetRules[targetLang] !== undefined;
+
     if (elements.editTargetRuleBtn) {
-      elements.editTargetRuleBtn.classList.toggle('hidden', hasCustomTarget);
+      elements.editTargetRuleBtn.classList.toggle('hidden', isTargetEditable);
+    }
+    if (elements.saveTargetRuleBtn) {
+      elements.saveTargetRuleBtn.classList.toggle('hidden', !isTargetEditable);
     }
     if (elements.resetTargetRuleBtn) {
       elements.resetTargetRuleBtn.classList.toggle('hidden', !hasCustomTarget);
-    }
-    if (elements.targetLanguageRule) {
-      elements.targetLanguageRule.classList.toggle('prompt-readonly', !hasCustomTarget);
-      elements.targetLanguageRule.readOnly = !hasCustomTarget;
     }
   }
 
