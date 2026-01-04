@@ -3232,3 +3232,230 @@ input:checked + .toggle-slider:before {
 .btn-outline:hover {
   background: rgba(99, 102, 241, 0.1);
 }
+
+/* ============ 云同步样式 ============ */
+.cloud-sync-container {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.cloud-sync-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.cloud-sync-row:last-child {
+  margin-bottom: 0;
+}
+
+.cloud-sync-row > label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.cloud-sync-row .form-input,
+.cloud-sync-row .form-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.cloud-sync-row .form-input:focus,
+.cloud-sync-row .form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.cloud-sync-row .form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.cloud-sync-row .input-with-toggle {
+  display: flex;
+  align-items: stretch;
+}
+
+.cloud-sync-row .input-with-toggle .form-input {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  border-right: none;
+}
+
+.cloud-sync-row .input-with-toggle .toggle-visibility {
+  padding: 0 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.cloud-sync-row .input-with-toggle .toggle-visibility:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.help-text-small {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.help-text-small a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.help-text-small a:hover {
+  text-decoration: underline;
+}
+
+.cloud-sync-test-result {
+  font-size: 13px;
+  margin-left: 12px;
+}
+
+.cloud-sync-test-result.success {
+  color: var(--success);
+}
+
+.cloud-sync-test-result.error {
+  color: var(--danger);
+}
+
+.cloud-sync-config {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.cloud-sync-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.cloud-sync-list-container {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.cloud-sync-list-container > label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.cloud-sync-list {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.cloud-sync-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.cloud-sync-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.cloud-sync-item:last-child {
+  border-bottom: none;
+}
+
+.cloud-sync-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.cloud-sync-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cloud-sync-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.cloud-sync-item-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cloud-sync-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cloud-sync-item-actions .btn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.cloud-sync-status {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.cloud-sync-status.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.cloud-sync-status.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.cloud-sync-status-time {
+  font-weight: 500;
+}
+
+/* 云同步按钮加载状态 */
+.cloud-sync-actions .btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.cloud-sync-actions .btn.loading svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

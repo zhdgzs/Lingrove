@@ -141,6 +141,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     exportStats: document.getElementById('exportStats'),
     exportCache: document.getElementById('exportCache'),
 
+    // 云同步
+    cloudSyncProvider: document.getElementById('cloudSyncProvider'),
+    cloudSyncServer: document.getElementById('cloudSyncServer'),
+    cloudSyncUsername: document.getElementById('cloudSyncUsername'),
+    cloudSyncPassword: document.getElementById('cloudSyncPassword'),
+    toggleCloudSyncPassword: document.getElementById('toggleCloudSyncPassword'),
+    testCloudSyncBtn: document.getElementById('testCloudSyncBtn'),
+    cloudSyncTestResult: document.getElementById('cloudSyncTestResult'),
+    cloudSyncUploadBtn: document.getElementById('cloudSyncUploadBtn'),
+    cloudSyncRefreshBtn: document.getElementById('cloudSyncRefreshBtn'),
+    cloudSyncList: document.getElementById('cloudSyncList'),
+    cloudSyncStatus: document.getElementById('cloudSyncStatus'),
+
     // 提示词设置
     customPromptRules: document.getElementById('customPromptRules'),
     resetPromptBtn: document.getElementById('resetPromptBtn'),
@@ -2240,6 +2253,495 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 重置文件输入
       e.target.value = '';
     });
+
+    // ============ 云同步功能 ============
+
+    // 云同步配置默认值
+    const DEFAULT_CLOUD_SYNC = {
+      provider: 'jianguoyun',
+      server: 'https://dav.jianguoyun.com/dav/',
+      username: '',
+      password: '',
+      lastSyncTime: null,
+      lastSyncType: null,
+      lastSyncStatus: null
+    };
+
+    // 加载云同步配置
+    async function loadCloudSyncConfig() {
+      return new Promise(resolve => {
+        chrome.storage.sync.get('cloudSync', (result) => {
+          resolve({ ...DEFAULT_CLOUD_SYNC, ...result.cloudSync });
+        });
+      });
+    }
+
+    // 保存云同步配置
+    async function saveCloudSyncConfig(config) {
+      const current = await loadCloudSyncConfig();
+      const updated = { ...current, ...config };
+      return new Promise(resolve => {
+        chrome.storage.sync.set({ cloudSync: updated }, resolve);
+      });
+    }
+
+    // 初始化云同步 UI
+    async function initCloudSyncUI() {
+      const config = await loadCloudSyncConfig();
+
+      if (elements.cloudSyncProvider) {
+        elements.cloudSyncProvider.value = config.provider || 'jianguoyun';
+      }
+      if (elements.cloudSyncServer) {
+        elements.cloudSyncServer.value = config.server || DEFAULT_CLOUD_SYNC.server;
+      }
+      if (elements.cloudSyncUsername) {
+        elements.cloudSyncUsername.value = config.username || '';
+      }
+      if (elements.cloudSyncPassword) {
+        // 密码是 Base64 编码的，解码后显示
+        elements.cloudSyncPassword.value = config.password ? atob(config.password) : '';
+      }
+
+      // 显示上次同步状态
+      updateCloudSyncStatusUI(config);
+    }
+
+    // 更新云同步状态 UI
+    function updateCloudSyncStatusUI(config) {
+      if (!elements.cloudSyncStatus) return;
+
+      if (config.lastSyncTime) {
+        const date = new Date(config.lastSyncTime);
+        const timeStr = date.toLocaleString('zh-CN');
+        const typeStr = config.lastSyncType === 'upload' ? '上传' : '下载';
+        const statusStr = config.lastSyncStatus === 'success' ? '成功' : '失败';
+
+        elements.cloudSyncStatus.innerHTML = `
+          上次同步：<span class="cloud-sync-status-time">${timeStr}</span>
+          (${typeStr}${statusStr})
+        `;
+        elements.cloudSyncStatus.className = 'cloud-sync-status ' +
+          (config.lastSyncStatus === 'success' ? 'success' : 'error');
+      } else {
+        elements.cloudSyncStatus.innerHTML = '尚未同步';
+        elements.cloudSyncStatus.className = 'cloud-sync-status';
+      }
+    }
+
+    // 获取当前云同步凭据
+    function getCloudSyncCredentials() {
+      return {
+        server: elements.cloudSyncServer?.value || DEFAULT_CLOUD_SYNC.server,
+        username: elements.cloudSyncUsername?.value || '',
+        password: btoa(elements.cloudSyncPassword?.value || '')  // Base64 编码
+      };
+    }
+
+    // 显示测试结果
+    function showCloudSyncTestResult(success, message) {
+      if (!elements.cloudSyncTestResult) return;
+      elements.cloudSyncTestResult.textContent = message;
+      elements.cloudSyncTestResult.className = 'cloud-sync-test-result ' + (success ? 'success' : 'error');
+    }
+
+    // 测试连接按钮
+    elements.testCloudSyncBtn?.addEventListener('click', async () => {
+      const { server, username, password } = getCloudSyncCredentials();
+
+      if (!username || !password) {
+        showCloudSyncTestResult(false, '请填写用户名和密码');
+        return;
+      }
+
+      elements.testCloudSyncBtn.disabled = true;
+      showCloudSyncTestResult(false, '测试中...');
+
+      try {
+        const result = await new Promise(resolve => {
+          chrome.runtime.sendMessage({
+            action: 'webdavTest',
+            server,
+            username,
+            password
+          }, resolve);
+        });
+
+        showCloudSyncTestResult(result.success, result.message);
+
+        // 测试成功后保存配置
+        if (result.success) {
+          await saveCloudSyncConfig({
+            provider: elements.cloudSyncProvider?.value || 'jianguoyun',
+            server,
+            username,
+            password
+          });
+        }
+      } catch (err) {
+        showCloudSyncTestResult(false, '测试失败: ' + err.message);
+      } finally {
+        elements.testCloudSyncBtn.disabled = false;
+      }
+    });
+
+    // 密码显示/隐藏切换
+    elements.toggleCloudSyncPassword?.addEventListener('click', () => {
+      const input = elements.cloudSyncPassword;
+      if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+      }
+    });
+
+    // 收集导出数据（复用现有导出逻辑）
+    async function collectExportData() {
+      const syncData = await new Promise(resolve => chrome.storage.sync.get(null, resolve));
+      const localData = await new Promise(resolve => chrome.storage.local.get(null, resolve));
+
+      const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString()
+      };
+
+      // 配置设置
+      exportData.settings = {
+        apiEndpoint: syncData.apiEndpoint,
+        apiKey: syncData.apiKey,
+        modelName: syncData.modelName,
+        nativeLanguage: syncData.nativeLanguage,
+        targetLanguage: syncData.targetLanguage,
+        difficultyLevel: syncData.difficultyLevel,
+        intensity: syncData.intensity,
+        autoProcess: syncData.autoProcess,
+        showPhonetic: syncData.showPhonetic,
+        dictionaryType: syncData.dictionaryType,
+        blacklist: syncData.blacklist,
+        whitelist: syncData.whitelist,
+        siteMode: syncData.siteMode,
+        customPromptRules: syncData.customPromptRules,
+        apiNodes: syncData.apiNodes,
+        rateLimitEnabled: syncData.rateLimitEnabled,
+        globalRateLimit: syncData.globalRateLimit,
+        processMode: syncData.processMode,
+        cacheMaxSize: syncData.cacheMaxSize,
+        translationStyle: syncData.translationStyle,
+        theme: syncData.theme,
+        colorTheme: syncData.colorTheme,
+        customTheme: syncData.customTheme,
+        ttsVoice: syncData.ttsVoice,
+        ttsRate: syncData.ttsRate,
+        showAddMemorize: syncData.showAddMemorize,
+        customSourceRules: syncData.customSourceRules,
+        customTargetRules: syncData.customTargetRules
+      };
+
+      // 词汇数据
+      exportData.learnedWords = localData.learnedWords || [];
+      exportData.memorizeList = localData.memorizeList || [];
+
+      // 统计数据
+      exportData.stats = {
+        totalWords: syncData.totalWords,
+        todayWords: syncData.todayWords,
+        lastResetDate: syncData.lastResetDate,
+        cacheHits: syncData.cacheHits,
+        cacheMisses: syncData.cacheMisses
+      };
+
+      // 缓存数据
+      exportData.cache = localData.lingrove_word_cache || [];
+
+      return exportData;
+    }
+
+    // 上传到云端
+    elements.cloudSyncUploadBtn?.addEventListener('click', async () => {
+      const { server, username, password } = getCloudSyncCredentials();
+
+      if (!username || !password) {
+        alert('请先配置云同步账号');
+        return;
+      }
+
+      if (!confirm('确定要上传当前数据到云端吗？')) {
+        return;
+      }
+
+      elements.cloudSyncUploadBtn.classList.add('loading');
+      elements.cloudSyncUploadBtn.disabled = true;
+
+      try {
+        const exportData = await collectExportData();
+
+        const result = await new Promise(resolve => {
+          chrome.runtime.sendMessage({
+            action: 'webdavUpload',
+            server,
+            username,
+            password,
+            data: exportData
+          }, resolve);
+        });
+
+        if (result.success) {
+          alert('上传成功！文件名: ' + result.filename);
+
+          // 更新同步状态
+          await saveCloudSyncConfig({
+            lastSyncTime: Date.now(),
+            lastSyncType: 'upload',
+            lastSyncStatus: 'success'
+          });
+
+          const config = await loadCloudSyncConfig();
+          updateCloudSyncStatusUI(config);
+
+          // 刷新列表
+          await refreshCloudSyncList();
+        } else {
+          alert('上传失败: ' + result.message);
+          await saveCloudSyncConfig({
+            lastSyncTime: Date.now(),
+            lastSyncType: 'upload',
+            lastSyncStatus: 'failed'
+          });
+        }
+      } catch (err) {
+        alert('上传失败: ' + err.message);
+      } finally {
+        elements.cloudSyncUploadBtn.classList.remove('loading');
+        elements.cloudSyncUploadBtn.disabled = false;
+      }
+    });
+
+    // 刷新云端备份列表
+    async function refreshCloudSyncList() {
+      const { server, username, password } = getCloudSyncCredentials();
+
+      if (!username || !password) {
+        if (elements.cloudSyncList) {
+          elements.cloudSyncList.innerHTML = '<div class="cloud-sync-empty">请先配置并测试连接</div>';
+        }
+        return;
+      }
+
+      if (elements.cloudSyncList) {
+        elements.cloudSyncList.innerHTML = '<div class="cloud-sync-empty">加载中...</div>';
+      }
+
+      try {
+        const result = await new Promise(resolve => {
+          chrome.runtime.sendMessage({
+            action: 'webdavList',
+            server,
+            username,
+            password
+          }, resolve);
+        });
+
+        if (result.success) {
+          renderCloudSyncList(result.files);
+        } else {
+          if (elements.cloudSyncList) {
+            elements.cloudSyncList.innerHTML = `<div class="cloud-sync-empty">获取列表失败: ${result.message}</div>`;
+          }
+        }
+      } catch (err) {
+        if (elements.cloudSyncList) {
+          elements.cloudSyncList.innerHTML = `<div class="cloud-sync-empty">获取列表失败: ${err.message}</div>`;
+        }
+      }
+    }
+
+    // 渲染云端备份列表
+    function renderCloudSyncList(files) {
+      if (!elements.cloudSyncList) return;
+
+      if (!files || files.length === 0) {
+        elements.cloudSyncList.innerHTML = '<div class="cloud-sync-empty">暂无云端备份</div>';
+        return;
+      }
+
+      elements.cloudSyncList.innerHTML = files.map(file => {
+        const sizeStr = formatFileSize(file.size);
+        const dateStr = file.lastModified ? new Date(file.lastModified).toLocaleString('zh-CN') : '未知';
+
+        return `
+          <div class="cloud-sync-item" data-filename="${file.name}">
+            <div class="cloud-sync-item-info">
+              <span class="cloud-sync-item-name">${file.name}</span>
+              <span class="cloud-sync-item-meta">${sizeStr} · ${dateStr}</span>
+            </div>
+            <div class="cloud-sync-item-actions">
+              <button class="btn btn-primary btn-sm cloud-sync-download-btn">下载</button>
+              <button class="btn btn-secondary btn-sm cloud-sync-delete-btn">删除</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 绑定下载和删除事件
+      elements.cloudSyncList.querySelectorAll('.cloud-sync-item').forEach(item => {
+        const filename = item.dataset.filename;
+
+        item.querySelector('.cloud-sync-download-btn')?.addEventListener('click', () => {
+          downloadFromCloud(filename);
+        });
+
+        item.querySelector('.cloud-sync-delete-btn')?.addEventListener('click', () => {
+          deleteFromCloud(filename);
+        });
+      });
+    }
+
+    // 格式化文件大小
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // 从云端下载
+    async function downloadFromCloud(filename) {
+      const { server, username, password } = getCloudSyncCredentials();
+
+      if (!confirm(`确定要下载并导入 "${filename}" 吗？\n这将覆盖本地数据。`)) {
+        return;
+      }
+
+      try {
+        const result = await new Promise(resolve => {
+          chrome.runtime.sendMessage({
+            action: 'webdavDownload',
+            server,
+            username,
+            password,
+            filename
+          }, resolve);
+        });
+
+        if (result.success && result.data) {
+          // 导入数据（复用导入逻辑）
+          const data = result.data;
+
+          if (!data.version) {
+            alert('无效的备份文件');
+            return;
+          }
+
+          const syncUpdates = {};
+          const localUpdates = {};
+
+          if (data.settings) {
+            Object.assign(syncUpdates, data.settings);
+          }
+          if (data.learnedWords) {
+            localUpdates.learnedWords = data.learnedWords;
+          }
+          if (data.memorizeList) {
+            localUpdates.memorizeList = data.memorizeList;
+          }
+          if (data.stats) {
+            Object.assign(syncUpdates, data.stats);
+          }
+          if (data.cache) {
+            const seenKeys = new Set();
+            const deduplicatedCache = [];
+            for (const item of data.cache) {
+              if (item.key && !seenKeys.has(item.key)) {
+                seenKeys.add(item.key);
+                deduplicatedCache.push(item);
+              }
+            }
+            localUpdates.lingrove_word_cache = deduplicatedCache;
+          }
+
+          if (Object.keys(syncUpdates).length > 0) {
+            await new Promise(resolve => chrome.storage.sync.set(syncUpdates, resolve));
+          }
+          if (Object.keys(localUpdates).length > 0) {
+            await new Promise(resolve => chrome.storage.local.set(localUpdates, resolve));
+          }
+
+          // 更新同步状态
+          await saveCloudSyncConfig({
+            lastSyncTime: Date.now(),
+            lastSyncType: 'download',
+            lastSyncStatus: 'success'
+          });
+
+          alert('下载并导入成功！页面将刷新。');
+          location.reload();
+        } else {
+          alert('下载失败: ' + (result.message || '未知错误'));
+        }
+      } catch (err) {
+        alert('下载失败: ' + err.message);
+      }
+    }
+
+    // 从云端删除
+    async function deleteFromCloud(filename) {
+      const { server, username, password } = getCloudSyncCredentials();
+
+      if (!confirm(`确定要删除云端备份 "${filename}" 吗？\n此操作不可恢复。`)) {
+        return;
+      }
+
+      try {
+        const result = await new Promise(resolve => {
+          chrome.runtime.sendMessage({
+            action: 'webdavDelete',
+            server,
+            username,
+            password,
+            filename
+          }, resolve);
+        });
+
+        if (result.success) {
+          alert('删除成功');
+          await refreshCloudSyncList();
+        } else {
+          alert('删除失败: ' + result.message);
+        }
+      } catch (err) {
+        alert('删除失败: ' + err.message);
+      }
+    }
+
+    // 刷新列表按钮
+    elements.cloudSyncRefreshBtn?.addEventListener('click', refreshCloudSyncList);
+
+    // 云同步配置变更时保存
+    elements.cloudSyncProvider?.addEventListener('change', async () => {
+      await saveCloudSyncConfig({
+        provider: elements.cloudSyncProvider.value
+      });
+    });
+
+    elements.cloudSyncServer?.addEventListener('blur', async () => {
+      await saveCloudSyncConfig({
+        server: elements.cloudSyncServer.value
+      });
+    });
+
+    elements.cloudSyncUsername?.addEventListener('blur', async () => {
+      await saveCloudSyncConfig({
+        username: elements.cloudSyncUsername.value
+      });
+    });
+
+    elements.cloudSyncPassword?.addEventListener('blur', async () => {
+      await saveCloudSyncConfig({
+        password: btoa(elements.cloudSyncPassword.value)
+      });
+    });
+
+    // 初始化云同步 UI
+    initCloudSyncUI();
 
     // ============ 主题样式事件 ============
     // 主题选择变化

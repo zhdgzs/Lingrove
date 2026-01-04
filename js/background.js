@@ -1067,6 +1067,48 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  // ============ WebDAV 云同步相关 ============
+
+  // 测试 WebDAV 连接
+  if (message.action === 'webdavTest') {
+    webdavTest(message.server, message.username, message.password)
+      .then(result => sendResponse(result))
+      .catch(err => sendResponse({ success: false, message: err.message }));
+    return true;
+  }
+
+  // 上传数据到 WebDAV
+  if (message.action === 'webdavUpload') {
+    webdavUpload(message.server, message.username, message.password, message.data)
+      .then(result => sendResponse(result))
+      .catch(err => sendResponse({ success: false, message: err.message }));
+    return true;
+  }
+
+  // 列出 WebDAV 备份文件
+  if (message.action === 'webdavList') {
+    webdavList(message.server, message.username, message.password)
+      .then(result => sendResponse(result))
+      .catch(err => sendResponse({ success: false, message: err.message }));
+    return true;
+  }
+
+  // 从 WebDAV 下载文件
+  if (message.action === 'webdavDownload') {
+    webdavDownload(message.server, message.username, message.password, message.filename)
+      .then(result => sendResponse(result))
+      .catch(err => sendResponse({ success: false, message: err.message }));
+    return true;
+  }
+
+  // 删除 WebDAV 文件
+  if (message.action === 'webdavDelete') {
+    webdavDelete(message.server, message.username, message.password, message.filename)
+      .then(result => sendResponse(result))
+      .catch(err => sendResponse({ success: false, message: err.message }));
+    return true;
+  }
 });
 
 // 通用 API 调用（从 background 发起，避免 CORS）
@@ -1143,3 +1185,282 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 })();
 
 console.log('[Lingrove] Background script loaded');
+
+// ============ WebDAV 云同步函数 ============
+
+// 云同步配置
+const CLOUD_SYNC_CONFIG = {
+  backupDir: 'Lingrove',
+  filePrefix: 'Lingrove-data-'
+};
+
+/**
+ * 生成 WebDAV Basic Auth 头
+ */
+function getWebdavAuthHeader(username, password) {
+  // password 已经是 Base64 编码的，需要先解码
+  const decodedPassword = atob(password);
+  const credentials = btoa(`${username}:${decodedPassword}`);
+  return `Basic ${credentials}`;
+}
+
+/**
+ * 确保 WebDAV 目录存在
+ */
+async function ensureWebdavDir(server, username, password) {
+  const dirUrl = `${server}${CLOUD_SYNC_CONFIG.backupDir}/`;
+
+  try {
+    // 先检查目录是否存在
+    const checkResponse = await fetch(dirUrl, {
+      method: 'PROPFIND',
+      headers: {
+        'Authorization': getWebdavAuthHeader(username, password),
+        'Depth': '0'
+      }
+    });
+
+    if (checkResponse.ok || checkResponse.status === 207) {
+      return true;
+    }
+
+    // 目录不存在，创建它
+    if (checkResponse.status === 404) {
+      const mkcolResponse = await fetch(dirUrl, {
+        method: 'MKCOL',
+        headers: {
+          'Authorization': getWebdavAuthHeader(username, password)
+        }
+      });
+
+      if (mkcolResponse.ok || mkcolResponse.status === 201) {
+        return true;
+      }
+
+      throw new Error(`创建目录失败: ${mkcolResponse.status}`);
+    }
+
+    throw new Error(`检查目录失败: ${checkResponse.status}`);
+  } catch (error) {
+    console.error('[Lingrove] ensureWebdavDir error:', error);
+    throw error;
+  }
+}
+
+/**
+ * 测试 WebDAV 连接
+ */
+async function webdavTest(server, username, password) {
+  try {
+    const response = await fetch(server, {
+      method: 'PROPFIND',
+      headers: {
+        'Authorization': getWebdavAuthHeader(username, password),
+        'Depth': '0'
+      }
+    });
+
+    if (response.ok || response.status === 207) {
+      return { success: true, message: '连接成功！' };
+    }
+
+    if (response.status === 401) {
+      return { success: false, message: '认证失败，请检查用户名和应用密码' };
+    }
+
+    return { success: false, message: `连接失败: HTTP ${response.status}` };
+  } catch (error) {
+    console.error('[Lingrove] webdavTest error:', error);
+    return { success: false, message: `连接失败: ${error.message}` };
+  }
+}
+
+/**
+ * 上传数据到 WebDAV
+ */
+async function webdavUpload(server, username, password, data) {
+  try {
+    // 确保目录存在
+    await ensureWebdavDir(server, username, password);
+
+    // 生成带时间戳的文件名
+    const now = new Date();
+    const timestamp = now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, '0') +
+      now.getDate().toString().padStart(2, '0') + '-' +
+      now.getHours().toString().padStart(2, '0') +
+      now.getMinutes().toString().padStart(2, '0') +
+      now.getSeconds().toString().padStart(2, '0');
+    const filename = `${CLOUD_SYNC_CONFIG.filePrefix}${timestamp}.json`;
+    const fileUrl = `${server}${CLOUD_SYNC_CONFIG.backupDir}/${filename}`;
+
+    // 上传文件
+    const response = await fetch(fileUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': getWebdavAuthHeader(username, password),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data, null, 2)
+    });
+
+    if (response.ok || response.status === 201 || response.status === 204) {
+      return { success: true, filename, message: '上传成功！' };
+    }
+
+    return { success: false, message: `上传失败: HTTP ${response.status}` };
+  } catch (error) {
+    console.error('[Lingrove] webdavUpload error:', error);
+    return { success: false, message: `上传失败: ${error.message}` };
+  }
+}
+
+/**
+ * 列出 WebDAV 备份文件
+ */
+async function webdavList(server, username, password) {
+  try {
+    const dirUrl = `${server}${CLOUD_SYNC_CONFIG.backupDir}/`;
+
+    const response = await fetch(dirUrl, {
+      method: 'PROPFIND',
+      headers: {
+        'Authorization': getWebdavAuthHeader(username, password),
+        'Depth': '1',
+        'Content-Type': 'application/xml'
+      },
+      body: `<?xml version="1.0" encoding="utf-8"?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:displayname/>
+    <D:getcontentlength/>
+    <D:getlastmodified/>
+    <D:resourcetype/>
+  </D:prop>
+</D:propfind>`
+    });
+
+    if (response.status === 404) {
+      // 目录不存在，返回空列表
+      return { success: true, files: [] };
+    }
+
+    if (!response.ok && response.status !== 207) {
+      return { success: false, message: `获取列表失败: HTTP ${response.status}` };
+    }
+
+    const text = await response.text();
+    const files = parseWebdavResponse(text);
+
+    // 只返回 Lingrove 备份文件，按时间倒序
+    const backupFiles = files
+      .filter(f => f.name.startsWith(CLOUD_SYNC_CONFIG.filePrefix) && f.name.endsWith('.json'))
+      .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+
+    return { success: true, files: backupFiles };
+  } catch (error) {
+    console.error('[Lingrove] webdavList error:', error);
+    return { success: false, message: `获取列表失败: ${error.message}` };
+  }
+}
+
+/**
+ * 解析 WebDAV PROPFIND 响应
+ */
+function parseWebdavResponse(xmlText) {
+  const files = [];
+
+  // 简单的 XML 解析（不依赖 DOMParser 在 Service Worker 中可能不可用）
+  const responseRegex = /<D:response[^>]*>([\s\S]*?)<\/D:response>/gi;
+  const hrefRegex = /<D:href[^>]*>([^<]+)<\/D:href>/i;
+  const displaynameRegex = /<D:displayname[^>]*>([^<]*)<\/D:displayname>/i;
+  const contentlengthRegex = /<D:getcontentlength[^>]*>([^<]*)<\/D:getcontentlength>/i;
+  const lastmodifiedRegex = /<D:getlastmodified[^>]*>([^<]*)<\/D:getlastmodified>/i;
+  const collectionRegex = /<D:collection\s*\/?>|<D:collection[^>]*>/i;
+
+  let match;
+  while ((match = responseRegex.exec(xmlText)) !== null) {
+    const responseBlock = match[1];
+
+    // 跳过目录
+    if (collectionRegex.test(responseBlock)) {
+      continue;
+    }
+
+    const hrefMatch = hrefRegex.exec(responseBlock);
+    const displaynameMatch = displaynameRegex.exec(responseBlock);
+    const contentlengthMatch = contentlengthRegex.exec(responseBlock);
+    const lastmodifiedMatch = lastmodifiedRegex.exec(responseBlock);
+
+    if (hrefMatch) {
+      const href = decodeURIComponent(hrefMatch[1]);
+      const name = displaynameMatch ? displaynameMatch[1] : href.split('/').pop();
+
+      // 跳过目录本身
+      if (!name || name.endsWith('/')) continue;
+
+      files.push({
+        name: name,
+        size: contentlengthMatch ? parseInt(contentlengthMatch[1]) || 0 : 0,
+        lastModified: lastmodifiedMatch ? lastmodifiedMatch[1] : null
+      });
+    }
+  }
+
+  return files;
+}
+
+/**
+ * 从 WebDAV 下载文件
+ */
+async function webdavDownload(server, username, password, filename) {
+  try {
+    const fileUrl = `${server}${CLOUD_SYNC_CONFIG.backupDir}/${filename}`;
+
+    const response = await fetch(fileUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': getWebdavAuthHeader(username, password)
+      }
+    });
+
+    if (response.status === 404) {
+      return { success: false, message: '文件不存在' };
+    }
+
+    if (!response.ok) {
+      return { success: false, message: `下载失败: HTTP ${response.status}` };
+    }
+
+    const data = await response.json();
+    return { success: true, data, message: '下载成功！' };
+  } catch (error) {
+    console.error('[Lingrove] webdavDownload error:', error);
+    return { success: false, message: `下载失败: ${error.message}` };
+  }
+}
+
+/**
+ * 删除 WebDAV 文件
+ */
+async function webdavDelete(server, username, password, filename) {
+  try {
+    const fileUrl = `${server}${CLOUD_SYNC_CONFIG.backupDir}/${filename}`;
+
+    const response = await fetch(fileUrl, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': getWebdavAuthHeader(username, password)
+      }
+    });
+
+    if (response.ok || response.status === 204 || response.status === 404) {
+      return { success: true, message: '删除成功！' };
+    }
+
+    return { success: false, message: `删除失败: HTTP ${response.status}` };
+  } catch (error) {
+    console.error('[Lingrove] webdavDelete error:', error);
+    return { success: false, message: `删除失败: ${error.message}` };
+  }
+}
