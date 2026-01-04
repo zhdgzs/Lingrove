@@ -3,7 +3,7 @@
  * 封装 Chrome Storage API，提供统一的存储接口
  */
 
-import { DEFAULT_CONFIG, NODE_STATUS, FAILOVER_CONFIG, generateNodeId, createDefaultNodeStatus } from './config.js';
+import { DEFAULT_CONFIG, NODE_STATUS, FAILOVER_CONFIG, generateNodeId, createDefaultNodeStatus, DEFAULT_CLOUD_SYNC } from './config.js';
 
 /**
  * 存储服务类
@@ -500,6 +500,42 @@ class StorageService {
     return statuses
       .filter(s => s.status === NODE_STATUS.ERROR)
       .map(s => s.nodeId);
+  }
+
+  // ============ 云同步配置管理方法 ============
+
+  /**
+   * 获取云同步配置
+   * @returns {Promise<object>}
+   */
+  async getCloudSyncConfig() {
+    const result = await this.get('cloudSync');
+    return { ...DEFAULT_CLOUD_SYNC, ...result.cloudSync };
+  }
+
+  /**
+   * 保存云同步配置
+   * @param {object} config - 云同步配置
+   * @returns {Promise<void>}
+   */
+  async saveCloudSyncConfig(config) {
+    const current = await this.getCloudSyncConfig();
+    const updated = { ...current, ...config };
+    await this.set({ cloudSync: updated });
+  }
+
+  /**
+   * 更新云同步状态
+   * @param {string} type - 同步类型：'upload' | 'download'
+   * @param {string} status - 同步状态：'success' | 'failed'
+   * @returns {Promise<void>}
+   */
+  async updateCloudSyncStatus(type, status) {
+    await this.saveCloudSyncConfig({
+      lastSyncTime: Date.now(),
+      lastSyncType: type,
+      lastSyncStatus: status
+    });
   }
 }
 

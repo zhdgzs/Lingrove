@@ -136,6 +136,35 @@ export const RATE_LIMIT_CONFIG = {
   defaultCooldownMs: 60 * 1000     // 默认冷却时间：60 秒
 };
 
+// 云同步配置
+export const CLOUD_SYNC_CONFIG = {
+  // 支持的云服务提供商
+  providers: {
+    jianguoyun: {
+      name: '坚果云',
+      server: 'https://dav.jianguoyun.com/dav/',
+      helpUrl: 'https://help.jianguoyun.com/?p=2064'
+    }
+  },
+  // 默认提供商
+  defaultProvider: 'jianguoyun',
+  // 备份目录名
+  backupDir: 'Lingrove',
+  // 备份文件名前缀
+  filePrefix: 'Lingrove-data-'
+};
+
+// 云同步默认配置
+export const DEFAULT_CLOUD_SYNC = {
+  provider: 'jianguoyun',
+  server: CLOUD_SYNC_CONFIG.providers.jianguoyun.server,
+  username: '',
+  password: '',              // Base64 编码存储
+  lastSyncTime: null,
+  lastSyncType: null,        // 'upload' | 'download'
+  lastSyncStatus: null       // 'success' | 'failed'
+};
+
 /**
  * 生成唯一 ID
  * @returns {string}
