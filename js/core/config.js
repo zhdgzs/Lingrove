@@ -156,7 +156,7 @@ export const CLOUD_SYNC_CONFIG = {
 
 // 云同步默认配置
 export const DEFAULT_CLOUD_SYNC = {
-  provider: 'jianguoyun',
+  provider: 'offline',
   server: CLOUD_SYNC_CONFIG.providers.jianguoyun.server,
   username: '',
   password: '',              // Base64 编码存储

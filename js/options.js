@@ -2258,7 +2258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 云同步配置默认值
     const DEFAULT_CLOUD_SYNC = {
-      provider: 'jianguoyun',
+      provider: 'offline',
       server: 'https://dav.jianguoyun.com/dav/',
       username: '',
       password: '',
@@ -2290,7 +2290,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const config = await loadCloudSyncConfig();
 
       if (elements.cloudSyncProvider) {
-        elements.cloudSyncProvider.value = config.provider || 'jianguoyun';
+        elements.cloudSyncProvider.value = config.provider || 'offline';
+        // 根据当前选择显示对应配置面板
+        updateSyncProviderUI(config.provider || 'offline');
       }
       if (elements.cloudSyncServer) {
         elements.cloudSyncServer.value = config.server || DEFAULT_CLOUD_SYNC.server;
@@ -2305,6 +2307,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // 显示上次同步状态
       updateCloudSyncStatusUI(config);
+    }
+
+    // 更新同步方式 UI（切换显示不同配置面板）
+    function updateSyncProviderUI(provider) {
+      const offlineConfig = document.getElementById('offlineConfig');
+      const jianguoyunConfig = document.getElementById('jianguoyunConfig');
+
+      if (provider === 'offline') {
+        if (offlineConfig) offlineConfig.style.display = 'block';
+        if (jianguoyunConfig) jianguoyunConfig.style.display = 'none';
+      } else if (provider === 'jianguoyun') {
+        if (offlineConfig) offlineConfig.style.display = 'none';
+        if (jianguoyunConfig) jianguoyunConfig.style.display = 'block';
+      }
     }
 
     // 更新云同步状态 UI
@@ -2717,9 +2733,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 云同步配置变更时保存
     elements.cloudSyncProvider?.addEventListener('change', async () => {
-      await saveCloudSyncConfig({
-        provider: elements.cloudSyncProvider.value
-      });
+      const provider = elements.cloudSyncProvider.value;
+      await saveCloudSyncConfig({ provider });
+      // 切换显示对应配置面板
+      updateSyncProviderUI(provider);
     });
 
     elements.cloudSyncServer?.addEventListener('blur', async () => {
