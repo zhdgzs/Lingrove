@@ -410,6 +410,64 @@ body {
   color: var(--text-muted);
 }
 
+/* Min Length Config */
+.min-length-config {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.min-length-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.min-length-label {
+  flex: 0 0 120px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.min-length-input {
+  width: 80px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: center;
+}
+
+.min-length-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.min-length-unit {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.min-length-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.min-length-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* Process Mode Selector */
 .process-mode-selector {
   display: grid;

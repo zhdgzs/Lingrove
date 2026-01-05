@@ -80,7 +80,9 @@
    */
   L.getMinTextLength = function(text) {
     const lang = L.detectLanguage(text);
-    return L.MIN_LENGTH_CONFIG[lang] || 50;
+    // 优先使用用户配置，否则使用默认值
+    const config = L.config?.minLengthConfig || L.MIN_LENGTH_CONFIG;
+    return config[lang] || 50;
   };
 
   /**

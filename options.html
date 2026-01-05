@@ -306,6 +306,27 @@
         </div>
 
         <div class="form-group">
+          <label>最小文本长度</label>
+          <p class="help-text">段落字符数低于此阈值将被跳过，不进行翻译处理</p>
+          <div class="min-length-config">
+            <div class="min-length-row">
+              <span class="min-length-label">中文/日文/韩文</span>
+              <input type="number" id="minLengthCJK" min="5" max="100" value="20" class="min-length-input">
+              <span class="min-length-unit">字符</span>
+            </div>
+            <div class="min-length-row">
+              <span class="min-length-label">英文/其他</span>
+              <input type="number" id="minLengthEN" min="10" max="200" value="50" class="min-length-input">
+              <span class="min-length-unit">字符</span>
+            </div>
+            <div class="min-length-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="applyRecommendedMinLength">应用推荐值</button>
+              <span class="min-length-hint" id="recommendedMinLengthHint"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label>发音设置</label>
           <p class="help-text">配置学习语言的发音声音和语速</p>
           <div class="voice-settings">
@@ -608,6 +629,34 @@
               <span class="style-card">
                 <span class="style-preview">原文(译文)</span>
                 <span class="style-desc">原文在前，译文在后</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>已学会词汇显示</label>
+          <p class="help-text">选择已学会词汇在页面上的显示方式</p>
+          <div class="style-selector">
+            <label class="style-option">
+              <input type="radio" name="learnedWordDisplay" value="hide" checked>
+              <span class="style-card">
+                <span class="style-preview">不处理</span>
+                <span class="style-desc">保持原样，不做标记</span>
+              </span>
+            </label>
+            <label class="style-option">
+              <input type="radio" name="learnedWordDisplay" value="original">
+              <span class="style-card">
+                <span class="style-preview style-learned">原文</span>
+                <span class="style-desc">显示原文，带标记样式</span>
+              </span>
+            </label>
+            <label class="style-option">
+              <input type="radio" name="learnedWordDisplay" value="translation">
+              <span class="style-card">
+                <span class="style-preview style-learned">译文</span>
+                <span class="style-desc">直接显示译文，强化记忆</span>
               </span>
             </label>
           </div>

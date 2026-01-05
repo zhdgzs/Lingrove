@@ -15,15 +15,31 @@
    * @param {string} translation - 翻译
    * @param {string} phonetic - 音标
    * @param {string} difficulty - 难度
+   * @param {boolean} isLearned - 是否已学会
    * @returns {Element}
    */
-  L.createReplacementElement = function(original, translation, phonetic, difficulty) {
+  L.createReplacementElement = function(original, translation, phonetic, difficulty, isLearned = false) {
     const wrapper = document.createElement('span');
     wrapper.className = 'lingrove-translated';
+    if (isLearned) wrapper.classList.add('lingrove-learned');
     wrapper.setAttribute('data-original', original);
     wrapper.setAttribute('data-translation', translation);
     wrapper.setAttribute('data-phonetic', phonetic || '');
     wrapper.setAttribute('data-difficulty', difficulty || 'B1');
+    if (isLearned) wrapper.setAttribute('data-learned', 'true');
+
+    // 已学会词汇根据设置显示
+    if (isLearned) {
+      const learnedDisplay = L.config.learnedWordDisplay || 'hide';
+      if (learnedDisplay === 'original') {
+        // 显示原文（带标记样式）
+        wrapper.innerHTML = `<span class="lingrove-word lingrove-learned-word">${original}</span>`;
+      } else {
+        // 显示译文
+        wrapper.innerHTML = `<span class="lingrove-word lingrove-learned-word">${translation}</span>`;
+      }
+      return wrapper;
+    }
 
     // 根据配置的样式生成不同的HTML
     const style = L.config.translationStyle || 'translation-original';
@@ -111,7 +127,7 @@
     const sortedReplacements = [...replacements].sort((a, b) => (b.position || 0) - (a.position || 0));
 
     for (const replacement of sortedReplacements) {
-      const { original, translation, phonetic, difficulty } = replacement;
+      const { original, translation, phonetic, difficulty, isLearned } = replacement;
       const lowerOriginal = original.toLowerCase();
 
       // 每次替换后重新获取文本节点，因为DOM结构已改变
@@ -162,7 +178,7 @@
 
           if (isAlreadyReplaced) continue;
 
-          const wrapper = L.createReplacementElement(original, translation, phonetic, difficulty);
+          const wrapper = L.createReplacementElement(original, translation, phonetic, difficulty, isLearned);
           range.deleteContents();
           range.insertNode(wrapper);
           count++;

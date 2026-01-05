@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     difficultyLevel: document.getElementById('difficultyLevel'),
     selectedDifficulty: document.getElementById('selectedDifficulty'),
     intensityRadios: document.querySelectorAll('input[name="intensity"]'),
+    minLengthCJK: document.getElementById('minLengthCJK'),
+    minLengthEN: document.getElementById('minLengthEN'),
+    applyRecommendedMinLength: document.getElementById('applyRecommendedMinLength'),
+    recommendedMinLengthHint: document.getElementById('recommendedMinLengthHint'),
     processModeRadios: document.querySelectorAll('input[name="processMode"]'),
 
     // 行为设置
@@ -67,6 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     showAddMemorize: document.getElementById('showAddMemorize'),
     cacheMaxSizeRadios: document.querySelectorAll('input[name="cacheMaxSize"]'),
     translationStyleRadios: document.querySelectorAll('input[name="translationStyle"]'),
+    learnedWordDisplayRadios: document.querySelectorAll('input[name="learnedWordDisplay"]'),
     themeRadios: document.querySelectorAll('input[name="theme"]'),
     
     // 主题样式
@@ -1397,6 +1402,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.intensityRadios.forEach(radio => {
         radio.checked = radio.value === intensity;
       });
+
+      // 最小文本长度配置
+      const minLengthConfig = result.minLengthConfig || { zh: 20, ja: 20, ko: 20, en: 50 };
+      if (elements.minLengthCJK) elements.minLengthCJK.value = minLengthConfig.zh || 20;
+      if (elements.minLengthEN) elements.minLengthEN.value = minLengthConfig.en || 50;
+      updateRecommendedMinLengthHint(intensity);
       
       const processMode = result.processMode || 'both';
       elements.processModeRadios.forEach(radio => {
@@ -1421,6 +1432,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       const translationStyle = result.translationStyle || 'translation-original';
       elements.translationStyleRadios.forEach(radio => {
         radio.checked = radio.value === translationStyle;
+      });
+
+      const learnedWordDisplay = result.learnedWordDisplay || 'hide';
+      elements.learnedWordDisplayRadios.forEach(radio => {
+        radio.checked = radio.value === learnedWordDisplay;
       });
       
       // 主题样式
@@ -1763,6 +1779,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       targetLanguage: elements.targetLanguage.value,
       difficultyLevel: CEFR_LEVELS[elements.difficultyLevel.value],
       intensity: document.querySelector('input[name="intensity"]:checked').value,
+      minLengthConfig: {
+        zh: parseInt(elements.minLengthCJK?.value) || 20,
+        ja: parseInt(elements.minLengthCJK?.value) || 20,
+        ko: parseInt(elements.minLengthCJK?.value) || 20,
+        en: parseInt(elements.minLengthEN?.value) || 50
+      },
       processMode: document.querySelector('input[name="processMode"]:checked')?.value || 'both',
       autoProcess: elements.autoProcess.checked,
       showPhonetic: elements.showPhonetic.checked,
@@ -1770,6 +1792,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       showAddMemorize: elements.showAddMemorize.checked,
       cacheMaxSize: parseInt(document.querySelector('input[name="cacheMaxSize"]:checked').value),
       translationStyle: document.querySelector('input[name="translationStyle"]:checked').value,
+      learnedWordDisplay: document.querySelector('input[name="learnedWordDisplay"]:checked')?.value || 'hide',
       ttsVoice: elements.ttsVoice.value,
       ttsRate: parseFloat(elements.ttsRate.value),
       siteMode: document.querySelector('input[name="siteMode"]:checked').value,
@@ -1852,7 +1875,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 单选按钮 - 改变时保存
     elements.intensityRadios.forEach(radio => {
-      radio.addEventListener('change', () => debouncedSave(200));
+      radio.addEventListener('change', () => {
+        updateRecommendedMinLengthHint(radio.value);
+        debouncedSave(200);
+      });
+    });
+
+    // 最小文本长度配置
+    elements.minLengthCJK?.addEventListener('change', () => debouncedSave(200));
+    elements.minLengthEN?.addEventListener('change', () => debouncedSave(200));
+    elements.applyRecommendedMinLength?.addEventListener('click', () => {
+      const intensity = document.querySelector('input[name="intensity"]:checked')?.value || 'medium';
+      const multipliers = { low: 0.7, medium: 1, high: 1.5 };
+      const m = multipliers[intensity] || 1;
+      if (elements.minLengthCJK) elements.minLengthCJK.value = Math.round(20 * m);
+      if (elements.minLengthEN) elements.minLengthEN.value = Math.round(50 * m);
+      debouncedSave(200);
     });
 
     elements.processModeRadios.forEach(radio => {
@@ -1860,6 +1898,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     elements.translationStyleRadios.forEach(radio => {
+      radio.addEventListener('change', () => debouncedSave(200));
+    });
+
+    elements.learnedWordDisplayRadios.forEach(radio => {
       radio.addEventListener('change', () => debouncedSave(200));
     });
 
@@ -1937,6 +1979,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateDifficultyLabel() {
     const level = CEFR_LEVELS[elements.difficultyLevel.value];
     elements.selectedDifficulty.textContent = level;
+  }
+
+  // 更新推荐最小长度提示
+  // 翻译词少时短文本也够用，翻译词多时需要更长文本
+  function updateRecommendedMinLengthHint(intensity) {
+    const multipliers = { low: 0.7, medium: 1, high: 1.5 };
+    const m = multipliers[intensity] || 1;
+    const cjk = Math.round(20 * m);
+    const en = Math.round(50 * m);
+    if (elements.recommendedMinLengthHint) {
+      elements.recommendedMinLengthHint.textContent = `推荐值：中日韩 ${cjk}，英文 ${en}`;
+    }
   }
 
   // 切换到指定页面
@@ -2136,12 +2190,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           targetLanguage: syncData.targetLanguage,
           difficultyLevel: syncData.difficultyLevel,
           intensity: syncData.intensity,
+          minLengthConfig: syncData.minLengthConfig,
           autoProcess: syncData.autoProcess,
           showPhonetic: syncData.showPhonetic,
           dictionaryType: syncData.dictionaryType,
           showAddMemorize: syncData.showAddMemorize,
           cacheMaxSize: syncData.cacheMaxSize,
           translationStyle: syncData.translationStyle,
+          learnedWordDisplay: syncData.learnedWordDisplay,
           theme: syncData.theme,
           ttsVoice: syncData.ttsVoice,
           ttsRate: syncData.ttsRate,
@@ -2433,6 +2489,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         targetLanguage: syncData.targetLanguage,
         difficultyLevel: syncData.difficultyLevel,
         intensity: syncData.intensity,
+        minLengthConfig: syncData.minLengthConfig,
         autoProcess: syncData.autoProcess,
         showPhonetic: syncData.showPhonetic,
         dictionaryType: syncData.dictionaryType,
@@ -2448,6 +2505,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         processMode: syncData.processMode,
         cacheMaxSize: syncData.cacheMaxSize,
         translationStyle: syncData.translationStyle,
+        learnedWordDisplay: syncData.learnedWordDisplay,
         theme: syncData.theme,
         colorTheme: syncData.colorTheme,
         customTheme: syncData.customTheme,

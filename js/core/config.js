@@ -13,6 +13,27 @@ export const INTENSITY_CONFIG = {
   high: { maxPerParagraph: 14, label: '较多' }
 };
 
+// 默认最小文本长度配置
+export const DEFAULT_MIN_LENGTH_CONFIG = {
+  zh: 20,
+  ja: 20,
+  ko: 20,
+  en: 50
+};
+
+// 根据强度获取推荐的最小长度配置
+// 翻译词少时短文本也够用，翻译词多时需要更长文本
+export function getRecommendedMinLength(intensity) {
+  const multipliers = { low: 0.7, medium: 1, high: 1.5 };
+  const m = multipliers[intensity] || 1;
+  return {
+    zh: Math.round(DEFAULT_MIN_LENGTH_CONFIG.zh * m),
+    ja: Math.round(DEFAULT_MIN_LENGTH_CONFIG.ja * m),
+    ko: Math.round(DEFAULT_MIN_LENGTH_CONFIG.ko * m),
+    en: Math.round(DEFAULT_MIN_LENGTH_CONFIG.en * m)
+  };
+}
+
 // 支持的语言
 export const SUPPORTED_LANGUAGES = {
   native: [
@@ -89,6 +110,7 @@ export const DEFAULT_CONFIG = {
   autoProcess: false,
   showPhonetic: true,
   dictionaryType: 'zh-en', // 'zh-en' 中英, 'en-en' 英英
+  learnedWordDisplay: 'hide', // 'hide' 不处理, 'original' 显示原文标记, 'translation' 显示译文
   enabled: true,
 
   // 提示词设置
