@@ -937,22 +937,67 @@
           </div>
         </div>
 
-        <!-- 云同步 -->
+        <!-- 数据同步 -->
         <div class="form-group">
-          <label>云同步</label>
-          <p class="help-text">将数据同步到云端，实现多设备共享</p>
+          <label>数据同步</label>
+          <p class="help-text">备份或迁移你的学习数据和配置</p>
 
           <div class="cloud-sync-container">
             <!-- 同步方式选择 -->
             <div class="cloud-sync-row">
               <label for="cloudSyncProvider">同步方式</label>
               <select id="cloudSyncProvider" class="form-select">
+                <option value="offline" selected>离线文件同步</option>
                 <option value="jianguoyun">坚果云</option>
               </select>
             </div>
 
+            <!-- 全局：选择同步内容 -->
+            <div class="export-options sync-content-options">
+              <div class="export-group">
+                <h4>选择同步内容</h4>
+                <div class="checkbox-group">
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="exportSettings" checked>
+                    <span>配置设置（API、选项、站点规则）</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="exportWords" checked>
+                    <span>词汇数据（已学会、需记忆）</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="exportStats" checked>
+                    <span>统计数据</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="exportCache">
+                    <span>缓存词汇（可能较大）</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 离线文件同步配置 -->
+            <div class="cloud-sync-config" id="offlineConfig">
+              <div class="export-actions">
+                <button class="btn btn-primary" id="exportDataBtn">
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                  </svg>
+                  导出数据
+                </button>
+                <button class="btn btn-secondary" id="importDataBtn">
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" transform="rotate(180 12 12)"/>
+                  </svg>
+                  导入数据
+                </button>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;">
+              </div>
+            </div>
+
             <!-- 坚果云配置 -->
-            <div class="cloud-sync-config" id="jianguoyunConfig">
+            <div class="cloud-sync-config" id="jianguoyunConfig" style="display: none;">
               <div class="cloud-sync-row">
                 <label for="cloudSyncServer">服务器地址</label>
                 <input type="url" id="cloudSyncServer" class="form-input" value="https://dav.jianguoyun.com/dav/" placeholder="https://dav.jianguoyun.com/dav/">
@@ -984,80 +1029,35 @@
                 </button>
                 <span class="cloud-sync-test-result" id="cloudSyncTestResult"></span>
               </div>
-            </div>
 
-            <!-- 同步操作 -->
-            <div class="cloud-sync-actions">
-              <button type="button" class="btn btn-primary" id="cloudSyncUploadBtn">
-                <svg viewBox="0 0 24 24" width="16" height="16">
-                  <path fill="currentColor" d="M14,13V17H10V13H7L12,8L17,13M19.35,10.03C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.03C2.34,8.36 0,10.9 0,14A6,6 0 0,0 6,20H19A5,5 0 0,0 24,15C24,12.36 21.95,10.22 19.35,10.03Z"/>
-                </svg>
-                上传到云端
-              </button>
-              <button type="button" class="btn btn-secondary" id="cloudSyncRefreshBtn">
-                <svg viewBox="0 0 24 24" width="16" height="16">
-                  <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
-                </svg>
-                刷新列表
-              </button>
-            </div>
-
-            <!-- 云端备份列表 -->
-            <div class="cloud-sync-list-container">
-              <label>云端备份</label>
-              <div class="cloud-sync-list" id="cloudSyncList">
-                <div class="cloud-sync-empty">请先配置并测试连接</div>
+              <!-- 同步操作 -->
+              <div class="cloud-sync-actions">
+                <button type="button" class="btn btn-primary" id="cloudSyncUploadBtn">
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M14,13V17H10V13H7L12,8L17,13M19.35,10.03C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.03C2.34,8.36 0,10.9 0,14A6,6 0 0,0 6,20H19A5,5 0 0,0 24,15C24,12.36 21.95,10.22 19.35,10.03Z"/>
+                  </svg>
+                  上传到云端
+                </button>
+                <button type="button" class="btn btn-secondary" id="cloudSyncRefreshBtn">
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+                  </svg>
+                  刷新列表
+                </button>
               </div>
-            </div>
 
-            <!-- 同步状态 -->
-            <div class="cloud-sync-status" id="cloudSyncStatus">
-              <!-- 状态信息将通过 JS 动态填充 -->
-            </div>
-          </div>
-        </div>
-
-        <!-- 导入导出 -->
-        <div class="form-group">
-          <label>数据导入导出</label>
-          <p class="help-text">备份或迁移你的学习数据和配置</p>
-          
-          <div class="export-options">
-            <div class="export-group">
-              <h4>选择导出内容</h4>
-              <div class="checkbox-group">
-                <label class="checkbox-item">
-                  <input type="checkbox" id="exportSettings" checked>
-                  <span>配置设置（API、选项、站点规则）</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" id="exportWords" checked>
-                  <span>词汇数据（已学会、需记忆）</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" id="exportStats" checked>
-                  <span>统计数据</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" id="exportCache">
-                  <span>缓存词汇（可能较大）</span>
-                </label>
+              <!-- 云端备份列表 -->
+              <div class="cloud-sync-list-container">
+                <label>云端备份</label>
+                <div class="cloud-sync-list" id="cloudSyncList">
+                  <div class="cloud-sync-empty">请先配置并测试连接</div>
+                </div>
               </div>
-            </div>
-            <div class="export-actions">
-              <button class="btn btn-primary" id="exportDataBtn">
-                <svg viewBox="0 0 24 24" width="16" height="16">
-                  <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
-                </svg>
-                导出数据
-              </button>
-              <button class="btn btn-secondary" id="importDataBtn">
-                <svg viewBox="0 0 24 24" width="16" height="16">
-                  <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" transform="rotate(180 12 12)"/>
-                </svg>
-                导入数据
-              </button>
-              <input type="file" id="importFileInput" accept=".json" style="display: none;">
+
+              <!-- 同步状态 -->
+              <div class="cloud-sync-status" id="cloudSyncStatus">
+                <!-- 状态信息将通过 JS 动态填充 -->
+              </div>
             </div>
           </div>
         </div>

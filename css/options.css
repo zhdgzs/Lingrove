@@ -3341,6 +3341,13 @@ input:checked + .toggle-slider:before {
   border-top: 1px solid var(--border);
 }
 
+/* 全局同步内容选择 */
+.sync-content-options {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
 .cloud-sync-actions {
   display: flex;
   gap: 12px;
