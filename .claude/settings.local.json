@@ -9,7 +9,8 @@
       "Bash(dir:*)",
       "Bash(nul:*)",
       "mcp__sequential-thinking__sequentialthinking",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(npx openspec archive:*)"
     ]
   }
 }
