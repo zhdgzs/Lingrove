@@ -2236,6 +2236,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           localUpdates.lingrove_word_cache = deduplicatedCache;
         }
 
+        // 云同步配置
+        if (data.cloudSync) {
+          syncUpdates.cloudSync = data.cloudSync;
+        }
+
         // 保存数据
         if (Object.keys(syncUpdates).length > 0) {
           await new Promise(resolve => chrome.storage.sync.set(syncUpdates, resolve));
@@ -2434,6 +2439,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         blacklist: syncData.blacklist,
         whitelist: syncData.whitelist,
         siteMode: syncData.siteMode,
+        excludedSites: syncData.excludedSites,
+        allowedSites: syncData.allowedSites,
         customPromptRules: syncData.customPromptRules,
         apiNodes: syncData.apiNodes,
         rateLimitEnabled: syncData.rateLimitEnabled,
@@ -2444,12 +2451,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         theme: syncData.theme,
         colorTheme: syncData.colorTheme,
         customTheme: syncData.customTheme,
+        customizedThemes: syncData.customizedThemes,
         ttsVoice: syncData.ttsVoice,
         ttsRate: syncData.ttsRate,
         showAddMemorize: syncData.showAddMemorize,
         customSourceRules: syncData.customSourceRules,
         customTargetRules: syncData.customTargetRules
       };
+
+      // 云同步配置
+      if (syncData.cloudSync) {
+        exportData.cloudSync = syncData.cloudSync;
+      }
 
       // 词汇数据
       exportData.learnedWords = localData.learnedWords || [];

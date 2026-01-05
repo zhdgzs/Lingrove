@@ -937,44 +937,42 @@
           </div>
         </div>
 
-        <!-- 数据同步 -->
-        <div class="form-group">
-          <label>数据同步</label>
-          <p class="help-text">备份或迁移你的学习数据和配置</p>
+        <!-- 数据同步标题 -->
+        <h3 class="section-title">数据同步</h3>
+        <p class="help-text">备份或迁移你的学习数据和配置</p>
 
+        <!-- 选择同步内容 -->
+        <div class="form-group">
+          <label>选择同步内容</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" id="exportSettings" checked>
+              <span>配置设置（API、选项、站点规则）</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="exportWords" checked>
+              <span>词汇数据（已学会、需记忆）</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="exportStats" checked>
+              <span>统计数据</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="exportCache" checked>
+              <span>缓存词汇（可能较大）</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 同步方式 -->
+        <div class="form-group">
+          <label for="cloudSyncProvider">同步方式</label>
           <div class="cloud-sync-container">
-            <!-- 同步方式选择 -->
             <div class="cloud-sync-row">
-              <label for="cloudSyncProvider">同步方式</label>
               <select id="cloudSyncProvider" class="form-select">
                 <option value="offline" selected>离线文件同步</option>
                 <option value="jianguoyun">坚果云</option>
               </select>
-            </div>
-
-            <!-- 全局：选择同步内容 -->
-            <div class="export-options sync-content-options">
-              <div class="export-group">
-                <h4>选择同步内容</h4>
-                <div class="checkbox-group">
-                  <label class="checkbox-item">
-                    <input type="checkbox" id="exportSettings" checked>
-                    <span>配置设置（API、选项、站点规则）</span>
-                  </label>
-                  <label class="checkbox-item">
-                    <input type="checkbox" id="exportWords" checked>
-                    <span>词汇数据（已学会、需记忆）</span>
-                  </label>
-                  <label class="checkbox-item">
-                    <input type="checkbox" id="exportStats" checked>
-                    <span>统计数据</span>
-                  </label>
-                  <label class="checkbox-item">
-                    <input type="checkbox" id="exportCache">
-                    <span>缓存词汇（可能较大）</span>
-                  </label>
-                </div>
-              </div>
             </div>
 
             <!-- 离线文件同步配置 -->
