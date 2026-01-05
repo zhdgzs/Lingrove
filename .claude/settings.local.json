@@ -5,7 +5,11 @@
       "Bash(npx openspec archive improve-semantic-segmentation:*)",
       "Bash(npx openspec validate:*)",
       "Bash(mkdir:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(dir:*)",
+      "Bash(nul:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(node -c:*)"
     ]
   }
 }

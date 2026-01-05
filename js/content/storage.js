@@ -34,6 +34,8 @@
             targetLanguage: syncResult.targetLanguage || 'en',
             difficultyLevel: syncResult.difficultyLevel || 'B1',
             intensity: syncResult.intensity || 'medium',
+            minLengthConfig: syncResult.minLengthConfig || { zh: 20, ja: 20, ko: 20, en: 50 },
+            learnedWordDisplay: syncResult.learnedWordDisplay || 'hide',
             processMode: syncResult.processMode || 'both',
             autoProcess: syncResult.autoProcess ?? false,
             showPhonetic: syncResult.showPhonetic ?? true,

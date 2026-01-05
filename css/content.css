@@ -130,6 +130,16 @@
   margin-left: 2px !important;
 }
 
+/* 已学会词汇样式 */
+.lingrove-translated.lingrove-learned {
+  border-bottom-style: dashed !important;
+  opacity: 0.75 !important;
+}
+
+.lingrove-learned-word {
+  color: inherit !important;
+}
+
 .lingrove-tooltip {
   position: absolute !important;
   z-index: 2147483647 !important;
