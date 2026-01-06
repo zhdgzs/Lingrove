@@ -219,6 +219,34 @@
   };
 
   /**
+   * 更新已学会词汇的显示
+   * @param {string} original - 原词
+   * @param {string} translation - 翻译
+   * @param {string} difficulty - 难度
+   */
+  L.updateLearnedWordDisplay = function(original, translation, difficulty) {
+    const learnedDisplay = L.config.learnedWordDisplay || 'hide';
+
+    if (learnedDisplay === 'hide') {
+      L.restoreAllSameWord(original);
+      return;
+    }
+
+    document.querySelectorAll('.lingrove-translated').forEach(el => {
+      if (el.getAttribute('data-original')?.toLowerCase() === original.toLowerCase()) {
+        el.classList.add('lingrove-learned');
+        el.setAttribute('data-learned', 'true');
+
+        if (learnedDisplay === 'original') {
+          el.innerHTML = `<span class="lingrove-word lingrove-learned-word">${original}</span>`;
+        } else {
+          el.innerHTML = `<span class="lingrove-word lingrove-learned-word">${translation}</span>`;
+        }
+      }
+    });
+  };
+
+  /**
    * 恢复所有翻译
    */
   L.restoreAll = function() {

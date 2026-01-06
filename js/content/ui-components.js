@@ -481,6 +481,41 @@
     clearTimeout(L.tooltipHideTimeout);
   };
 
+  // 选择弹窗状态
+  L.selectionPopupState = 'idle'; // idle, loading, result, error
+  L.selectionPopupText = '';
+  L.selectionPopupResult = null;
+  L.wordActionPopup = null;
+
+  // 英文虚词列表
+  const STOP_WORDS = new Set([
+    'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+    'should', 'may', 'might', 'must', 'shall', 'can', 'to', 'of', 'in',
+    'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
+    'and', 'but', 'or', 'nor', 'so', 'yet', 'i', 'me', 'my', 'we', 'our',
+    'you', 'your', 'he', 'him', 'his', 'she', 'her', 'it', 'its', 'they',
+    'them', 'their', 'this', 'that', 'these', 'those', 'am', 'not', 'no'
+  ]);
+
+  /**
+   * 判断词汇是否值得添加到记忆
+   */
+  L.isMemorizableWord = function(word) {
+    const clean = word.toLowerCase().replace(/[^a-z]/g, '');
+    return clean.length >= 2 && !STOP_WORDS.has(clean);
+  };
+
+  /**
+   * 分词处理
+   */
+  L.tokenizeText = function(text, lang) {
+    if (lang === 'zh' || lang === 'ja') {
+      return text.split('');
+    }
+    return text.match(/[\w'-]+|[^\w\s]/g) || [];
+  };
+
   /**
    * 创建选择弹窗
    */
@@ -490,19 +525,255 @@
     L.selectionPopup = document.createElement('div');
     L.selectionPopup.className = 'lingrove-selection-popup';
     L.selectionPopup.setAttribute('data-theme', L.config?.theme || 'dark');
+    L.selectionPopup.setAttribute('data-state', 'idle');
+    L.selectionPopup.setAttribute('data-length', 'short');
     L.selectionPopup.style.display = 'none';
-    L.selectionPopup.innerHTML = '<button class="lingrove-add-memorize">添加到需记忆</button>';
     document.body.appendChild(L.selectionPopup);
 
-    L.selectionPopup.querySelector('button').addEventListener('click', async () => {
-      const selection = window.getSelection();
-      const text = selection.toString().trim();
-      if (text && text.length < 50) {
-        await L.addToMemorizeList(text);
-        L.showToast(`"${text}" 已添加到需记忆列表`);
+    // 创建词汇操作弹窗
+    L.wordActionPopup = document.createElement('div');
+    L.wordActionPopup.className = 'lingrove-word-action-popup';
+    L.wordActionPopup.setAttribute('data-theme', L.config?.theme || 'dark');
+    L.wordActionPopup.style.display = 'none';
+    L.wordActionPopup.innerHTML = `
+      <button class="lingrove-word-action-btn" data-action="memorize">
+        <svg viewBox="0 0 24 24" width="14" height="14">
+          <path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>
+        </svg>
+        添加到记忆
+      </button>
+    `;
+    document.body.appendChild(L.wordActionPopup);
+  };
+
+  /**
+   * 更新选择弹窗内容
+   */
+  L.updateSelectionPopup = function(text, lengthType) {
+    if (!L.selectionPopup) return;
+
+    L.selectionPopupText = text;
+    L.selectionPopupState = 'idle';
+    L.selectionPopupResult = null;
+    L.selectionPopup.setAttribute('data-state', 'idle');
+    L.selectionPopup.setAttribute('data-length', lengthType);
+
+    const isInMemorizeList = (L.config.memorizeList || []).some(w =>
+      w.word.toLowerCase() === text.toLowerCase()
+    );
+
+    // 工具栏按钮
+    let toolbarHtml = `
+      <div class="lingrove-selection-toolbar">
+        <button class="lingrove-sel-btn" data-action="translate" title="翻译">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path fill="currentColor" d="M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z"/>
+          </svg>
+          翻译
+        </button>`;
+
+    // 短文本才显示记忆按钮
+    if (lengthType === 'short') {
+      toolbarHtml += `
+        <button class="lingrove-sel-btn ${isInMemorizeList ? 'active' : ''}" data-action="memorize" title="${isInMemorizeList ? '已在记忆列表' : '添加到记忆'}">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            ${isInMemorizeList
+              ? '<path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>'
+              : '<path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>'
+            }
+          </svg>
+          记忆
+        </button>`;
+    }
+
+    toolbarHtml += `
+        <button class="lingrove-sel-btn" data-action="copy" title="复制">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+          </svg>
+          复制
+        </button>
+      </div>
+      <div class="lingrove-selection-result"></div>
+    `;
+
+    L.selectionPopup.innerHTML = toolbarHtml;
+  };
+
+  /**
+   * 显示翻译加载状态
+   */
+  L.showSelectionLoading = function() {
+    L.selectionPopupState = 'loading';
+    L.selectionPopup.setAttribute('data-state', 'loading');
+    const resultDiv = L.selectionPopup.querySelector('.lingrove-selection-result');
+    if (resultDiv) {
+      resultDiv.innerHTML = '<div class="lingrove-sel-loading">翻译中...</div>';
+    }
+  };
+
+  /**
+   * 显示翻译结果
+   */
+  L.showSelectionResult = function(result) {
+    L.selectionPopupState = 'result';
+    L.selectionPopupResult = result;
+    L.selectionPopup.setAttribute('data-state', 'result');
+
+    const resultDiv = L.selectionPopup.querySelector('.lingrove-selection-result');
+    if (!resultDiv) return;
+
+    const { translation, original, phonetic, isWord, dictData } = result;
+    const sourceLang = L.detectLanguage(original);
+
+    let html = '';
+
+    if (isWord) {
+      // 单词结果
+      html = `
+        <div class="lingrove-sel-header">
+          <span class="lingrove-sel-word">${translation}</span>
+        </div>
+        ${phonetic ? `
+        <div class="lingrove-sel-phonetic lingrove-sel-speak" data-text="${original}" title="朗读原文">
+          <svg viewBox="0 0 24 24" width="12" height="12">
+            <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+          </svg>
+          <span>${phonetic}</span>
+        </div>
+        ` : ''}
+        <div class="lingrove-sel-speak-group">
+          <div class="lingrove-sel-speak-btn lingrove-sel-speak" data-text="${original}" title="朗读原文">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+            </svg>
+            原文
+          </div>
+          <div class="lingrove-sel-speak-btn lingrove-sel-speak" data-text="${translation}" title="朗读译文">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+            </svg>
+            译文
+          </div>
+        </div>
+        <div class="lingrove-sel-original">原文: ${original}</div>
+        <div class="lingrove-sel-dict"></div>
+      `;
+    } else {
+      // 句子结果 - 原文词汇可点击
+      const tokens = L.tokenizeText(original, sourceLang);
+      const clickableHtml = tokens.map(token => {
+        if (L.isMemorizableWord(token)) {
+          return `<span class="lingrove-sel-clickable-word" data-word="${token}">${token}</span>`;
+        }
+        return `<span>${token}</span>`;
+      }).join(sourceLang === 'en' ? ' ' : '');
+
+      const translationLang = L.detectLanguage(translation);
+
+      html = `
+        <div class="lingrove-sel-translation">${translation}</div>
+        <div class="lingrove-sel-speak-group">
+          <div class="lingrove-sel-speak-btn lingrove-sel-speak" data-text="${original}" title="朗读原文">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+            </svg>
+            原文
+          </div>
+          <div class="lingrove-sel-speak-btn lingrove-sel-speak" data-text="${translation}" title="朗读译文">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+            </svg>
+            译文
+          </div>
+        </div>
+        <div class="lingrove-sel-original-sentence">原文: ${clickableHtml}</div>
+      `;
+    }
+
+    resultDiv.innerHTML = html;
+
+    // 加载词典数据（仅单词）
+    if (isWord && sourceLang === 'en') {
+      L.fetchDictionaryData(original).then(dictData => {
+        if (dictData && L.selectionPopupState === 'result') {
+          const dictContainer = resultDiv.querySelector('.lingrove-sel-dict');
+          if (dictContainer) {
+            let dictHtml = '';
+            for (const meaning of dictData.meanings) {
+              dictHtml += `<div class="lingrove-dict-entry">`;
+              if (meaning.partOfSpeech) {
+                dictHtml += `<span class="lingrove-dict-pos">${meaning.partOfSpeech}</span>`;
+              }
+              dictHtml += `<ul class="lingrove-dict-defs">`;
+              for (const def of meaning.definitions) {
+                dictHtml += `<li>${def}</li>`;
+              }
+              dictHtml += `</ul></div>`;
+            }
+            dictContainer.innerHTML = dictHtml;
+          }
+        }
+      });
+    }
+  };
+
+  /**
+   * 显示翻译错误
+   */
+  L.showSelectionError = function(message) {
+    L.selectionPopupState = 'error';
+    L.selectionPopup.setAttribute('data-state', 'error');
+    const resultDiv = L.selectionPopup.querySelector('.lingrove-selection-result');
+    if (resultDiv) {
+      resultDiv.innerHTML = `<div class="lingrove-sel-error">${message}</div>`;
+    }
+  };
+
+  /**
+   * 隐藏词汇操作弹窗
+   */
+  L.hideWordActionPopup = function() {
+    if (L.wordActionPopup) {
+      L.wordActionPopup.style.display = 'none';
+    }
+  };
+
+  /**
+   * 显示词汇操作弹窗
+   */
+  L.showWordActionPopup = function(word, x, y) {
+    if (!L.wordActionPopup) return;
+
+    const isInMemorizeList = (L.config.memorizeList || []).some(w =>
+      w.word.toLowerCase() === word.toLowerCase()
+    );
+
+    const btn = L.wordActionPopup.querySelector('.lingrove-word-action-btn');
+    if (btn) {
+      if (isInMemorizeList) {
+        btn.classList.add('active');
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="14" height="14">
+            <path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+          </svg>
+          已在记忆列表
+        `;
+      } else {
+        btn.classList.remove('active');
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="14" height="14">
+            <path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>
+          </svg>
+          添加到记忆
+        `;
       }
-      L.selectionPopup.style.display = 'none';
-    });
+    }
+
+    L.wordActionPopup.setAttribute('data-word', word);
+    L.wordActionPopup.style.left = x + 'px';
+    L.wordActionPopup.style.top = y + 'px';
+    L.wordActionPopup.style.display = 'block';
   };
 
 })(window.Lingrove);

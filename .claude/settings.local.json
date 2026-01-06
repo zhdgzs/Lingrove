@@ -10,7 +10,10 @@
       "Bash(nul:*)",
       "mcp__sequential-thinking__sequentialthinking",
       "Bash(node -c:*)",
-      "Bash(npx openspec archive:*)"
+      "Bash(npx openspec archive:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(git log:*)"
     ]
   }
 }

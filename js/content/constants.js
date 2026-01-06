@@ -23,7 +23,7 @@ window.Lingrove = window.Lingrove || {};
   L.SKIP_TAGS = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'CODE', 'PRE', 'KBD', 'TEXTAREA', 'INPUT', 'SELECT', 'BUTTON'];
 
   // 需要跳过的类名
-  L.SKIP_CLASSES = ['lingrove-translated', 'lingrove-tooltip', 'hljs', 'code', 'syntax'];
+  L.SKIP_CLASSES = ['lingrove-translated', 'lingrove-tooltip', 'lingrove-selection-popup', 'lingrove-word-action-popup', 'lingrove-sel-original', 'lingrove-toast', 'hljs', 'code', 'syntax'];
 
   // 缓存配置
   L.DEFAULT_CACHE_MAX_SIZE = 2000;
