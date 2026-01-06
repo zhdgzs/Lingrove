@@ -448,10 +448,302 @@
   position: absolute !important;
   z-index: 2147483647 !important;
   background: #1e293b !important;
-  border-radius: 8px !important;
-  padding: 4px !important;
+  border-radius: 10px !important;
+  padding: 6px !important;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
   border: 1px solid #334155 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  max-width: 350px !important;
+  min-width: 200px !important;
+}
+
+/* 选择弹窗工具栏 */
+.lingrove-selection-toolbar {
+  display: flex !important;
+  gap: 4px !important;
+}
+
+.lingrove-sel-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 6px 10px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+
+.lingrove-sel-btn:hover {
+  background: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.lingrove-sel-btn.active {
+  color: #ec4899 !important;
+}
+
+.lingrove-sel-btn.active:hover {
+  background: #ec4899 !important;
+  color: white !important;
+}
+
+.lingrove-sel-btn svg {
+  flex-shrink: 0 !important;
+}
+
+/* 翻译结果区域 */
+.lingrove-selection-result {
+  max-height: 0 !important;
+  overflow: hidden !important;
+  transition: max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease !important;
+}
+
+.lingrove-selection-popup[data-state="loading"] .lingrove-selection-result,
+.lingrove-selection-popup[data-state="result"] .lingrove-selection-result,
+.lingrove-selection-popup[data-state="error"] .lingrove-selection-result {
+  max-height: 300px !important;
+  padding-top: 8px !important;
+  margin-top: 6px !important;
+  border-top: 1px solid #334155 !important;
+  overflow-y: auto !important;
+}
+
+.lingrove-sel-loading {
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  text-align: center !important;
+  padding: 8px 0 !important;
+}
+
+.lingrove-sel-error {
+  color: #ef4444 !important;
+  font-size: 13px !important;
+  text-align: center !important;
+  padding: 8px 0 !important;
+}
+
+/* 单词翻译结果 */
+.lingrove-sel-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 6px !important;
+}
+
+.lingrove-sel-word {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #818cf8 !important;
+}
+
+.lingrove-sel-phonetic {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  font-style: italic !important;
+  padding: 4px 8px !important;
+  background: #334155 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  margin-bottom: 6px !important;
+}
+
+.lingrove-sel-phonetic:hover {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+.lingrove-sel-speak-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  background: #334155 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  margin-bottom: 6px !important;
+}
+
+.lingrove-sel-speak-btn:hover {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+/* 发音按钮组 */
+.lingrove-sel-speak-group {
+  display: flex !important;
+  gap: 6px !important;
+  margin-bottom: 6px !important;
+}
+
+.lingrove-sel-speak-group .lingrove-sel-speak-btn {
+  margin-bottom: 0 !important;
+}
+
+.lingrove-sel-original {
+  color: #64748b !important;
+  font-size: 12px !important;
+  margin-bottom: 6px !important;
+}
+
+/* 句子翻译结果 */
+.lingrove-sel-translation {
+  color: #f8fafc !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  margin-bottom: 8px !important;
+}
+
+.lingrove-sel-original-sentence {
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+
+.lingrove-sel-clickable-word {
+  color: #818cf8 !important;
+  cursor: pointer !important;
+  border-radius: 2px !important;
+  transition: all 0.15s ease !important;
+}
+
+.lingrove-sel-clickable-word:hover {
+  background: rgba(129, 140, 248, 0.2) !important;
+}
+
+/* 词典样式复用 */
+.lingrove-selection-result .lingrove-dict-entry {
+  margin-bottom: 6px !important;
+}
+
+.lingrove-selection-result .lingrove-dict-pos {
+  display: inline-block !important;
+  background: #475569 !important;
+  color: #e2e8f0 !important;
+  padding: 1px 6px !important;
+  border-radius: 3px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  margin-bottom: 4px !important;
+}
+
+.lingrove-selection-result .lingrove-dict-defs {
+  margin: 4px 0 0 16px !important;
+  padding: 0 !important;
+  list-style: disc !important;
+}
+
+.lingrove-selection-result .lingrove-dict-defs li {
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  margin-bottom: 2px !important;
+  line-height: 1.4 !important;
+}
+
+/* 词汇操作弹窗 */
+.lingrove-word-action-popup {
+  position: absolute !important;
+  z-index: 2147483648 !important;
+  background: #1e293b !important;
+  border-radius: 6px !important;
+  padding: 4px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid #334155 !important;
+}
+
+.lingrove-word-action-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 10px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: #f8fafc !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+
+.lingrove-word-action-btn:hover {
+  background: #ec4899 !important;
+}
+
+/* 亮色主题 */
+.lingrove-selection-popup[data-theme="light"] {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-btn {
+  color: #64748b !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-btn:hover {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-selection-result {
+  border-top-color: #e2e8f0 !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-translation {
+  color: #1e293b !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-phonetic,
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-speak-btn {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-phonetic:hover,
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-speak-btn:hover {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-speak-group .lingrove-sel-speak-btn {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-dict-pos {
+  background: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-dict-defs li {
+  color: #64748b !important;
+}
+
+.lingrove-word-action-popup[data-theme="light"] {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.lingrove-word-action-popup[data-theme="light"] .lingrove-word-action-btn {
+  color: #1e293b !important;
+}
+
+.lingrove-word-action-popup[data-theme="light"] .lingrove-word-action-btn:hover {
+  background: #ec4899 !important;
+  color: white !important;
 }
 
 /* 打印时隐藏 */

@@ -122,7 +122,7 @@
 
     const filteredText = L.reconstructTextWithWords(text, uncached);
     const cacheSatisfied = immediateResults.length >= maxReplacements;
-    const textTooShort = filteredText.trim().length < 50;
+    const textTooShort = filteredText.trim().length < L.getMinTextLength(filteredText);
 
     if (textTooShort) {
       return { immediate: immediateResults, async: null };
@@ -630,6 +630,181 @@
     }
 
     return processed;
+  };
+
+})(window.Lingrove);
+
+/**
+ * Lingrove 选中翻译服务
+ * 处理选中文本的翻译功能
+ */
+(function(L) {
+  'use strict';
+
+  // 翻译缓存
+  L.selectionTranslateCache = new Map();
+
+  /**
+   * 使用有道翻译 API
+   * @param {string} text - 待翻译文本
+   * @returns {Promise<string|null>}
+   */
+  L.translateWithYoudao = async function(text) {
+    try {
+      const url = `https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${encodeURIComponent(text)}`;
+
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ action: 'fetchProxy', url }, (res) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else if (!res?.success) {
+            reject(new Error(res?.error || 'Fetch failed'));
+          } else {
+            resolve(res.data);
+          }
+        });
+      });
+
+      const result = response.translateResult?.[0]?.[0]?.tgt;
+      return result || null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  /**
+   * 使用 AI 翻译
+   * @param {string} text - 待翻译文本
+   * @param {string} targetLang - 目标语言
+   * @returns {Promise<string|null>}
+   */
+  L.translateWithAI = async function(text, targetLang) {
+    if (!L.config.hasApiNodes && !L.config.apiEndpoint) {
+      throw new Error('API 未配置');
+    }
+
+    const langNames = {
+      'zh-CN': '简体中文',
+      'zh-TW': '繁体中文',
+      'en': '英文',
+      'ja': '日文',
+      'ko': '韩文',
+      'fr': '法文',
+      'de': '德文',
+      'es': '西班牙文'
+    };
+
+    const targetLangName = langNames[targetLang] || targetLang;
+
+    const prompt = `请将以下文本翻译成${targetLangName}。要求：
+1. 保持原文的语气和风格
+2. 翻译要自然流畅
+3. 只返回翻译结果，不要任何解释或额外内容
+
+原文：${text}`;
+
+    try {
+      const apiResponse = await L.sendApiRequest({
+        model: L.config.modelName,
+        messages: [
+          { role: 'system', content: '你是一个专业翻译助手。只返回翻译结果，不要任何解释。' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 1000
+      });
+
+      const content = apiResponse.choices?.[0]?.message?.content?.trim();
+      return content || null;
+    } catch (e) {
+      console.error('[Lingrove] AI translate error:', e);
+      throw e;
+    }
+  };
+
+  /**
+   * 判断是否使用有道翻译
+   * @param {string} text - 文本
+   * @param {string} sourceLang - 源语言
+   * @param {string} targetLang - 目标语言
+   * @returns {boolean}
+   */
+  L.shouldUseYoudao = function(text, sourceLang, targetLang) {
+    // 计算词数
+    const wordCount = sourceLang === 'zh' || sourceLang === 'ja'
+      ? text.length
+      : text.split(/\s+/).filter(w => w.length > 0).length;
+
+    // 短文本（≤10词）
+    if (wordCount > 10) return false;
+
+    // 中英互译
+    const isChinese = sourceLang === 'zh';
+    const isEnglish = sourceLang === 'en';
+    const targetIsChinese = targetLang.startsWith('zh');
+    const targetIsEnglish = targetLang === 'en';
+
+    return (isChinese && targetIsEnglish) || (isEnglish && targetIsChinese);
+  };
+
+  /**
+   * 混合翻译策略
+   * @param {string} text - 待翻译文本
+   * @returns {Promise<{translation: string, original: string, phonetic: string, isWord: boolean}>}
+   */
+  L.translateSelection = async function(text) {
+    // 检查缓存
+    const cacheKey = text.toLowerCase();
+    if (L.selectionTranslateCache.has(cacheKey)) {
+      return L.selectionTranslateCache.get(cacheKey);
+    }
+
+    const sourceLang = L.detectLanguage(text);
+    const isNative = L.isNativeLanguage(sourceLang, L.config.nativeLanguage);
+    const targetLang = isNative ? L.config.targetLanguage : L.config.nativeLanguage;
+
+    // 判断是否为单词
+    const wordCount = sourceLang === 'zh' || sourceLang === 'ja'
+      ? text.length
+      : text.split(/\s+/).filter(w => w.length > 0).length;
+    const isWord = wordCount <= 3;
+
+    let translation = null;
+    let phonetic = '';
+
+    // 尝试有道翻译
+    if (L.shouldUseYoudao(text, sourceLang, targetLang)) {
+      translation = await L.translateWithYoudao(text);
+    }
+
+    // 有道失败或不适用，使用 AI
+    if (!translation) {
+      translation = await L.translateWithAI(text, targetLang);
+    }
+
+    if (!translation) {
+      throw new Error('翻译失败');
+    }
+
+    // 如果是英文单词，尝试获取音标
+    if (isWord && sourceLang === 'en') {
+      const dictData = await L.fetchDictionaryData(text);
+      if (dictData?.phonetic) {
+        phonetic = dictData.phonetic;
+      }
+    }
+
+    const result = {
+      translation,
+      original: text,
+      phonetic,
+      isWord
+    };
+
+    // 缓存结果
+    L.selectionTranslateCache.set(cacheKey, result);
+
+    return result;
   };
 
 })(window.Lingrove);

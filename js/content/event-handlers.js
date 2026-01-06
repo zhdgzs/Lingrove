@@ -108,7 +108,7 @@
         const difficulty = learnedBtn.getAttribute('data-difficulty') || 'B1';
 
         L.addToWhitelist(original, translation, difficulty);
-        L.restoreAllSameWord(original);
+        L.updateLearnedWordDisplay(original, translation, difficulty);
         L.hideTooltip();
         L.showToast(`"${original}" 已标记为已学会`);
         return;
@@ -127,7 +127,12 @@
 
     // 选择文本显示添加按钮
     document.addEventListener('mouseup', (e) => {
+      // 点击弹窗内部不处理
       if (e.target.closest('.lingrove-selection-popup')) return;
+      if (e.target.closest('.lingrove-word-action-popup')) return;
+
+      // 隐藏词汇操作弹窗
+      L.hideWordActionPopup();
 
       if (!L.config?.showAddMemorize) {
         if (L.selectionPopup) L.selectionPopup.style.display = 'none';
@@ -138,17 +143,151 @@
         const selection = window.getSelection();
         const text = selection.toString().trim();
 
-        if (text && text.length > 1 && text.length < 50 && !e.target.closest('.lingrove-translated')) {
+        // 判断文本长度类型
+        const len = text.length;
+        let lengthType = null;
+
+        if (len >= 1 && len <= 50) {
+          lengthType = 'short';
+        } else if (len > 50 && len <= 300) {
+          lengthType = 'paragraph';
+        }
+        // >300 不响应
+
+        // 检查选中的文本是否在弹窗内
+        const isInPopup = selection.anchorNode && (
+          selection.anchorNode.parentElement?.closest('.lingrove-selection-popup') ||
+          selection.anchorNode.parentElement?.closest('.lingrove-tooltip') ||
+          selection.anchorNode.parentElement?.closest('.lingrove-word-action-popup')
+        );
+
+        if (lengthType && !e.target.closest('.lingrove-translated') && !isInPopup) {
           const range = selection.getRangeAt(0);
           const rect = range.getBoundingClientRect();
 
+          L.updateSelectionPopup(text, lengthType);
           L.selectionPopup.style.left = rect.left + window.scrollX + 'px';
           L.selectionPopup.style.top = rect.bottom + window.scrollY + 5 + 'px';
           L.selectionPopup.style.display = 'block';
         } else {
-          L.selectionPopup.style.display = 'none';
+          if (L.selectionPopup) L.selectionPopup.style.display = 'none';
         }
       }, 10);
+    });
+
+    // 选择弹窗按钮点击事件
+    document.addEventListener('click', (e) => {
+      // 选择弹窗内的按钮
+      const selBtn = e.target.closest('.lingrove-sel-btn');
+      if (selBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const action = selBtn.getAttribute('data-action');
+
+        if (action === 'translate') {
+          // 翻译
+          L.showSelectionLoading();
+          L.translateSelection(L.selectionPopupText)
+            .then(result => {
+              L.showSelectionResult(result);
+            })
+            .catch(err => {
+              console.error('[Lingrove] Translation error:', err);
+              L.showSelectionError(err.message || '翻译失败');
+            });
+        } else if (action === 'memorize') {
+          // 记忆
+          const text = L.selectionPopupText;
+          const isActive = selBtn.classList.contains('active');
+
+          if (!isActive) {
+            L.addToMemorizeList(text);
+            selBtn.classList.add('active');
+            selBtn.title = '已在记忆列表';
+            L.showToast(`"${text}" 已添加到需记忆列表`);
+          } else {
+            L.removeFromMemorizeList(text);
+            selBtn.classList.remove('active');
+            selBtn.title = '添加到记忆';
+          }
+        } else if (action === 'copy') {
+          // 复制
+          navigator.clipboard.writeText(L.selectionPopupText).then(() => {
+            L.showToast('已复制到剪贴板');
+          }).catch(() => {
+            L.showToast('复制失败');
+          });
+        }
+        return;
+      }
+
+      // 翻译结果区域的发音按钮
+      const selSpeak = e.target.closest('.lingrove-sel-speak');
+      if (selSpeak) {
+        e.preventDefault();
+        e.stopPropagation();
+        const text = selSpeak.getAttribute('data-text');
+        if (text) {
+          const lang = L.detectLanguage(text);
+          const ttsLang = lang === 'zh' ? 'zh-CN' :
+                          lang === 'ja' ? 'ja-JP' :
+                          lang === 'ko' ? 'ko-KR' : 'en-US';
+          chrome.runtime.sendMessage({ action: 'speak', text, lang: ttsLang });
+        }
+        return;
+      }
+
+      // 句子中可点击的词汇
+      const clickableWord = e.target.closest('.lingrove-sel-clickable-word');
+      if (clickableWord) {
+        e.preventDefault();
+        e.stopPropagation();
+        const word = clickableWord.getAttribute('data-word');
+        const rect = clickableWord.getBoundingClientRect();
+        L.showWordActionPopup(word, rect.left + window.scrollX, rect.bottom + window.scrollY + 2);
+        return;
+      }
+
+      // 词汇操作弹窗的按钮
+      const wordActionBtn = e.target.closest('.lingrove-word-action-btn');
+      if (wordActionBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const action = wordActionBtn.getAttribute('data-action');
+        const word = L.wordActionPopup?.getAttribute('data-word');
+
+        if (action === 'memorize' && word) {
+          const isActive = wordActionBtn.classList.contains('active');
+
+          if (!isActive) {
+            L.addToMemorizeList(word);
+            wordActionBtn.classList.add('active');
+            wordActionBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" width="14" height="14">
+                <path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+              </svg>
+              已在记忆列表
+            `;
+            L.showToast(`"${word}" 已添加到需记忆列表`);
+          } else {
+            L.removeFromMemorizeList(word);
+            wordActionBtn.classList.remove('active');
+            wordActionBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" width="14" height="14">
+                <path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>
+              </svg>
+              添加到记忆
+            `;
+            L.showToast(`"${word}" 已从记忆列表移除`);
+          }
+        }
+        return;
+      }
+
+      // 点击其他地方隐藏词汇操作弹窗
+      if (!e.target.closest('.lingrove-word-action-popup')) {
+        L.hideWordActionPopup();
+      }
     });
 
     // 滚动处理
