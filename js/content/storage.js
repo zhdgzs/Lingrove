@@ -33,7 +33,7 @@
             nativeLanguage: syncResult.nativeLanguage || 'zh-CN',
             targetLanguage: syncResult.targetLanguage || 'en',
             difficultyLevel: syncResult.difficultyLevel || 'B1',
-            intensity: syncResult.intensity || 'medium',
+            translationDensity: syncResult.translationDensity || 30,
             minLengthConfig: syncResult.minLengthConfig || { zh: 20, ja: 20, ko: 20, en: 50 },
             learnedWordDisplay: syncResult.learnedWordDisplay || 'hide',
             processMode: syncResult.processMode || 'both',

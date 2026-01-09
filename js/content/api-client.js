@@ -34,7 +34,6 @@
 
     const sourceLang = isNative ? L.config.nativeLanguage : detectedLang;
     const targetLang = isNative ? L.config.targetLanguage : L.config.nativeLanguage;
-    const maxReplacements = L.INTENSITY_CONFIG[L.config.intensity]?.maxPerParagraph || 8;
 
     // 检查缓存
     const words = (text.match(/\b[a-zA-Z]{5,}\b/g) || []).filter(w => !L.STOP_WORDS.has(w.toLowerCase()));
@@ -92,7 +91,7 @@
     // 获取已学会单词列表
     const learnedWordsSet = new Set((L.config.learnedWords || []).map(w => w.original.toLowerCase()));
 
-    // 过滤缓存结果
+    // 过滤缓存结果（不再限制数量，由 AI 根据百分比决定）
     const filteredCached = cached
       .filter(c =>
         L.isDifficultyCompatible(c.difficulty || 'B1', L.config.difficultyLevel) &&
@@ -110,42 +109,28 @@
         };
       });
 
-    const immediateResults = filteredCached.slice(0, maxReplacements);
+    // 返回所有缓存结果作为即时结果
+    const immediateResults = filteredCached;
 
     if (immediateResults.length > 0) {
       L.updateStats({ cacheHits: immediateResults.length, cacheMisses: 0 });
     }
 
-    if (uncached.length === 0) {
+    // 检查文本长度是否足够调用 API
+    const textTooShort = text.trim().length < L.getMinTextLength(text);
+
+    if (textTooShort || uncached.length === 0) {
       return { immediate: immediateResults, async: null };
     }
 
-    const filteredText = L.reconstructTextWithWords(text, uncached);
-    const cacheSatisfied = immediateResults.length >= maxReplacements;
-    const textTooShort = filteredText.trim().length < L.getMinTextLength(filteredText);
-
-    if (textTooShort) {
-      return { immediate: immediateResults, async: null };
-    }
-
-    const remainingSlots = maxReplacements - immediateResults.length;
-    const maxAsyncReplacements = cacheSatisfied ? 1 : remainingSlots;
-
-    if (maxAsyncReplacements <= 0) {
-      return { immediate: immediateResults, async: null };
-    }
-
-    const aiTargetCount = cacheSatisfied ? 1 : Math.max(maxAsyncReplacements, Math.ceil(maxReplacements * 1.5));
-
-    // 异步调用 API
+    // 异步调用 API（只传递百分比，让 AI 决定翻译词汇数量）
     const asyncPromise = (async () => {
       try {
         const prompt = L.buildTranslationPrompt({
           sourceLang,
           targetLang,
-          text: filteredText,
-          targetCount: aiTargetCount,
-          maxCount: maxReplacements * 2,
+          text: text,
+          translationDensity: L.config.translationDensity || 30,
           customPrompt: L.config.customPromptRules,
           config: L.config
         });
@@ -214,25 +199,13 @@
         const immediateWords = new Set(immediateResults.map(r => r.original.toLowerCase()));
         const currentLearnedWords = new Set((L.config.learnedWords || []).map(w => w.original.toLowerCase()));
 
-        const cachedResults = cached
-          .filter(c =>
-            !immediateWords.has(c.word.toLowerCase()) &&
-            !correctedResults.some(r => r.original.toLowerCase() === c.word.toLowerCase()) &&
-            !currentLearnedWords.has(c.word.toLowerCase()) &&
-            L.isDifficultyCompatible(c.difficulty || 'B1', L.config.difficultyLevel)
-          )
-          .map(c => ({
-            original: c.word,
-            translation: c.translation,
-            phonetic: c.phonetic,
-            difficulty: c.difficulty,
-            position: text.toLowerCase().indexOf(c.word.toLowerCase()),
-            fromCache: true
-          }));
+        // 过滤掉已学会和已在即时结果中的词汇
+        const filteredCorrectedResults = correctedResults.filter(r =>
+          !currentLearnedWords.has(r.original.toLowerCase()) &&
+          !immediateWords.has(r.original.toLowerCase())
+        );
 
-        const filteredCorrectedResults = correctedResults.filter(r => !currentLearnedWords.has(r.original.toLowerCase()));
-        const mergedResults = [...cachedResults, ...filteredCorrectedResults];
-        return mergedResults.slice(0, maxAsyncReplacements);
+        return filteredCorrectedResults;
 
       } catch (error) {
         console.error('[Lingrove] Async API Error:', error);

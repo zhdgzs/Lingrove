@@ -9,6 +9,7 @@
   // 内置主题配置（可被用户自定义覆盖）
   L.BUILT_IN_THEMES = {
     default: {
+      name: '默认紫',
       primary: '#6366f1',
       underline: 'rgba(99,102,241,0.6)',
       hoverBg: 'rgba(99,102,241,0.15)',
@@ -19,6 +20,7 @@
       originalColor: ''
     },
     ocean: {
+      name: '海洋蓝',
       primary: '#0ea5e9',
       underline: 'rgba(14,165,233,0.7)',
       hoverBg: 'rgba(14,165,233,0.12)',
@@ -29,6 +31,7 @@
       originalColor: '#64748b'
     },
     forest: {
+      name: '森林绿',
       primary: '#10b981',
       underline: 'rgba(16,185,129,0.6)',
       hoverBg: 'rgba(16,185,129,0.1)',
@@ -39,6 +42,7 @@
       originalColor: '#6b7280'
     },
     sunset: {
+      name: '日落橙',
       primary: '#f59e0b',
       underline: 'rgba(245,158,11,0.7)',
       hoverBg: 'rgba(245,158,11,0.12)',

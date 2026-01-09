@@ -25,62 +25,75 @@
   L.SOURCE_LANGUAGE_RULES = {
     'zh-CN': `
 ## 中文语义分词规则：
-- 按语义边界识别词汇，而非机械切分
+- 按语义边界识别词汇，过滤停用词（的、了、在、和、是、我、你、他、也等虚词），仅保留名词、动词、形容词、方式副词、成语等实义词。
 - 注意区分同形异义词组，如「对方面无表情」应识别为「对方」「面无表情」而非「方面」
 - 优先识别完整的成语、惯用语、固定搭配
 - 避免将动宾结构拆分，如「吃饭」「睡觉」应作为整体
-- 注意前后文语境，正确识别多音多义字的含义`,
+- 注意前后文语境，正确识别多音多义字的含义
+- 对结果去重后形成有效词汇列表`,
 
     'zh-TW': `
 ## 繁體中文語義分詞規則：
-- 按語義邊界識別詞彙，而非機械切分
-- 注意區分同形異義詞組
+- 按語義邊界識別詞彙，過濾停用詞（的、了、在、和、是、我、你、他、也等虛詞），僅保留名詞、動詞、形容詞、方式副詞、成語等實義詞。
+- 注意區分同形異義詞組，如「對方面無表情」應識別為「對方」「面無表情」而非「方面」
 - 優先識別完整的成語、慣用語、固定搭配
-- 避免將動賓結構拆分
-- 注意前後文語境，正確識別多音多義字的含義`,
+- 避免將動賓結構拆分，如「吃飯」「睡覺」應作為整體
+- 注意前後文語境，正確識別多音多義字的含義
+- 對結果去重後形成有效詞彙列表`,
 
     'en': `
 ## English Semantic Segmentation Rules:
+- Filter stopwords (the, a, an, is, are, was, were, be, been, being, have, has, had, do, does, did, will, would, could, should, may, might, must, shall, can, to, of, in, for, on, with, at, by, from, as, it, this, that, these, those, I, you, he, she, we, they, etc.), keep only content words: nouns, verbs, adjectives, adverbs.
 - Identify phrasal verbs as complete units (e.g., "give up", "look forward to", "put up with")
 - Recognize idiomatic expressions and collocations as single units
 - Keep compound nouns together (e.g., "ice cream", "high school")
-- Identify multi-word verbs and their particles correctly
-- Consider context to distinguish homographs and polysemous words`,
+- Consider context to distinguish homographs and polysemous words
+- Deduplicate results to form an effective vocabulary list`,
 
     'ja': `
 ## 日本語の語義分割ルール：
+- 助詞（は、が、を、に、で、と、も、の、へ、から、まで、より等）と助動詞（です、ます、た、ない、れる、られる等）を除外し、名詞、動詞、形容詞、副詞等の実義語のみを保持する。
 - 複合語は意味のまとまりとして認識する
-- 慣用句・熟語は分割しない
-- 動詞の活用形を正しく認識する
-- 文脈に応じて同音異義語を区別する`,
+- 慣用句・熟語・四字熟語は分割しない
+- 動詞の活用形を正しく認識し、原形で記録する
+- 文脈に応じて同音異義語を区別する
+- 結果を重複排除し、有効な語彙リストを形成する`,
 
     'ko': `
 ## 한국어 의미 분할 규칙:
+- 조사(은/는, 이/가, 을/를, 에, 에서, 로/으로, 와/과, 도, 만, 부터, 까지 등)와 어미를 제외하고, 명사, 동사, 형용사, 부사 등 실질적 의미를 가진 단어만 유지한다.
 - 복합어는 의미 단위로 인식
 - 관용구와 숙어는 분리하지 않음
-- 동사 활용형을 올바르게 인식
-- 문맥에 따라 동음이의어 구별`,
+- 동사 활용형을 올바르게 인식하고 원형으로 기록
+- 문맥에 따라 동음이의어 구별
+- 결과를 중복 제거하여 유효한 어휘 목록 형성`,
 
     'fr': `
 ## Règles de segmentation sémantique française:
+- Filtrer les mots vides (le, la, les, un, une, des, de, du, à, au, aux, en, et, ou, mais, donc, or, ni, car, que, qui, dont, où, ce, cette, ces, je, tu, il, elle, nous, vous, ils, elles, être, avoir, etc.), ne garder que les mots de contenu: noms, verbes, adjectifs, adverbes.
 - Identifier les expressions idiomatiques comme unités complètes
 - Reconnaître les verbes pronominaux et leurs particules
 - Garder les locutions verbales ensemble
-- Considérer le contexte pour les homonymes`,
+- Considérer le contexte pour les homonymes
+- Dédupliquer les résultats pour former une liste de vocabulaire efficace`,
 
     'de': `
 ## Deutsche semantische Segmentierungsregeln:
+- Stoppwörter filtern (der, die, das, ein, eine, und, oder, aber, denn, weil, dass, wenn, als, ob, zu, von, mit, bei, nach, für, über, unter, an, auf, in, aus, ich, du, er, sie, es, wir, ihr, sein, haben, werden, etc.), nur Inhaltswörter behalten: Substantive, Verben, Adjektive, Adverbien.
 - Zusammengesetzte Wörter als Einheiten erkennen
-- Trennbare Verben korrekt identifizieren
-- Redewendungen nicht trennen
-- Kontext für Homonyme berücksichtigen`,
+- Trennbare Verben korrekt identifizieren (z.B. "aufstehen", "anfangen")
+- Redewendungen und feste Wendungen nicht trennen
+- Kontext für Homonyme berücksichtigen
+- Ergebnisse deduplizieren, um eine effektive Vokabelliste zu bilden`,
 
     'es': `
 ## Reglas de segmentación semántica española:
+- Filtrar palabras vacías (el, la, los, las, un, una, unos, unas, de, del, a, al, en, con, por, para, y, o, pero, que, quien, cual, este, esta, estos, estas, yo, tú, él, ella, nosotros, vosotros, ellos, ellas, ser, estar, haber, tener, etc.), mantener solo palabras de contenido: sustantivos, verbos, adjetivos, adverbios.
 - Identificar expresiones idiomáticas como unidades completas
 - Reconocer verbos pronominales y sus partículas
 - Mantener las locuciones verbales juntas
-- Considerar el contexto para homónimos`
+- Considerar el contexto para homónimos
+- Deduplicar resultados para formar una lista de vocabulario efectiva`
   };
 
   // 目标语言规则（根据目标语言动态注入）
@@ -138,7 +151,7 @@
    * 构建完整的翻译提示词
    */
   L.buildTranslationPrompt = function(options) {
-    const { sourceLang, targetLang, text, targetCount, maxCount, customPrompt, config } = options;
+    const { sourceLang, targetLang, text, translationDensity, customPrompt, config } = options;
 
     // 获取源语言规则（优先使用自定义规则）
     const defaultSourceRule = L.SOURCE_LANGUAGE_RULES[sourceLang] ||
@@ -163,9 +176,10 @@ ${targetRule}
 ${userRule}
 
 ## 任务参数：
-1. 选择约 ${targetCount} 个词汇（实际返回数量可以根据文本内容灵活调整，但不要超过 ${maxCount} 个）
-2. 翻译方向：从 ${sourceLang} 翻译到 ${targetLang}
-3. 不要重复翻译已经是${targetLang}的内容
+1. 请根据有效词汇列表选择约 ${translationDensity}% 的词汇进行翻译
+2. 优先选择CEFR等级在${config?.difficultyLevel || 'B1'}及以上的词汇
+3. 翻译方向：从 ${sourceLang} 翻译到 ${targetLang}
+4. 不要重复翻译已经是${targetLang}的内容
 
 ## 输出格式：
 返回 JSON 数组，每个元素包含：

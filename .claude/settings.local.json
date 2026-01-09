@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(npx openspec list:*)",
-      "Bash(npx openspec archive improve-semantic-segmentation:*)",
+      "Bash(npx openspec archive *)",
       "Bash(npx openspec validate:*)",
       "Bash(mkdir:*)",
       "Bash(git mv:*)",
@@ -13,7 +13,9 @@
       "Bash(npx openspec archive:*)",
       "Bash(cat:*)",
       "Bash(find:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "SlashCommand(/openspec:proposal)",
+      "Bash(npx openspec show:*)"
     ]
   }
 }
