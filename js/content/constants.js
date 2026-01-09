@@ -29,6 +29,47 @@ window.Lingrove = window.Lingrove || {};
     'en': 50   // 英文：50 字符
   };
 
+  // 语言名称映射（用于提示词与界面展示）
+  L.LANGUAGE_NAMES = {
+    'zh-CN': '简体中文',
+    'zh-TW': '繁体中文',
+    'en': 'English',
+    'ja': '日本語',
+    'ko': '한국어',
+    'fr': 'Français',
+    'de': 'Deutsch',
+    'es': 'Español'
+  };
+
+  // 用于提示词的语言名称（保持原有文案）
+  L.LANGUAGE_NAMES_ZH = {
+    'zh-CN': '简体中文',
+    'zh-TW': '繁体中文',
+    'en': '英文',
+    'ja': '日文',
+    'ko': '韩文',
+    'fr': '法文',
+    'de': '德文',
+    'es': '西班牙文'
+  };
+
+  /**
+   * 计算主色的二次渐变色（用于 UI 配色一致性）
+   * @param {string} primaryHex - 主色 HEX
+   * @returns {string}
+   */
+  L.getSecondaryColor = function(primaryHex) {
+    if (!primaryHex || !primaryHex.startsWith('#') || primaryHex.length < 7) {
+      return primaryHex || '#000000';
+    }
+
+    const gradientEnd = primaryHex.replace('#', '');
+    const r = Math.max(0, parseInt(gradientEnd.substr(0, 2), 16) - 20);
+    const g = Math.max(0, parseInt(gradientEnd.substr(2, 2), 16) - 30);
+    const b = Math.min(255, parseInt(gradientEnd.substr(4, 2), 16) + 20);
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  };
+
   // 翻译密度预设档位
   L.DENSITY_PRESETS = [10, 30, 50, 70];
 

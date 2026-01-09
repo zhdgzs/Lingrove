@@ -998,6 +998,56 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // 有道词典查询（统一接口）
+  if (message.action === 'fetchYoudaoDict') {
+    const word = message.word;
+    const url = `https://dict.youdao.com/jsonapi?q=${encodeURIComponent(word)}&doctype=json`;
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        const ecData = data.ec?.word?.[0];
+        if (!ecData) {
+          sendResponse({ success: true, data: null });
+          return;
+        }
+
+        const phonetic = ecData.usphone ? `/${ecData.usphone}/` : (ecData.ukphone ? `/${ecData.ukphone}/` : '');
+        const meanings = [];
+        const trs = ecData.trs || [];
+
+        for (const tr of trs.slice(0, 4)) {
+          const defText = tr.tr?.[0]?.l?.i?.[0] || '';
+          if (defText) {
+            const match = defText.match(/^([a-z]+\.)\s*(.+)$/i);
+            if (match) {
+              const pos = match[1];
+              const def = match[2];
+              const existing = meanings.find(m => m.partOfSpeech === pos);
+              if (existing) {
+                if (existing.definitions.length < 4) existing.definitions.push(def);
+              } else {
+                meanings.push({ partOfSpeech: pos, definitions: [def] });
+              }
+            } else {
+              meanings.push({ partOfSpeech: '', definitions: [defText] });
+            }
+          }
+        }
+
+        if (meanings.length === 0) {
+          sendResponse({ success: true, data: null });
+        } else {
+          sendResponse({ success: true, data: { word, phonetic, meanings } });
+        }
+      })
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
   // 获取统计数据
   if (message.action === 'getStats') {
     chrome.storage.sync.get([

@@ -116,10 +116,8 @@
    */
   L.fetchYoudaoData = async function(word) {
     try {
-      const url = `https://dict.youdao.com/jsonapi?q=${encodeURIComponent(word)}&doctype=json`;
-
       const response = await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: 'fetchProxy', url }, (res) => {
+        chrome.runtime.sendMessage({ action: 'fetchYoudaoDict', word }, (res) => {
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message));
           } else if (!res?.success) {
@@ -130,34 +128,7 @@
         });
       });
 
-      const ecData = response.ec?.word?.[0];
-      if (!ecData) return null;
-
-      const phonetic = ecData.usphone ? `/${ecData.usphone}/` : (ecData.ukphone ? `/${ecData.ukphone}/` : '');
-      const meanings = [];
-      const trs = ecData.trs || [];
-
-      for (const tr of trs.slice(0, 4)) {
-        const defText = tr.tr?.[0]?.l?.i?.[0] || '';
-        if (defText) {
-          const match = defText.match(/^([a-z]+\.)\s*(.+)$/i);
-          if (match) {
-            const pos = match[1];
-            const def = match[2];
-            const existing = meanings.find(m => m.partOfSpeech === pos);
-            if (existing) {
-              if (existing.definitions.length < 4) existing.definitions.push(def);
-            } else {
-              meanings.push({ partOfSpeech: pos, definitions: [def] });
-            }
-          } else {
-            meanings.push({ partOfSpeech: '', definitions: [defText] });
-          }
-        }
-      }
-
-      if (meanings.length === 0) return null;
-      return { word, phonetic, meanings };
+      return response;
     } catch (e) {
       console.error('[Lingrove] Youdao fetch error:', e);
       return null;
@@ -369,10 +340,8 @@
     const originalLang = L.detectLanguage(original);
     const translationLang = L.detectLanguage(translation);
 
-    const isOriginalTargetLang = (originalLang === 'en' && targetLang === 'en') ||
-                                  (originalLang === 'zh' && (targetLang === 'zh-CN' || targetLang === 'zh-TW'));
-    const isTranslationTargetLang = (translationLang === 'en' && targetLang === 'en') ||
-                                     (translationLang === 'zh' && (targetLang === 'zh-CN' || targetLang === 'zh-TW'));
+    const isOriginalTargetLang = L.isTargetLanguage(originalLang, targetLang);
+    const isTranslationTargetLang = L.isTargetLanguage(translationLang, targetLang);
 
     const dictWord = isOriginalTargetLang ? original : (isTranslationTargetLang ? translation : null);
 
@@ -381,12 +350,7 @@
         <span class="lingrove-tooltip-word">${translation}</span>
         <span class="lingrove-tooltip-badge" data-difficulty="${difficulty}">${difficulty}</span>
         <button class="lingrove-tooltip-btn lingrove-btn-memorize ${isInMemorizeList ? 'active' : ''}" data-original="${original}" title="${isInMemorizeList ? '已在记忆列表' : '添加到记忆列表'}">
-          <svg viewBox="0 0 24 24" width="16" height="16">
-            ${isInMemorizeList
-              ? '<path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>'
-              : '<path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>'
-            }
-          </svg>
+          ${L.getMemorizeIconSvg(isInMemorizeList, 16)}
         </button>
       </div>
       ${phonetic && L.config.showPhonetic ? `
@@ -487,23 +451,13 @@
   L.selectionPopupResult = null;
   L.wordActionPopup = null;
 
-  // 英文虚词列表
-  const STOP_WORDS = new Set([
-    'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-    'should', 'may', 'might', 'must', 'shall', 'can', 'to', 'of', 'in',
-    'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
-    'and', 'but', 'or', 'nor', 'so', 'yet', 'i', 'me', 'my', 'we', 'our',
-    'you', 'your', 'he', 'him', 'his', 'she', 'her', 'it', 'its', 'they',
-    'them', 'their', 'this', 'that', 'these', 'those', 'am', 'not', 'no'
-  ]);
-
   /**
    * 判断词汇是否值得添加到记忆
    */
   L.isMemorizableWord = function(word) {
     const clean = word.toLowerCase().replace(/[^a-z]/g, '');
-    return clean.length >= 2 && !STOP_WORDS.has(clean);
+    const stopWords = L.MEMORIZABLE_STOP_WORDS || L.STOP_WORDS;
+    return clean.length >= 2 && !stopWords?.has(clean);
   };
 
   /**
@@ -537,10 +491,7 @@
     L.wordActionPopup.style.display = 'none';
     L.wordActionPopup.innerHTML = `
       <button class="lingrove-word-action-btn" data-action="memorize">
-        <svg viewBox="0 0 24 24" width="14" height="14">
-          <path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>
-        </svg>
-        添加到记忆
+        ${L.getMemorizeButtonHtml(false, 14, '已在记忆列表', '添加到记忆')}
       </button>
     `;
     document.body.appendChild(L.wordActionPopup);
@@ -576,12 +527,7 @@
     if (lengthType === 'short') {
       toolbarHtml += `
         <button class="lingrove-sel-btn ${isInMemorizeList ? 'active' : ''}" data-action="memorize" title="${isInMemorizeList ? '已在记忆列表' : '添加到记忆'}">
-          <svg viewBox="0 0 24 24" width="16" height="16">
-            ${isInMemorizeList
-              ? '<path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>'
-              : '<path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>'
-            }
-          </svg>
+          ${L.getMemorizeIconSvg(isInMemorizeList, 16)}
           记忆
         </button>`;
     }
@@ -753,21 +699,10 @@
     if (btn) {
       if (isInMemorizeList) {
         btn.classList.add('active');
-        btn.innerHTML = `
-          <svg viewBox="0 0 24 24" width="14" height="14">
-            <path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
-          </svg>
-          已在记忆列表
-        `;
       } else {
         btn.classList.remove('active');
-        btn.innerHTML = `
-          <svg viewBox="0 0 24 24" width="14" height="14">
-            <path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>
-          </svg>
-          添加到记忆
-        `;
       }
+      btn.innerHTML = L.getMemorizeButtonHtml(isInMemorizeList, 14, '已在记忆列表', '添加到记忆');
     }
 
     L.wordActionPopup.setAttribute('data-word', word);

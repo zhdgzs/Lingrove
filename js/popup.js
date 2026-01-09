@@ -44,11 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const root = document.documentElement;
     
     // 计算渐变的第二个颜色
-    const gradientEnd = theme.primary.replace('#', '');
-    const r = Math.max(0, parseInt(gradientEnd.substr(0, 2), 16) - 20);
-    const g = Math.max(0, parseInt(gradientEnd.substr(2, 2), 16) - 30);
-    const b = Math.min(255, parseInt(gradientEnd.substr(4, 2), 16) + 20);
-    const secondColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    const secondColor = Lingrove.getSecondaryColor(theme.primary);
     
     root.style.setProperty('--primary', theme.primary);
     root.style.setProperty('--primary-light', theme.tooltipWord);

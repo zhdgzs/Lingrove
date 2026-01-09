@@ -100,6 +100,33 @@
   };
 
   /**
+   * 判断是否为目标语言
+   * @param {string} detectedLang - 检测到的语言
+   * @param {string} targetLang - 目标语言
+   * @returns {boolean}
+   */
+  L.isTargetLanguage = function(detectedLang, targetLang) {
+    if (!detectedLang || !targetLang) return false;
+    if (detectedLang === 'zh' && (targetLang === 'zh-CN' || targetLang === 'zh-TW')) {
+      return true;
+    }
+    return detectedLang === targetLang;
+  };
+
+  /**
+   * 获取 TTS 语言代码
+   * @param {string} targetLang - 目标语言
+   * @returns {string}
+   */
+  L.getTtsLang = function(targetLang) {
+    return targetLang === 'en' ? 'en-US' :
+           targetLang === 'zh-CN' ? 'zh-CN' :
+           targetLang === 'zh-TW' ? 'zh-TW' :
+           targetLang === 'ja' ? 'ja-JP' :
+           targetLang === 'ko' ? 'ko-KR' : 'en-US';
+  };
+
+  /**
    * 检测文本是否为代码
    * @param {string} text - 文本内容
    * @returns {boolean}
@@ -194,7 +221,48 @@
     }, duration);
   };
 
+  /**
+   * 生成记忆按钮 SVG
+   * @param {boolean} isActive - 是否激活
+   * @param {number} size - 图标尺寸
+   * @returns {string}
+   */
+  L.getMemorizeIconSvg = function(isActive, size = 16) {
+    const path = isActive
+      ? 'M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z'
+      : 'M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z';
+    return `
+      <svg viewBox="0 0 24 24" width="${size}" height="${size}">
+        <path fill="currentColor" d="${path}"/>
+      </svg>
+    `;
+  };
+
+  /**
+   * 生成记忆按钮内容
+   * @param {boolean} isActive - 是否激活
+   * @param {number} size - 图标尺寸
+   * @param {string} activeText - 激活文案
+   * @param {string} inactiveText - 未激活文案
+   * @returns {string}
+   */
+  L.getMemorizeButtonHtml = function(isActive, size, activeText, inactiveText) {
+    const text = isActive ? activeText : inactiveText;
+    return `${L.getMemorizeIconSvg(isActive, size)}${text ? `\n  ${text}` : ''}`;
+  };
+
   // 停用词列表
   L.STOP_WORDS = new Set(['the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'and', 'but', 'if', 'or', 'because', 'until', 'while', 'this', 'that', 'these', 'those', 'what', 'which', 'who', 'whom', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their']);
+
+  // UI 词汇可记忆过滤用停用词（保持与旧逻辑一致）
+  L.MEMORIZABLE_STOP_WORDS = new Set([
+    'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+    'should', 'may', 'might', 'must', 'shall', 'can', 'to', 'of', 'in',
+    'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
+    'and', 'but', 'or', 'nor', 'so', 'yet', 'i', 'me', 'my', 'we', 'our',
+    'you', 'your', 'he', 'him', 'his', 'she', 'her', 'it', 'its', 'they',
+    'them', 'their', 'this', 'that', 'these', 'those', 'am', 'not', 'no'
+  ]);
 
 })(window.Lingrove);
