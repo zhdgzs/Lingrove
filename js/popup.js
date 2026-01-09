@@ -36,17 +36,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 内置主题配置
-  const BUILT_IN_THEMES = {
-    default: { primary: '#6366f1', tooltipWord: '#818cf8' },
-    ocean: { primary: '#0ea5e9', tooltipWord: '#38bdf8' },
-    forest: { primary: '#10b981', tooltipWord: '#34d399' },
-    sunset: { primary: '#f59e0b', tooltipWord: '#fbbf24' }
-  };
+  // BUILT_IN_THEMES 已移至 themes.js，通过 Lingrove.BUILT_IN_THEMES 访问
 
   // 应用配色主题
   function applyColorTheme(themeId, customTheme) {
-    const theme = themeId === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[themeId] || BUILT_IN_THEMES.default;
+    const theme = themeId === 'custom' && customTheme ? customTheme : Lingrove.BUILT_IN_THEMES[themeId] || Lingrove.BUILT_IN_THEMES.default;
     const root = document.documentElement;
     
     // 计算渐变的第二个颜色

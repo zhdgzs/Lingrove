@@ -358,11 +358,11 @@ body {
 /* Intensity Selector */
 .intensity-selector {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
 }
 
-.intensity-option input {
+.intensity-option input[type="radio"] {
   display: none;
 }
 
@@ -370,8 +370,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px 16px;
+  gap: 4px;
+  padding: 12px 8px;
   background: var(--bg-secondary);
   border: 2px solid var(--border);
   border-radius: var(--radius);
@@ -396,18 +396,34 @@ body {
 }
 
 .intensity-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
 }
 
 .intensity-name {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .intensity-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
+}
+
+.custom-density-input {
+  width: 36px;
+  padding: 2px 4px;
+  font-size: 11px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.custom-density-input:focus {
+  outline: none;
+  border-color: var(--primary);
 }
 
 /* Min Length Config */

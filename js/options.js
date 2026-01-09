@@ -3,7 +3,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  // CEFR_LEVELS 已移至 constants.js，通过 Lingrove.CEFR_LEVELS 访问
 
   // 防抖保存函数
   let saveTimeout;
@@ -57,7 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     targetLanguage: document.getElementById('targetLanguage'),
     difficultyLevel: document.getElementById('difficultyLevel'),
     selectedDifficulty: document.getElementById('selectedDifficulty'),
-    intensityRadios: document.querySelectorAll('input[name="intensity"]'),
+    intensityRadios: document.querySelectorAll('input[name="translationDensity"]'),
+    customDensityInput: document.getElementById('customDensityInput'),
     minLengthCJK: document.getElementById('minLengthCJK'),
     minLengthEN: document.getElementById('minLengthEN'),
     applyRecommendedMinLength: document.getElementById('applyRecommendedMinLength'),
@@ -198,148 +199,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   let customTargetRules = {};
 
   // ============ 提示词规则常量 ============
-  // 核心提示词（系统固定，不可修改）
-  const CORE_PROMPT = `你是一个语言学习助手。请分析以下文本，选择适合学习的词汇进行翻译。
+  // Lingrove.CORE_PROMPT 和 Lingrove.DEFAULT_CUSTOM_PROMPT 已移至 prompt-rules.js
+  // 通过 Lingrove.Lingrove.CORE_PROMPT 和 Lingrove.Lingrove.DEFAULT_CUSTOM_PROMPT 访问
 
-## 核心规则：
-1. 优先选择：有学习价值的词汇、不同难度级别的词汇
-2. 翻译倾向：结合上下文只翻译成最合适的词汇，而不是多个含义
-3. 不要翻译专有名词、缩写、数字、代码等内容
+  // 源语言规则和目标语言规则已移至 prompt-rules.js，通过 Lingrove 命名空间访问
+  // Lingrove.SOURCE_LANGUAGE_RULES 和 Lingrove.TARGET_LANGUAGE_RULES
 
-## CEFR等级从简单到复杂依次为：A1-C2`;
-
-  // 默认自定义提示词
-  const DEFAULT_CUSTOM_PROMPT = `## 额外规则：
-- 优先选择日常实用词汇
-- 注意词汇的使用频率和实用性`;
-
-  // 源语言规则
-  const SOURCE_LANGUAGE_RULES = {
-    'zh-CN': `## 中文语义分词规则：
-- 按语义边界识别词汇，而非机械切分
-- 注意区分同形异义词组，如「对方面无表情」应识别为「对方」「面无表情」而非「方面」
-- 优先识别完整的成语、惯用语、固定搭配
-- 避免将动宾结构拆分，如「吃饭」「睡觉」应作为整体
-- 注意前后文语境，正确识别多音多义字的含义`,
-
-    'zh-TW': `## 繁體中文語義分詞規則：
-- 按語義邊界識別詞彙，而非機械切分
-- 注意區分同形異義詞組
-- 優先識別完整的成語、慣用語、固定搭配
-- 避免將動賓結構拆分
-- 注意前後文語境，正確識別多音多義字的含義`,
-
-    'en': `## English Semantic Segmentation Rules:
-- Identify phrasal verbs as complete units (e.g., "give up", "look forward to")
-- Recognize idiomatic expressions and collocations as single units
-- Keep compound nouns together (e.g., "ice cream", "high school")
-- Identify multi-word verbs and their particles correctly
-- Consider context to distinguish homographs and polysemous words`,
-
-    'ja': `## 日本語の語義分割ルール：
-- 複合語は意味のまとまりとして認識する
-- 慣用句・熟語は分割しない
-- 動詞の活用形を正しく認識する
-- 文脈に応じて同音異義語を区別する`,
-
-    'ko': `## 한국어 의미 분할 규칙:
-- 복합어는 의미 단위로 인식
-- 관용구와 숙어는 분리하지 않음
-- 동사 활용형을 올바르게 인식
-- 문맥에 따라 동음이의어 구별`
-  };
-
-  // 目标语言规则
-  const TARGET_LANGUAGE_RULES = {
-    'zh-CN': `## 中文输出规则：
-- 使用简体中文
-- 翻译应自然流畅，符合中文表达习惯
-- 避免生硬的直译`,
-
-    'zh-TW': `## 繁體中文輸出規則：
-- 使用繁體中文
-- 翻譯應自然流暢，符合中文表達習慣
-- 避免生硬的直譯`,
-
-    'en': `## English Output Rules:
-- Use natural, fluent English
-- Avoid overly literal translations
-- Match the appropriate register and formality level`,
-
-    'ja': `## 日本語出力ルール：
-- 自然で流暢な日本語を使用
-- 直訳を避ける
-- 適切な敬語レベルを維持`,
-
-    'ko': `## 한국어 출력 규칙:
-- 자연스럽고 유창한 한국어 사용
-- 직역 피하기
-- 적절한 존댓말 수준 유지`,
-
-    'fr': `## Règles de sortie française:
-- Utiliser un français naturel et fluide
-- Éviter les traductions trop littérales
-- Adapter le registre de langue`,
-
-    'de': `## Deutsche Ausgaberegeln:
-- Natürliches, flüssiges Deutsch verwenden
-- Zu wörtliche Übersetzungen vermeiden
-- Angemessenes Sprachregister wählen`,
-
-    'es': `## Reglas de salida española:
-- Usar español natural y fluido
-- Evitar traducciones demasiado literales
-- Adaptar el registro lingüístico`
-  };
-
-  // ============ 内置主题配置 ============
-  // 内置主题配置 - 与 content.js 保持一致
-  const BUILT_IN_THEMES = {
-    default: {
-      name: '默认紫',
-      primary: '#6366f1',
-      underline: 'rgba(99,102,241,0.6)',
-      hoverBg: 'rgba(99,102,241,0.15)',
-      tooltipWord: '#818cf8',
-      underlineWidth: '1.5px',
-      underlineStyle: 'solid',
-      wordColor: '',
-      originalColor: ''
-    },
-    ocean: {
-      name: '海洋蓝',
-      primary: '#0ea5e9',
-      underline: 'rgba(14,165,233,0.7)',
-      hoverBg: 'rgba(14,165,233,0.12)',
-      tooltipWord: '#38bdf8',
-      underlineWidth: '2px',
-      underlineStyle: 'dashed',
-      wordColor: '#0ea5e9',
-      originalColor: '#64748b'
-    },
-    forest: {
-      name: '森林绿',
-      primary: '#10b981',
-      underline: 'rgba(16,185,129,0.6)',
-      hoverBg: 'rgba(16,185,129,0.1)',
-      tooltipWord: '#34d399',
-      underlineWidth: '1.5px',
-      underlineStyle: 'dotted',
-      wordColor: '#059669',
-      originalColor: '#6b7280'
-    },
-    sunset: {
-      name: '日落橙',
-      primary: '#f59e0b',
-      underline: 'rgba(245,158,11,0.7)',
-      hoverBg: 'rgba(245,158,11,0.12)',
-      tooltipWord: '#fbbf24',
-      underlineWidth: '2px',
-      underlineStyle: 'wavy',
-      wordColor: '#d97706',
-      originalColor: '#78716c'
-    }
-  };
+  // BUILT_IN_THEMES 已移至 themes.js，通过 Lingrove.BUILT_IN_THEMES 访问
 
   let customTheme = null;
 
@@ -376,7 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 更新编辑器状态的函数
   function updateThemeEditorState(themeId) {
     const isDefault = themeId === 'default';
-    const theme = BUILT_IN_THEMES[themeId] || BUILT_IN_THEMES.default;
+    const theme = Lingrove.BUILT_IN_THEMES[themeId] || Lingrove.BUILT_IN_THEMES.default;
     
     // 更新标题
     elements.themeEditorTitle.textContent = theme.name || '主题编辑器';
@@ -1394,21 +1260,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.nativeLanguage.value = result.nativeLanguage || 'zh-CN';
       elements.targetLanguage.value = result.targetLanguage || 'en';
       
-      const diffIdx = CEFR_LEVELS.indexOf(result.difficultyLevel || 'B1');
+      const diffIdx = Lingrove.CEFR_LEVELS.indexOf(result.difficultyLevel || 'B1');
       elements.difficultyLevel.value = diffIdx >= 0 ? diffIdx : 2;
       updateDifficultyLabel();
       
-      const intensity = result.intensity || 'medium';
+      const translationDensity = result.translationDensity || 30;
+      const isPreset = [10, 30, 50, 70].includes(translationDensity);
       elements.intensityRadios.forEach(radio => {
-        radio.checked = radio.value === intensity;
+        if (isPreset) {
+          radio.checked = parseInt(radio.value) === translationDensity;
+        } else {
+          radio.checked = radio.value === 'custom';
+        }
       });
+      if (elements.customDensityInput) {
+        elements.customDensityInput.value = translationDensity;
+      }
+      updateRecommendedMinLengthHint(translationDensity);
 
       // 最小文本长度配置
       const minLengthConfig = result.minLengthConfig || { zh: 20, ja: 20, ko: 20, en: 50 };
       if (elements.minLengthCJK) elements.minLengthCJK.value = minLengthConfig.zh || 20;
       if (elements.minLengthEN) elements.minLengthEN.value = minLengthConfig.en || 50;
-      updateRecommendedMinLengthHint(intensity);
-      
+
       const processMode = result.processMode || 'both';
       elements.processModeRadios.forEach(radio => {
         radio.checked = radio.value === processMode;
@@ -1447,7 +1321,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (result.customizedThemes) {
         ['ocean', 'forest', 'sunset'].forEach(themeId => {
           if (result.customizedThemes[themeId]) {
-            BUILT_IN_THEMES[themeId] = result.customizedThemes[themeId];
+            Lingrove.BUILT_IN_THEMES[themeId] = result.customizedThemes[themeId];
             // 更新配色选择器中的预览和名称
             const optionEl = document.querySelector(`input[name="colorTheme"][value="${themeId}"]`)?.closest('.color-theme-option');
             if (optionEl) {
@@ -1473,7 +1347,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       
       // 更新预览
-      const activeTheme = BUILT_IN_THEMES[colorTheme] || BUILT_IN_THEMES.default;
+      const activeTheme = Lingrove.BUILT_IN_THEMES[colorTheme] || Lingrove.BUILT_IN_THEMES.default;
       updatePreviewColors(activeTheme);
       
       // 更新编辑器状态
@@ -1499,7 +1373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // 提示词设置
       if (elements.customPromptRules) {
-        elements.customPromptRules.value = result.customPromptRules || DEFAULT_CUSTOM_PROMPT;
+        elements.customPromptRules.value = result.customPromptRules || Lingrove.DEFAULT_CUSTOM_PROMPT;
       }
       // 加载自定义源语言和目标语言规则
       customSourceRules = result.customSourceRules || {};
@@ -1777,8 +1651,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 学习偏好
       nativeLanguage: elements.nativeLanguage.value,
       targetLanguage: elements.targetLanguage.value,
-      difficultyLevel: CEFR_LEVELS[elements.difficultyLevel.value],
-      intensity: document.querySelector('input[name="intensity"]:checked').value,
+      difficultyLevel: Lingrove.CEFR_LEVELS[elements.difficultyLevel.value],
+      translationDensity: (() => {
+        const selected = document.querySelector('input[name="translationDensity"]:checked');
+        if (selected?.value === 'custom') {
+          return parseInt(elements.customDensityInput?.value) || 30;
+        }
+        return parseInt(selected?.value) || 30;
+      })(),
       minLengthConfig: {
         zh: parseInt(elements.minLengthCJK?.value) || 20,
         ja: parseInt(elements.minLengthCJK?.value) || 20,
@@ -1802,12 +1682,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       customTheme: customTheme,
       // 保存可修改的内置主题配置
       customizedThemes: {
-        ocean: BUILT_IN_THEMES.ocean,
-        forest: BUILT_IN_THEMES.forest,
-        sunset: BUILT_IN_THEMES.sunset
+        ocean: Lingrove.BUILT_IN_THEMES.ocean,
+        forest: Lingrove.BUILT_IN_THEMES.forest,
+        sunset: Lingrove.BUILT_IN_THEMES.sunset
       },
       // 提示词设置
-      customPromptRules: elements.customPromptRules?.value || DEFAULT_CUSTOM_PROMPT,
+      customPromptRules: elements.customPromptRules?.value || Lingrove.DEFAULT_CUSTOM_PROMPT,
       customSourceRules: customSourceRules,
       customTargetRules: customTargetRules
     };
@@ -1876,20 +1756,65 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 单选按钮 - 改变时保存
     elements.intensityRadios.forEach(radio => {
       radio.addEventListener('change', () => {
-        updateRecommendedMinLengthHint(radio.value);
+        const selected = document.querySelector('input[name="translationDensity"]:checked');
+        let density = 30;
+        if (selected?.value === 'custom') {
+          density = parseInt(elements.customDensityInput?.value) || 30;
+        } else {
+          density = parseInt(selected?.value) || 30;
+        }
+        updateRecommendedMinLengthHint(density);
         debouncedSave(200);
       });
+    });
+
+    // 自定义密度输入
+    elements.customDensityInput?.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+    });
+
+    elements.customDensityInput?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // 点击输入框时自动选中自定义选项
+      const customRadio = document.querySelector('input[name="translationDensity"][value="custom"]');
+      if (customRadio) {
+        customRadio.checked = true;
+      }
+    });
+
+    elements.customDensityInput?.addEventListener('focus', () => {
+      // 聚焦时自动选中自定义选项
+      const customRadio = document.querySelector('input[name="translationDensity"][value="custom"]');
+      if (customRadio) {
+        customRadio.checked = true;
+      }
+    });
+
+    elements.customDensityInput?.addEventListener('change', () => {
+      const customRadio = document.querySelector('input[name="translationDensity"][value="custom"]');
+      if (customRadio) {
+        customRadio.checked = true;
+      }
+      const density = parseInt(elements.customDensityInput.value) || 30;
+      updateRecommendedMinLengthHint(density);
+      debouncedSave(200);
     });
 
     // 最小文本长度配置
     elements.minLengthCJK?.addEventListener('change', () => debouncedSave(200));
     elements.minLengthEN?.addEventListener('change', () => debouncedSave(200));
     elements.applyRecommendedMinLength?.addEventListener('click', () => {
-      const intensity = document.querySelector('input[name="intensity"]:checked')?.value || 'medium';
-      const multipliers = { low: 0.7, medium: 1, high: 1.5 };
-      const m = multipliers[intensity] || 1;
-      if (elements.minLengthCJK) elements.minLengthCJK.value = Math.round(20 * m);
-      if (elements.minLengthEN) elements.minLengthEN.value = Math.round(50 * m);
+      const selected = document.querySelector('input[name="translationDensity"]:checked');
+      let density = 30;
+      if (selected?.value === 'custom') {
+        density = parseInt(elements.customDensityInput?.value) || 30;
+      } else {
+        density = parseInt(selected?.value) || 30;
+      }
+      // 密度越高，需要更长的文本来提供足够的翻译词汇
+      const multiplier = density / 30; // 30% 为基准
+      if (elements.minLengthCJK) elements.minLengthCJK.value = Math.round(20 * multiplier);
+      if (elements.minLengthEN) elements.minLengthEN.value = Math.round(50 * multiplier);
       debouncedSave(200);
     });
 
@@ -1911,7 +1836,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyTheme(radio.value);
         // 切换亮/暗主题时也需要更新预览颜色
         const colorTheme = document.querySelector('input[name="colorTheme"]:checked')?.value || 'default';
-        const activeTheme = colorTheme === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[colorTheme] || BUILT_IN_THEMES.default;
+        const activeTheme = colorTheme === 'custom' && customTheme ? customTheme : Lingrove.BUILT_IN_THEMES[colorTheme] || Lingrove.BUILT_IN_THEMES.default;
         updatePreviewColors(activeTheme);
         debouncedSave(200);
       });
@@ -1977,17 +1902,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 更新难度标签
   function updateDifficultyLabel() {
-    const level = CEFR_LEVELS[elements.difficultyLevel.value];
+    const level = Lingrove.CEFR_LEVELS[elements.difficultyLevel.value];
     elements.selectedDifficulty.textContent = level;
   }
 
   // 更新推荐最小长度提示
-  // 翻译词少时短文本也够用，翻译词多时需要更长文本
-  function updateRecommendedMinLengthHint(intensity) {
-    const multipliers = { low: 0.7, medium: 1, high: 1.5 };
-    const m = multipliers[intensity] || 1;
-    const cjk = Math.round(20 * m);
-    const en = Math.round(50 * m);
+  // 翻译密度越高，需要更长的文本来提供足够的翻译词汇
+  function updateRecommendedMinLengthHint(density) {
+    const multiplier = density / 30; // 30% 为基准
+    const cjk = Math.round(20 * multiplier);
+    const en = Math.round(50 * multiplier);
     if (elements.recommendedMinLengthHint) {
       elements.recommendedMinLengthHint.textContent = `推荐值：中日韩 ${cjk}，英文 ${en}`;
     }
@@ -2836,7 +2760,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.colorThemeRadios.forEach(radio => {
       radio.addEventListener('change', () => {
         const themeId = radio.value;
-        const theme = themeId === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[themeId];
+        const theme = themeId === 'custom' && customTheme ? customTheme : Lingrove.BUILT_IN_THEMES[themeId];
         if (theme) {
           updatePreviewColors(theme);
         }
@@ -2858,7 +2782,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const selectedThemeId = document.querySelector('input[name="colorTheme"]:checked')?.value;
           if (selectedThemeId && selectedThemeId !== 'default') {
             // 更新当前选中的主题
-            BUILT_IN_THEMES[selectedThemeId] = parsed;
+            Lingrove.BUILT_IN_THEMES[selectedThemeId] = parsed;
             updatePreviewColors(parsed);
             updateThemeEditorState(selectedThemeId);
             saveSettings();
@@ -2875,7 +2799,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 导出主题按钮
     elements.exportThemeBtn?.addEventListener('click', () => {
       const selectedTheme = document.querySelector('input[name="colorTheme"]:checked')?.value;
-      const theme = selectedTheme === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[selectedTheme];
+      const theme = selectedTheme === 'custom' && customTheme ? customTheme : Lingrove.BUILT_IN_THEMES[selectedTheme];
       if (theme) {
         const css = generateThemeCss(theme);
         navigator.clipboard.writeText(css).then(() => {
@@ -2914,7 +2838,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 默认紫不可修改
       if (selectedThemeId === 'default') return;
       
-      const name = elements.themeNameInput.value.trim() || BUILT_IN_THEMES[selectedThemeId]?.name || '自定义';
+      const name = elements.themeNameInput.value.trim() || Lingrove.BUILT_IN_THEMES[selectedThemeId]?.name || '自定义';
       const primary = elements.primaryColor.value;
       
       const updatedTheme = {
@@ -2932,7 +2856,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       
       // 更新内置主题
-      BUILT_IN_THEMES[selectedThemeId] = updatedTheme;
+      Lingrove.BUILT_IN_THEMES[selectedThemeId] = updatedTheme;
       
       // 更新显示
       elements.themeEditorTitle.textContent = name;
@@ -2983,8 +2907,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const nativeLang = elements.nativeLanguage?.value || 'zh-CN';
       if (confirm('修改系统规则可能导致翻译效果异常。\n\n确定要修改源语言规则吗？')) {
         // 获取当前默认规则
-        const defaultRule = SOURCE_LANGUAGE_RULES[nativeLang] ||
-                            SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
+        const defaultRule = Lingrove.SOURCE_LANGUAGE_RULES[nativeLang] ||
+                            Lingrove.SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
         customSourceRules[nativeLang] = elements.sourceLanguageRule?.value || defaultRule;
         // 将输入框设置为可编辑
         if (elements.sourceLanguageRule) {
@@ -3035,8 +2959,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const targetLang = elements.targetLanguage?.value || 'en';
       if (confirm('修改系统规则可能导致翻译效果异常。\n\n确定要修改目标语言规则吗？')) {
         // 获取当前默认规则
-        const defaultRule = TARGET_LANGUAGE_RULES[targetLang] ||
-                            TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
+        const defaultRule = Lingrove.TARGET_LANGUAGE_RULES[targetLang] ||
+                            Lingrove.TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
         customTargetRules[targetLang] = elements.targetLanguageRule?.value || defaultRule;
         // 将输入框设置为可编辑
         if (elements.targetLanguageRule) {
@@ -3158,7 +3082,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 重置提示词按钮
     elements.resetPromptBtn?.addEventListener('click', () => {
       if (confirm('确定要重置为默认提示词吗？')) {
-        elements.customPromptRules.value = DEFAULT_CUSTOM_PROMPT;
+        elements.customPromptRules.value = Lingrove.DEFAULT_CUSTOM_PROMPT;
         showPromptSaveStatus('已重置为默认');
         updateFullPromptPreview();
         debouncedSave(200);
@@ -3209,15 +3133,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 获取源语言规则（优先使用自定义规则）
-    const defaultSourceRule = SOURCE_LANGUAGE_RULES[nativeLang] ||
-                              SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
+    const defaultSourceRule = Lingrove.SOURCE_LANGUAGE_RULES[nativeLang] ||
+                              Lingrove.SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
     const sourceRule = customSourceRules[nativeLang] !== undefined
                        ? customSourceRules[nativeLang]
                        : defaultSourceRule;
 
     // 获取目标语言规则（优先使用自定义规则）
-    const defaultTargetRule = TARGET_LANGUAGE_RULES[targetLang] ||
-                              TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
+    const defaultTargetRule = Lingrove.TARGET_LANGUAGE_RULES[targetLang] ||
+                              Lingrove.TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
     const targetRule = customTargetRules[targetLang] !== undefined
                        ? customTargetRules[targetLang]
                        : defaultTargetRule;
@@ -3274,8 +3198,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateFullPromptPreview() {
     const nativeLang = elements.nativeLanguage?.value || 'zh-CN';
     const targetLang = elements.targetLanguage?.value || 'en';
-    const difficultyLevel = CEFR_LEVELS[elements.difficultyLevel?.value || 2] || 'B1';
-    const intensity = document.querySelector('input[name="intensity"]:checked')?.value || 'medium';
+    const difficultyLevel = Lingrove.CEFR_LEVELS[elements.difficultyLevel?.value || 2] || 'B1';
+
+    // 获取翻译密度
+    const selected = document.querySelector('input[name="translationDensity"]:checked');
+    let translationDensity = 30;
+    if (selected?.value === 'custom') {
+      translationDensity = parseInt(elements.customDensityInput?.value) || 30;
+    } else {
+      translationDensity = parseInt(selected?.value) || 30;
+    }
 
     // 语言名称映射
     const langNames = {
@@ -3289,24 +3221,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       'es': 'Español'
     };
 
-    // 替换强度对应的词汇数量
-    const intensityConfig = {
-      low: { maxPerParagraph: 4 },
-      medium: { maxPerParagraph: 8 },
-      high: { maxPerParagraph: 14 }
-    };
-    const maxReplacements = intensityConfig[intensity]?.maxPerParagraph || 8;
-    const targetCount = Math.ceil(maxReplacements * 1.5);
-
     // 获取各部分规则
-    const defaultSourceRule = SOURCE_LANGUAGE_RULES[nativeLang] ||
-                              SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
+    const defaultSourceRule = Lingrove.SOURCE_LANGUAGE_RULES[nativeLang] ||
+                              Lingrove.SOURCE_LANGUAGE_RULES[nativeLang.split('-')[0]] || '';
     const sourceRule = customSourceRules[nativeLang] !== undefined
                        ? customSourceRules[nativeLang]
                        : defaultSourceRule;
 
-    const defaultTargetRule = TARGET_LANGUAGE_RULES[targetLang] ||
-                              TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
+    const defaultTargetRule = Lingrove.TARGET_LANGUAGE_RULES[targetLang] ||
+                              Lingrove.TARGET_LANGUAGE_RULES[targetLang.split('-')[0]] || '';
     const targetRule = customTargetRules[targetLang] !== undefined
                        ? customTargetRules[targetLang]
                        : defaultTargetRule;
@@ -3314,16 +3237,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const customPrompt = elements.customPromptRules?.value || '';
 
     // 组装完整提示词（与 content.js 中的 buildTranslationPrompt 保持一致）
-    const fullPrompt = `${CORE_PROMPT}
+    const fullPrompt = `${Lingrove.CORE_PROMPT}
 ${sourceRule}
 ${targetRule}
 ${customPrompt}
 
 ## 任务参数：
-1. 选择约 ${targetCount} 个词汇（实际返回数量可以根据文本内容灵活调整，但不要超过 ${maxReplacements * 2} 个）
-2. 翻译方向：从 ${langNames[nativeLang] || nativeLang} 翻译到 ${langNames[targetLang] || targetLang}
-3. 不要重复翻译已经是${langNames[targetLang] || targetLang}的内容
-4. 难度筛选：优先选择 ${difficultyLevel} 及以上难度的词汇
+1. 翻译密度：${translationDensity}%
+2. 请根据文本内容和语言特征，选择约 ${translationDensity}% 的词汇进行翻译
+3. 翻译方向：从 ${langNames[nativeLang] || nativeLang} 翻译到 ${langNames[targetLang] || targetLang}
+4. 不要重复翻译已经是${langNames[targetLang] || targetLang}的内容
+5. AI 根据语言特性自主决定翻译词汇数量（中文：2-4字符/词，英文：4-10字符/词）
+6. 难度筛选：优先选择 ${difficultyLevel} 及以上难度的词汇
 
 ## 输出格式：
 返回 JSON 数组，每个元素包含：

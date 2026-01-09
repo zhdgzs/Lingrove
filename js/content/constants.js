@@ -12,13 +12,6 @@ window.Lingrove = window.Lingrove || {};
   // CEFR 难度等级
   L.CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
-  // 替换强度配置
-  L.INTENSITY_CONFIG = {
-    low: { maxPerParagraph: 4 },
-    medium: { maxPerParagraph: 8 },
-    high: { maxPerParagraph: 14 }
-  };
-
   // 需要跳过的标签
   L.SKIP_TAGS = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'CODE', 'PRE', 'KBD', 'TEXTAREA', 'INPUT', 'SELECT', 'BUTTON'];
 
@@ -36,10 +29,13 @@ window.Lingrove = window.Lingrove || {};
     'en': 50   // 英文：50 字符
   };
 
-  // 批处理配置
-  L.MAX_SEGMENTS_PER_BATCH = 20;    // 每批最多处理的段落数
-  L.MAX_SEGMENTS_PER_REQUEST = 5;   // 每个API请求处理的最大段落数
-  L.REQUEST_INTERVAL_MS = 1000;     // API请求间隔（毫秒）
+  // 翻译密度预设档位
+  L.DENSITY_PRESETS = [10, 30, 50, 70];
+
+  // 文本分块配置
+  L.TARGET_BATCH_SIZE = 1000;  // 目标批次大小（字符）
+  L.MAX_BATCH_SIZE = 1200;     // 最大批次大小（字符）
+  L.MIN_BATCH_SIZE = 100;      // 最小批次大小（字符）
 
   // 词典缓存配置
   L.DICT_CACHE_STORAGE_KEY = 'lingrove_dict_cache';

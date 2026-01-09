@@ -54,10 +54,9 @@
     L.isProcessing = true;
 
     try {
-      const containers = Array.from(L.pendingContainers).slice(0, L.MAX_SEGMENTS_PER_BATCH);
-      for (const container of containers) {
-        L.pendingContainers.delete(container);
-      }
+      // 收集所有待处理的容器
+      const containers = Array.from(L.pendingContainers);
+      L.pendingContainers.clear();
 
       const segments = [];
       const whitelistWords = new Set((L.config.learnedWords || []).map(w => w.original.toLowerCase()));
@@ -89,13 +88,11 @@
         }
       }
 
-      for (let i = 0; i < segments.length; i += L.MAX_SEGMENTS_PER_REQUEST) {
-        const batch = segments.slice(i, i + L.MAX_SEGMENTS_PER_REQUEST);
-        await L.processBatchSegments(batch, whitelistWords);
+      // 智能文本分块：按字符数分批，目标 1000 字符，上限 1200 字符
+      const batches = L.createTextBatches(segments);
 
-        if (i + L.MAX_SEGMENTS_PER_REQUEST < segments.length) {
-          await new Promise(resolve => setTimeout(resolve, L.REQUEST_INTERVAL_MS));
-        }
+      for (const batch of batches) {
+        await L.processBatchSegments(batch, whitelistWords);
       }
     } finally {
       L.isProcessing = false;
@@ -105,6 +102,74 @@
       }
     }
   }, 100);
+
+  /**
+   * 智能文本分块
+   * 按字符数分批，目标 TARGET_BATCH_SIZE 字符，上限 MAX_BATCH_SIZE 字符
+   * @param {Array} segments - 段落数组
+   * @returns {Array<Array>} - 分批后的段落数组
+   */
+  L.createTextBatches = function(segments) {
+    const batches = [];
+    let currentBatch = [];
+    let currentLength = 0;
+
+    for (const segment of segments) {
+      const segmentLength = segment.text.length;
+
+      // 如果当前段落本身超过最大批次大小，单独作为一批
+      if (segmentLength > L.MAX_BATCH_SIZE) {
+        // 先保存当前批次
+        if (currentBatch.length > 0) {
+          batches.push(currentBatch);
+          currentBatch = [];
+          currentLength = 0;
+        }
+        // 单独处理超长段落
+        batches.push([segment]);
+        continue;
+      }
+
+      // 如果添加当前段落会超过最���批次大小，先保存当前批次
+      if (currentLength + segmentLength > L.MAX_BATCH_SIZE) {
+        if (currentBatch.length > 0) {
+          batches.push(currentBatch);
+        }
+        currentBatch = [segment];
+        currentLength = segmentLength;
+      }
+      // 如果添加当前段落后接近目标大小，添加后保存
+      else if (currentLength + segmentLength >= L.TARGET_BATCH_SIZE - 200) {
+        currentBatch.push(segment);
+        batches.push(currentBatch);
+        currentBatch = [];
+        currentLength = 0;
+      }
+      // 继续累积
+      else {
+        currentBatch.push(segment);
+        currentLength += segmentLength;
+      }
+    }
+
+    // 处理剩余的段落
+    if (currentBatch.length > 0) {
+      // 如果剩余批次太小，尝试合并到上一批
+      if (currentLength < L.MIN_BATCH_SIZE && batches.length > 0) {
+        const lastBatch = batches[batches.length - 1];
+        const lastBatchLength = lastBatch.reduce((sum, s) => sum + s.text.length, 0);
+        if (lastBatchLength + currentLength <= L.MAX_BATCH_SIZE) {
+          batches[batches.length - 1] = [...lastBatch, ...currentBatch];
+        } else {
+          batches.push(currentBatch);
+        }
+      } else {
+        batches.push(currentBatch);
+      }
+    }
+
+    return batches;
+  };
 
   /**
    * 批量处理段落
