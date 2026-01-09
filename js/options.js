@@ -310,11 +310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.style.setProperty('--preview-underline-style', theme.underlineStyle || 'solid');
     
     // 计算渐变的第二个颜色（稍微偏紫/深一点）
-    const gradientEnd = theme.primary.replace('#', '');
-    const r = Math.max(0, parseInt(gradientEnd.substr(0, 2), 16) - 20);
-    const g = Math.max(0, parseInt(gradientEnd.substr(2, 2), 16) - 30);
-    const b = Math.min(255, parseInt(gradientEnd.substr(4, 2), 16) + 20);
-    const secondColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    const secondColor = Lingrove.getSecondaryColor(theme.primary);
     
     // 亮色主题下使用 primary 颜色，暗色主题下使用 tooltipWord（浅色版本）
     if (currentTheme === 'light') {
@@ -516,39 +512,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function fetchYoudaoData(word) {
     try {
-      const url = `https://dict.youdao.com/jsonapi?q=${encodeURIComponent(word)}`;
       const response = await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: 'fetchProxy', url, options: {} }, (resp) => {
-          if (resp && resp.success) {
-            resolve(resp.data);
-          } else {
+        chrome.runtime.sendMessage({ action: 'fetchYoudaoDict', word }, (resp) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else if (!resp?.success) {
             reject(new Error(resp?.error || 'Fetch failed'));
+          } else {
+            resolve(resp.data);
           }
         });
       });
 
-      const meanings = [];
-      if (response?.ec?.word) {
-        const trs = response.ec.word[0]?.trs || [];
-        for (const tr of trs.slice(0, 3)) {
-          const text = tr.tr?.[0]?.l?.i?.[0] || '';
-          if (text) {
-            const posMatch = text.match(/^([a-z]+\.)\s*/);
-            if (posMatch) {
-              meanings.push({
-                partOfSpeech: posMatch[1],
-                definitions: [text.replace(posMatch[0], '')]
-              });
-            } else {
-              meanings.push({
-                partOfSpeech: '',
-                definitions: [text]
-              });
-            }
-          }
-        }
-      }
-      return meanings.length > 0 ? { meanings } : null;
+      if (!response) return null;
+      return { meanings: response.meanings };
     } catch (e) {
       console.error('[Lingrove] Youdao fetch error:', e);
       return null;
@@ -1279,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateRecommendedMinLengthHint(translationDensity);
 
       // 最小文本长度配置
-      const minLengthConfig = result.minLengthConfig || { zh: 20, ja: 20, ko: 20, en: 50 };
+      const minLengthConfig = result.minLengthConfig || Lingrove.MIN_LENGTH_CONFIG;
       if (elements.minLengthCJK) elements.minLengthCJK.value = minLengthConfig.zh || 20;
       if (elements.minLengthEN) elements.minLengthEN.value = minLengthConfig.en || 50;
 
@@ -3107,16 +3084,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const targetLang = elements.targetLanguage?.value || 'en';
 
     // 语言名称映射
-    const langNames = {
-      'zh-CN': '简体中文',
-      'zh-TW': '繁体中文',
-      'en': 'English',
-      'ja': '日本語',
-      'ko': '한국어',
-      'fr': 'Français',
-      'de': 'Deutsch',
-      'es': 'Español'
-    };
+    const langNames = Lingrove.LANGUAGE_NAMES || {};
 
     // 更新语言显示标签
     if (elements.promptSourceLang) {
@@ -3210,16 +3178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 语言名称映射
-    const langNames = {
-      'zh-CN': '简体中文',
-      'zh-TW': '繁体中文',
-      'en': 'English',
-      'ja': '日本語',
-      'ko': '한국어',
-      'fr': 'Français',
-      'de': 'Deutsch',
-      'es': 'Español'
-    };
+    const langNames = Lingrove.LANGUAGE_NAMES || {};
 
     // 获取各部分规则
     const defaultSourceRule = Lingrove.SOURCE_LANGUAGE_RULES[nativeLang] ||

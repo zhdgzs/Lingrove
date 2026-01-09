@@ -656,17 +656,7 @@
       throw new Error('API 未配置');
     }
 
-    const langNames = {
-      'zh-CN': '简体中文',
-      'zh-TW': '繁体中文',
-      'en': '英文',
-      'ja': '日文',
-      'ko': '韩文',
-      'fr': '法文',
-      'de': '德文',
-      'es': '西班牙文'
-    };
-
+    const langNames = L.LANGUAGE_NAMES_ZH || {};
     const targetLangName = langNames[targetLang] || targetLang;
 
     const prompt = `请将以下文本翻译成${targetLangName}。要求：

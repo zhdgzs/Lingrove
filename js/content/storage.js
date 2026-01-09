@@ -34,7 +34,7 @@
             targetLanguage: syncResult.targetLanguage || 'en',
             difficultyLevel: syncResult.difficultyLevel || 'B1',
             translationDensity: syncResult.translationDensity || 30,
-            minLengthConfig: syncResult.minLengthConfig || { zh: 20, ja: 20, ko: 20, en: 50 },
+            minLengthConfig: syncResult.minLengthConfig || L.MIN_LENGTH_CONFIG,
             learnedWordDisplay: syncResult.learnedWordDisplay || 'hide',
             processMode: syncResult.processMode || 'both',
             autoProcess: syncResult.autoProcess ?? false,
@@ -93,11 +93,7 @@
     }
 
     // 计算渐变的第二个颜色（稍微偏紫/深一点）
-    const gradientEnd = theme.primary.replace('#', '');
-    const r = Math.max(0, parseInt(gradientEnd.substr(0, 2), 16) - 20);
-    const g = Math.max(0, parseInt(gradientEnd.substr(2, 2), 16) - 30);
-    const b = Math.min(255, parseInt(gradientEnd.substr(4, 2), 16) + 20);
-    const secondColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    const secondColor = L.getSecondaryColor(theme.primary);
 
     // 卡片背景色（自定义主题可以设置）
     const cardBgDark = theme.cardBg || '#1e293b';
