@@ -618,31 +618,42 @@
   L.selectionTranslateCache = new Map();
 
   /**
-   * 使用有道翻译 API
+   * 使用配置的翻译服务
    * @param {string} text - 待翻译文本
-   * @returns {Promise<string|null>}
+   * @param {string} from - 源语言
+   * @param {string} to - 目标语言
+   * @returns {Promise<Object>}
    */
-  L.translateWithYoudao = async function(text) {
-    try {
-      const url = `https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${encodeURIComponent(text)}`;
-
-      const response = await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: 'fetchProxy', url }, (res) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-          } else if (!res?.success) {
-            reject(new Error(res?.error || 'Fetch failed'));
-          } else {
-            resolve(res.data);
-          }
-        });
+  L.translateWithConfiguredService = async function(text, from, to) {
+    // 检查是否有配置的翻译节点
+    if (typeof translationService !== 'undefined') {
+      const request = createTranslationRequest({
+        text,
+        from,
+        to,
+        type: text.split(/\s+/).length <= 3 ? TranslationType.WORD : TranslationType.SENTENCE,
+        needDict: true,
+        needPhonetic: true
       });
 
-      const result = response.translateResult?.[0]?.[0]?.tgt;
-      return result || null;
-    } catch (e) {
-      return null;
+      const result = await translationService.translate(request);
+
+      if (result.success) {
+        return {
+          translation: result.translation,
+          phonetic: result.dictionary?.phonetic?.us || result.dictionary?.phonetic?.uk || '',
+          dictionary: result.dictionary
+        };
+      }
+
+      // 如果配置的服务失败，抛出错误让调用方处理
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
     }
+
+    // 没有配置翻译服务，返回 null
+    return null;
   };
 
   /**
@@ -686,31 +697,6 @@
   };
 
   /**
-   * 判断是否使用有道翻译
-   * @param {string} text - 文本
-   * @param {string} sourceLang - 源语言
-   * @param {string} targetLang - 目标语言
-   * @returns {boolean}
-   */
-  L.shouldUseYoudao = function(text, sourceLang, targetLang) {
-    // 计算词数
-    const wordCount = sourceLang === 'zh' || sourceLang === 'ja'
-      ? text.length
-      : text.split(/\s+/).filter(w => w.length > 0).length;
-
-    // 短文本（≤10词）
-    if (wordCount > 10) return false;
-
-    // 中英互译
-    const isChinese = sourceLang === 'zh';
-    const isEnglish = sourceLang === 'en';
-    const targetIsChinese = targetLang.startsWith('zh');
-    const targetIsEnglish = targetLang === 'en';
-
-    return (isChinese && targetIsEnglish) || (isEnglish && targetIsChinese);
-  };
-
-  /**
    * 混合翻译策略
    * @param {string} text - 待翻译文本
    * @returns {Promise<{translation: string, original: string, phonetic: string, isWord: boolean}>}
@@ -735,12 +721,18 @@
     let translation = null;
     let phonetic = '';
 
-    // 尝试有道翻译
-    if (L.shouldUseYoudao(text, sourceLang, targetLang)) {
-      translation = await L.translateWithYoudao(text);
+    // 1. 首先尝试使用配置的翻译服务
+    try {
+      const configuredResult = await L.translateWithConfiguredService(text, sourceLang, targetLang);
+      if (configuredResult?.translation) {
+        translation = configuredResult.translation;
+        phonetic = configuredResult.phonetic || '';
+      }
+    } catch (e) {
+      console.warn('[Lingrove] Configured translation service failed:', e.message);
     }
 
-    // 有道失败或不适用，使用 AI
+    // 2. 如果配置的服务失败或未配置，使用 AI 翻译
     if (!translation) {
       translation = await L.translateWithAI(text, targetLang);
     }
@@ -749,8 +741,8 @@
       throw new Error('翻译失败');
     }
 
-    // 如果是英文单词，尝试获取音标
-    if (isWord && sourceLang === 'en') {
+    // 如果是英文单词且没有音标，尝试获取音标
+    if (isWord && sourceLang === 'en' && !phonetic) {
       const dictData = await L.fetchDictionaryData(text);
       if (dictData?.phonetic) {
         phonetic = dictData.phonetic;

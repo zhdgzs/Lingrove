@@ -604,6 +604,14 @@
         </div>
         <div class="lingrove-sel-original">原文: ${original}</div>
         <div class="lingrove-sel-dict"></div>
+        <div class="lingrove-sel-actions">
+          <button class="lingrove-sel-replace-btn" data-original="${original}" data-translation="${translation}" data-phonetic="${phonetic || ''}" title="替换原文，悬浮可查看词典">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M12,6V9L16,5L12,1V4A8,8 0 0,0 4,12C4,13.57 4.46,15.03 5.24,16.26L6.7,14.8C6.25,13.97 6,13 6,12A6,6 0 0,1 12,6M18.76,7.74L17.3,9.2C17.74,10.04 18,11 18,12A6,6 0 0,1 12,18V15L8,19L12,23V20A8,8 0 0,0 20,12C20,10.43 19.54,8.97 18.76,7.74Z"/>
+            </svg>
+            替换原文
+          </button>
+        </div>
       `;
     } else {
       // 句子结果 - 原文词汇可点击
@@ -709,6 +717,68 @@
     L.wordActionPopup.style.left = x + 'px';
     L.wordActionPopup.style.top = y + 'px';
     L.wordActionPopup.style.display = 'block';
+  };
+
+  /**
+   * 替换选中文本为翻译格式
+   * @param {string} original - 原文
+   * @param {string} translation - 译文
+   * @param {string} phonetic - 音标
+   */
+  L.replaceSelectionWithTranslation = function(original, translation, phonetic) {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) {
+      L.showToast('无法获取选中文本');
+      return false;
+    }
+
+    const range = selection.getRangeAt(0);
+    const selectedText = range.toString().trim();
+
+    // 验证选中文本与原文匹配
+    if (selectedText.toLowerCase() !== original.toLowerCase()) {
+      L.showToast('选中文本已改变，请重新选择');
+      return false;
+    }
+
+    try {
+      // 创建替换元素
+      const wrapper = L.createReplacementElement(original, translation, phonetic, 'B1', false);
+
+      // 删除选中内容并插入替换元素
+      range.deleteContents();
+      range.insertNode(wrapper);
+
+      // 清除选择
+      selection.removeAllRanges();
+
+      // 隐藏弹窗
+      if (L.selectionPopup) {
+        L.selectionPopup.style.display = 'none';
+      }
+
+      // 缓存翻译结果
+      const sourceLang = L.detectLanguage(original);
+      const isNative = L.isNativeLanguage(sourceLang, L.config.nativeLanguage);
+      const targetLang = isNative ? L.config.targetLanguage : L.config.nativeLanguage;
+      const cacheKey = `${original.toLowerCase()}:${sourceLang}:${targetLang}`;
+
+      if (!L.wordCache.has(cacheKey)) {
+        L.wordCache.set(cacheKey, {
+          translation: translation,
+          phonetic: phonetic || '',
+          difficulty: 'B1'
+        });
+        L.saveWordCache();
+      }
+
+      L.showToast('已替换，悬浮可查看词典');
+      return true;
+    } catch (e) {
+      console.error('[Lingrove] Replace selection error:', e);
+      L.showToast('替换失败');
+      return false;
+    }
   };
 
 })(window.Lingrove);

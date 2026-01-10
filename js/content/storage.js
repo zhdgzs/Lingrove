@@ -322,3 +322,154 @@
   };
 
 })(window.Lingrove);
+
+// ==================== 翻译节点存储函数（全局） ====================
+
+/**
+ * 获取翻译节点列表
+ * @returns {Promise<Array>} - 节点列表
+ */
+async function getTranslationNodes() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(['translationNodes'], (result) => {
+      const nodes = result.translationNodes || [];
+      // 解码敏感字段
+      resolve(nodes.map(node => ({
+        ...node,
+        secretKey: node.secretKey ? decodeBase64(node.secretKey) : '',
+        apiKey: node.apiKey ? decodeBase64(node.apiKey) : ''
+      })));
+    });
+  });
+}
+
+/**
+ * 保存翻译节点列表
+ * @param {Array} nodes - 节点列表
+ * @returns {Promise}
+ */
+async function saveTranslationNodes(nodes) {
+  return new Promise((resolve, reject) => {
+    // 编码敏感字段
+    const encodedNodes = nodes.map(node => ({
+      ...node,
+      secretKey: node.secretKey ? encodeBase64(node.secretKey) : '',
+      apiKey: node.apiKey ? encodeBase64(node.apiKey) : ''
+    }));
+
+    chrome.storage.sync.set({ translationNodes: encodedNodes }, () => {
+      if (chrome.runtime.lastError) {
+        console.error('[Storage] Failed to save translation nodes:', chrome.runtime.lastError);
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+/**
+ * 添加翻译节点
+ * @param {Object} node - 节点配置
+ * @returns {Promise<Object>} - 添加后的节点（含 ID）
+ */
+async function addTranslationNode(node) {
+  const nodes = await getTranslationNodes();
+  const newNode = createTranslationNode(node);
+  nodes.push(newNode);
+  await saveTranslationNodes(nodes);
+  return newNode;
+}
+
+/**
+ * 更新翻译节点
+ * @param {string} nodeId - 节点 ID
+ * @param {Object} updates - 更新内容
+ * @returns {Promise<Object|null>} - 更新后的节点
+ */
+async function updateTranslationNode(nodeId, updates) {
+  const nodes = await getTranslationNodes();
+  const index = nodes.findIndex(n => n.id === nodeId);
+  if (index === -1) return null;
+
+  nodes[index] = { ...nodes[index], ...updates };
+  await saveTranslationNodes(nodes);
+  return nodes[index];
+}
+
+/**
+ * 删除翻译节点
+ * @param {string} nodeId - 节点 ID
+ * @returns {Promise<boolean>} - 是否删除成功
+ */
+async function deleteTranslationNode(nodeId) {
+  const nodes = await getTranslationNodes();
+  const newNodes = nodes.filter(n => n.id !== nodeId);
+  if (newNodes.length === nodes.length) return false;
+
+  await saveTranslationNodes(newNodes);
+  return true;
+}
+
+/**
+ * 更新翻译节点顺序
+ * @param {Array<string>} nodeIds - 节点 ID 列表（新顺序）
+ * @returns {Promise}
+ */
+async function reorderTranslationNodes(nodeIds) {
+  const nodes = await getTranslationNodes();
+  const nodeMap = new Map(nodes.map(n => [n.id, n]));
+  const reorderedNodes = nodeIds
+    .map(id => nodeMap.get(id))
+    .filter(Boolean);
+
+  // 添加未在列表中的节点（保持原顺序）
+  nodes.forEach(node => {
+    if (!nodeIds.includes(node.id)) {
+      reorderedNodes.push(node);
+    }
+  });
+
+  await saveTranslationNodes(reorderedNodes);
+}
+
+/**
+ * 更新节点测试结果
+ * @param {string} nodeId - 节点 ID
+ * @param {string} result - 测试结果 (success | failed)
+ * @returns {Promise}
+ */
+async function updateNodeTestResult(nodeId, result) {
+  return updateTranslationNode(nodeId, {
+    lastTestTime: Date.now(),
+    lastTestResult: result
+  });
+}
+
+// ==================== Base64 编解码工具 ====================
+
+/**
+ * Base64 编码
+ * @param {string} str
+ * @returns {string}
+ */
+function encodeBase64(str) {
+  try {
+    return btoa(unescape(encodeURIComponent(str)));
+  } catch (e) {
+    return str;
+  }
+}
+
+/**
+ * Base64 解码
+ * @param {string} str
+ * @returns {string}
+ */
+function decodeBase64(str) {
+  try {
+    return decodeURIComponent(escape(atob(str)));
+  } catch (e) {
+    return str;
+  }
+}

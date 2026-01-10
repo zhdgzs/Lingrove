@@ -10,49 +10,50 @@
 
 | ID | Task | Status | Dependencies | Files |
 |----|------|--------|--------------|-------|
-| T1.1 | 定义统一数据结构和类型常量 | pending | - | `js/content/translation-types.js` |
-| T1.2 | 实现适配器基类 BaseAdapter | pending | T1.1 | `js/content/translation-adapters.js` |
-| T1.3 | 实现 TranslationService 统一入口 | pending | T1.2 | `js/content/translation-service.js` |
-| T1.4 | 添加翻译节点存储逻辑 | pending | T1.1 | `js/content/storage.js` |
+| T1.1 | 定义统一数据结构和类型常量 | done | - | `js/content/translation-types.js` |
+| T1.2 | 实现适配器基类 BaseAdapter | done | T1.1 | `js/content/translation-adapters.js` |
+| T1.3 | 实现 TranslationService 统一入口 | done | T1.2 | `js/content/translation-service.js` |
+| T1.4 | 添加翻译节点存储逻辑 | done | T1.1 | `js/content/storage.js` |
 
 ### TG2: 提供商适配器 (Provider Adapters)
 
 | ID | Task | Status | Dependencies | Files |
 |----|------|--------|--------------|-------|
-| T2.1 | 实现百度翻译适配器 BaiduAdapter | pending | T1.2 | `js/content/translation-adapters.js` |
-| T2.2 | 实现有道翻译适配器 YoudaoAdapter | pending | T1.2 | `js/content/translation-adapters.js` |
-| T2.3 | 实现谷歌翻译适配器 GoogleAdapter | pending | T1.2 | `js/content/translation-adapters.js` |
-| T2.4 | 实现 DeepL 适配器 DeepLAdapter | pending | T1.2 | `js/content/translation-adapters.js` |
-| T2.5 | 添加 MD5/SHA256 签名工具函数 | pending | - | `js/content/crypto-utils.js` |
+| T2.1 | 实现谷歌翻译适配器 GoogleAdapter | done | T1.2 | `js/content/translation-adapters.js` |
+| T2.2 | 实现百度翻译适配器 BaiduAdapter | done | T1.2 | `js/content/translation-adapters.js` |
+| T2.3 | 实现腾讯云翻译适配器 TencentAdapter | done | T1.2 | `js/content/translation-adapters.js` |
+| T2.4 | 实现有道智云适配器 YoudaoAdapter | done | T1.2 | `js/content/translation-adapters.js` |
+| T2.5 | 实现 DeepL 适配器 DeepLAdapter | done | T1.2 | `js/content/translation-adapters.js` |
+| T2.6 | 添加 MD5/SHA256/HMAC 签名工具函数 | done | - | `js/content/crypto-utils.js` |
 
 ### TG3: 配置 UI (Configuration UI)
 
 | ID | Task | Status | Dependencies | Files |
 |----|------|--------|--------------|-------|
-| T3.1 | 添加翻译 API 配置区域 HTML | pending | - | `options.html` |
-| T3.2 | 添加翻译节点编辑弹窗 HTML | pending | T3.1 | `options.html` |
-| T3.3 | 添加翻译节点样式（复用 AI 节点） | pending | T3.1 | `css/options.css` |
-| T3.4 | 实现翻译节点列表渲染 | pending | T3.1, T1.4 | `js/options-translation.js` |
-| T3.5 | 实现翻译节点添加/编辑功能 | pending | T3.2, T3.4 | `js/options-translation.js` |
-| T3.6 | 实现翻译节点删除功能 | pending | T3.4 | `js/options-translation.js` |
-| T3.7 | 实现翻译节点拖拽排序 | pending | T3.4 | `js/options-translation.js` |
-| T3.8 | 实现快速填充预设按钮 | pending | T3.5 | `js/options-translation.js` |
-| T3.9 | 实现连通性测试功能 | pending | T3.5, TG2 | `js/options-translation.js` |
+| T3.1 | 添加翻译 API 配置区域 HTML | done | - | `options.html` |
+| T3.2 | 添加翻译节点编辑弹窗 HTML | done | T3.1 | `options.html` |
+| T3.3 | 添加翻译节点样式（复用 AI 节点） | done | T3.1 | `css/options.css` |
+| T3.4 | 实现翻译节点列表渲染 | done | T3.1, T1.4 | `js/options-translation.js` |
+| T3.5 | 实现翻译节点添加/编辑功能 | done | T3.2, T3.4 | `js/options-translation.js` |
+| T3.6 | 实现翻译节点删除功能 | done | T3.4 | `js/options-translation.js` |
+| T3.7 | 实现翻译节点拖拽排序 | done | T3.4 | `js/options-translation.js` |
+| T3.8 | 实现快速填充预设按钮 | done | T3.5 | `js/options-translation.js` |
+| T3.9 | 实现连通性测试功能 | done | T3.5, TG2 | `js/options-translation.js` |
 
 ### TG4: 集成与降级 (Integration & Fallback)
 
 | ID | Task | Status | Dependencies | Files |
 |----|------|--------|--------------|-------|
-| T4.1 | 修改 api-client.js 使用 TranslationService | pending | T1.3 | `js/content/api-client.js` |
-| T4.2 | 实现降级到内置免费服务逻辑 | pending | T4.1 | `js/content/translation-service.js` |
-| T4.3 | 实现节点故障转移机制 | pending | T1.3 | `js/content/translation-service.js` |
-| T4.4 | 实现速率限制检查 | pending | T1.3 | `js/content/translation-service.js` |
+| T4.1 | 修改 api-client.js 使用 TranslationService | done | T1.3 | `js/content/api-client.js` |
+| T4.2 | 实现降级到内置免费服务逻辑 | done | T4.1 | `js/content/translation-service.js` |
+| T4.3 | 实现节点故障转移机制 | done | T1.3 | `js/content/translation-service.js` |
+| T4.4 | 实现速率限制检查 | done | T1.3 | `js/content/translation-service.js` |
 
 ### TG5: 测试与优化 (Testing & Polish)
 
 | ID | Task | Status | Dependencies | Files |
 |----|------|--------|--------------|-------|
-| T5.1 | 更新 manifest.json 添加新文件引用 | pending | TG1, TG2 | `manifest.json` |
+| T5.1 | 更新 manifest.json 添加新文件引用 | done | TG1, TG2 | `manifest.json` |
 | T5.2 | 集成测试：配置 UI 流程 | pending | TG3 | - |
 | T5.3 | 集成测试：翻译功能端到端 | pending | TG4 | - |
 | T5.4 | 集成测试：故障转移场景 | pending | T4.3 | - |
@@ -140,7 +141,27 @@
 
 ---
 
-### T2.1 实现百度翻译适配器 BaiduAdapter
+### T2.1 实现谷歌翻译适配器 GoogleAdapter
+
+**目标**: 实现 Google Cloud Translation API 的适配器
+
+**内容**:
+- 语言代码映射表
+- API Key 认证
+- API 请求构建
+- 响应解析
+- 错误处理
+
+**API 文档**: https://cloud.google.com/translate/docs/reference/rest
+
+**验收标准**:
+- [ ] 翻译功能正常
+- [ ] 错误处理完善
+- [ ] 语言映射正确
+
+---
+
+### T2.2 实现百度翻译适配器 BaiduAdapter
 
 **目标**: 实现百度翻译 API 的适配器
 
@@ -151,7 +172,7 @@
 - 响应解析
 - 错误码映射
 
-**API 文档**: https://fanyi-api.baidu.com/doc/21
+**API 文档**: https://fanyi-api.baidu.com/product/112
 
 **验收标准**:
 - [ ] 翻译功能正常
@@ -160,9 +181,30 @@
 
 ---
 
-### T2.2 实现有道翻译适配器 YoudaoAdapter
+### T2.3 实现腾讯云翻译适配器 TencentAdapter
 
-**目标**: 实现有道翻译 API 的适配器（含词典功能）
+**目标**: 实现腾讯云机器翻译 API 的适配器
+
+**内容**:
+- 语言代码映射表
+- HMAC-SHA256 签名生成（TC3-HMAC-SHA256）
+- API 请求构建（POST JSON）
+- 响应解析
+- 错误码映射
+
+**API 文档**: https://cloud.tencent.com/document/product/551/35017
+
+**验收标准**:
+- [ ] 翻译功能正常
+- [ ] TC3 签名算法正确
+- [ ] 错误处理完善
+- [ ] 语言映射正确
+
+---
+
+### T2.4 实现有道智云适配器 YoudaoAdapter
+
+**目标**: 实现有道智云翻译 API 的适配器（含词典功能）
 
 **内容**:
 - 语言代码映射表
@@ -183,27 +225,7 @@
 
 ---
 
-### T2.3 实现谷歌翻译适配器 GoogleAdapter
-
-**目标**: 实现 Google Cloud Translation API 的适配器
-
-**内容**:
-- 语言代码映射表
-- API Key 认证
-- API 请求构建
-- 响应解析
-- 错误处理
-
-**API 文档**: https://cloud.google.com/translate/docs/reference/rest
-
-**验收标准**:
-- [ ] 翻译功能正常
-- [ ] 错误处理完善
-- [ ] 语言映射正确
-
----
-
-### T2.4 实现 DeepL 适配器 DeepLAdapter
+### T2.5 实现 DeepL 适配器 DeepLAdapter
 
 **目标**: 实现 DeepL API 的适配器
 
@@ -224,13 +246,14 @@
 
 ---
 
-### T2.5 添加 MD5/SHA256 签名工具函数
+### T2.6 添加 MD5/SHA256/HMAC 签名工具函数
 
-**目标**: 提供百度和有道 API 所需的签名函数
+**目标**: 提供各翻译 API 所需的签名函数
 
 **内容**:
-- `md5(str)` MD5 哈希
-- `sha256(str)` SHA256 哈希
+- `md5(str)` MD5 哈希（百度）
+- `sha256(str)` SHA256 哈希（有道）
+- `hmacSha256(key, str)` HMAC-SHA256（腾讯云）
 - 使用 Web Crypto API 或轻量库
 
 **验收标准**:
@@ -407,7 +430,7 @@
 
 ```
 Phase 1: 基础架构
-T1.1 → T1.2 → T2.5 → T2.1/T2.2/T2.3/T2.4 (并行) → T1.3 → T1.4
+T1.1 → T1.2 → T2.6 → T2.1/T2.2/T2.3/T2.4/T2.5 (并行) → T1.3 → T1.4
 
 Phase 2: 配置 UI
 T3.1 → T3.2 → T3.3 → T3.4 → T3.5 → T3.6 → T3.7 → T3.8 → T3.9
@@ -423,8 +446,8 @@ T5.2 → T5.3 → T5.4 → T5.5
 
 | Phase | Tasks | Effort |
 |-------|-------|--------|
-| Phase 1 | 9 tasks | 中等 |
+| Phase 1 | 10 tasks | 中等 |
 | Phase 2 | 9 tasks | 中等 |
 | Phase 3 | 5 tasks | 较小 |
 | Phase 4 | 4 tasks | 较小 |
-| **Total** | **27 tasks** | **中等** |
+| **Total** | **28 tasks** | **中等** |

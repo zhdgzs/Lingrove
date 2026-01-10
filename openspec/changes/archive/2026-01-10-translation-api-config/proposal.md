@@ -4,7 +4,7 @@
 
 新增翻译 API 配置功能，支持配置多个翻译服务（有道翻译、百度翻译、谷歌翻译等），采用与 AI 节点类似的配置方式，支持多节点、优先级排序、连通性测试和自动故障转移。
 
-## Motivation
+## Why
 
 当前翻译功能存在以下问题：
 
@@ -103,12 +103,13 @@
 
 ### 支持的翻译服务
 
-| 服务 | API 类型 | 认证方式 | 特点 |
-|------|----------|----------|------|
-| 百度翻译 | REST | appid + secretKey + sign | 中文优化，免费额度大 |
-| 有道翻译 | REST | appKey + appSecret + sign | 词典功能强，音标支持 |
-| 谷歌翻译 | REST | API Key | 多语言质量高 |
-| DeepL | REST | API Key | 翻译质量最佳 |
+| 服务 | API 类型 | 认证方式 | 特点 | 免费额度 |
+|------|----------|----------|------|----------|
+| 谷歌翻译 | REST | API Key | 多语言质量高 | 50万字符/月 |
+| 百度翻译 | REST | appid + secretKey + sign | 中文优化 | 100万字符/月（个人认证） |
+| 腾讯云翻译 | REST | SecretId + SecretKey + sign | 免费额度最大 | 500万字符/月 |
+| 有道智云 | REST | appKey + appSecret + sign | 词典功能强，音标支持 | 一次性50元额度 |
+| DeepL | REST | API Key | 翻译质量最佳 | 50万字符/月（Free版） |
 
 ### 数据结构
 
@@ -119,8 +120,9 @@
     {
       id: "uuid-1",
       name: "百度翻译",
-      provider: "baidu",        // baidu | youdao | google | deepl
+      provider: "baidu",        // google | baidu | tencent | youdao | deepl
       appId: "20241234567890",  // 百度/有道
+      secretId: "",             // 腾讯云
       secretKey: "encrypted",   // 加密存储
       apiKey: "",               // 谷歌/DeepL
       rateLimit: 10,            // QPS，0 表示无限制
@@ -200,15 +202,15 @@
 │  └───────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                               │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│ BaiduAdapter  │   │ YoudaoAdapter │   │ GoogleAdapter │  ...
-│               │   │               │   │               │
-│ - 签名算法    │   │ - 签名算法    │   │ - API Key    │
-│ - 语言映射    │   │ - 词典解析    │   │ - 语言映射    │
-│ - 结果转换    │   │ - 音标提取    │   │ - 结果转换    │
-└───────────────┘   └───────────────┘   └───────────────┘
+        ┌─────────────────────┼─────────────────────┬─────────────────────┐
+        ▼                     ▼                     ▼                     ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│ GoogleAdapter │   │ BaiduAdapter  │   │TencentAdapter │   │ YoudaoAdapter │  ...
+│               │   │               │   │               │   │               │
+│ - API Key    │   │ - MD5 签名    │   │ - HMAC 签名   │   │ - SHA256 签名 │
+│ - 语言映射    │   │ - 语言映射    │   │ - 语言映射    │   │ - 词典解析    │
+│ - 结果转换    │   │ - 结果转换    │   │ - 结果转换    │   │ - 音标提取    │
+└───────────────┘   └───────────────┘   └───────────────┘   └───────────────┘
 ```
 
 #### 统一数据结构
@@ -298,16 +300,16 @@ interface ProviderCapabilities {
 
 各提供商使用不同的语言代码，适配器负责转换：
 
-| 统一编码 | 百度 | 有道 | 谷歌 | DeepL |
-|----------|------|------|------|-------|
-| `zh-CN`  | `zh` | `zh-CHS` | `zh-CN` | `ZH` |
-| `zh-TW`  | `cht` | `zh-CHT` | `zh-TW` | `ZH` |
-| `en`     | `en` | `en` | `en` | `EN` |
-| `ja`     | `jp` | `ja` | `ja` | `JA` |
-| `ko`     | `kor` | `ko` | `ko` | `KO` |
-| `fr`     | `fra` | `fr` | `fr` | `FR` |
-| `de`     | `de` | `de` | `de` | `DE` |
-| `auto`   | `auto` | `auto` | `auto` | ❌ |
+| 统一编码 | 谷歌 | 百度 | 腾讯云 | 有道 | DeepL |
+|----------|------|------|--------|------|-------|
+| `zh-CN`  | `zh-CN` | `zh` | `zh` | `zh-CHS` | `ZH` |
+| `zh-TW`  | `zh-TW` | `cht` | `zh-TW` | `zh-CHT` | `ZH` |
+| `en`     | `en` | `en` | `en` | `en` | `EN` |
+| `ja`     | `ja` | `jp` | `ja` | `ja` | `JA` |
+| `ko`     | `ko` | `kor` | `ko` | `ko` | `KO` |
+| `fr`     | `fr` | `fra` | `fr` | `fr` | `FR` |
+| `de`     | `de` | `de` | `de` | `de` | `DE` |
+| `auto`   | `auto` | `auto` | `auto` | `auto` | ❌ |
 
 #### 适配器实现示例
 
@@ -508,9 +510,10 @@ class YoudaoAdapter extends BaseAdapter {
 class TranslationService {
   constructor() {
     this.adapters = {
-      baidu: BaiduAdapter,
-      youdao: YoudaoAdapter,
       google: GoogleAdapter,
+      baidu: BaiduAdapter,
+      tencent: TencentAdapter,
+      youdao: YoudaoAdapter,
       deepl: DeepLAdapter
     };
   }

@@ -622,6 +622,53 @@
   background: rgba(129, 140, 248, 0.2) !important;
 }
 
+/* 替换原文按钮 */
+.lingrove-sel-actions {
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid #334155 !important;
+}
+
+.lingrove-sel-replace-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 6px 10px !important;
+  background: #334155 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.lingrove-sel-replace-btn:hover {
+  background: #475569 !important;
+  color: #f8fafc !important;
+}
+
+.lingrove-sel-replace-btn svg {
+  flex-shrink: 0 !important;
+}
+
+/* 亮色主题下的替换按钮 */
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-actions {
+  border-top-color: #e2e8f0 !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-replace-btn {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.lingrove-selection-popup[data-theme="light"] .lingrove-sel-replace-btn:hover {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
 /* 词典样式复用 */
 .lingrove-selection-result .lingrove-dict-entry {
   margin-bottom: 6px !important;

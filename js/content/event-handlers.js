@@ -263,6 +263,18 @@
       if (!e.target.closest('.lingrove-word-action-popup')) {
         L.hideWordActionPopup();
       }
+
+      // 替换原文按钮
+      const replaceBtn = e.target.closest('.lingrove-sel-replace-btn');
+      if (replaceBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const original = replaceBtn.getAttribute('data-original');
+        const translation = replaceBtn.getAttribute('data-translation');
+        const phonetic = replaceBtn.getAttribute('data-phonetic');
+        L.replaceSelectionWithTranslation(original, translation, phonetic);
+        return;
+      }
     });
 
     // 滚动处理
