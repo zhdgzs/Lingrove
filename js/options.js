@@ -3247,6 +3247,12 @@ ${customPrompt}
   loadSettings();
   loadSectionFromHash(); // 从 hash 恢复页面
 
+  // 自动设置版本号（从 manifest.json 获取）
+  const appVersionEl = document.getElementById('appVersion');
+  if (appVersionEl) {
+    appVersionEl.textContent = 'v' + chrome.runtime.getManifest().version;
+  }
+
   // 监听 storage 变化（实时响应其他页面的主题切换）
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === 'sync' && changes.theme) {
