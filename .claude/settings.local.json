@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(npx openspec list:*)",
-      "Bash(npx openspec archive *)",
+      "Bash(npx openspec archive:*)",
       "Bash(npx openspec validate:*)",
       "Bash(mkdir:*)",
       "Bash(git mv:*)",

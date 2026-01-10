@@ -3540,3 +3540,408 @@ input:checked + .toggle-slider:before {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* ============ 翻译 API 节点管理样式 ============ */
+
+.translation-api-container {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.translation-api-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-tertiary);
+}
+
+.translation-api-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.translation-api-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.translation-api-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.translation-nodes-list {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 60px;
+}
+
+.translation-nodes-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.translation-nodes-empty svg {
+  opacity: 0.3;
+  margin-bottom: 12px;
+}
+
+.translation-nodes-empty p {
+  margin: 4px 0;
+}
+
+.translation-nodes-empty .hint {
+  font-size: 12px;
+}
+
+.translation-fallback-toggle {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.translation-fallback-toggle .toggle-item {
+  margin: 0;
+  padding: 0;
+}
+
+/* 翻译节点卡片 */
+.translation-node-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  transition: var(--transition);
+}
+
+.translation-node-card:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow);
+}
+
+.translation-node-card.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.translation-node-card.drag-over {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--bg-card));
+}
+
+.translation-node-drag-handle {
+  color: var(--text-muted);
+  cursor: grab;
+  padding: 4px;
+}
+
+.translation-node-drag-handle:hover {
+  color: var(--text-secondary);
+}
+
+.translation-node-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.translation-node-status.success {
+  background: var(--success);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--success) 50%, transparent);
+}
+
+.translation-node-status.failed {
+  background: var(--danger);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--danger) 50%, transparent);
+}
+
+.translation-node-status.untested {
+  background: var(--text-muted);
+}
+
+.translation-node-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.translation-node-name {
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.translation-node-provider {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.translation-node-key {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 翻译节点启用/禁用开关 */
+.translation-node-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.translation-node-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.translation-node-toggle .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-tertiary);
+  transition: var(--transition);
+  border-radius: 20px;
+}
+
+.translation-node-toggle .slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-muted);
+  transition: var(--transition);
+  border-radius: 50%;
+}
+
+.translation-node-toggle input:checked + .slider {
+  background-color: var(--primary);
+}
+
+.translation-node-toggle input:checked + .slider:before {
+  transform: translateX(16px);
+  background-color: white;
+}
+
+/* 禁用状态的节点卡片 */
+.translation-node-card.disabled {
+  opacity: 0.5;
+}
+
+.translation-node-card.disabled .translation-node-status {
+  background: var(--text-muted);
+  box-shadow: none;
+}
+
+.translation-node-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.translation-node-actions .btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.translation-node-actions .btn-icon:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.translation-node-actions .btn-icon.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+/* 翻译节点弹窗动态字段 */
+#translationAuthFields .form-group {
+  margin-bottom: 16px;
+}
+
+#translationAuthFields .input-with-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+#translationAuthFields .input-with-toggle input {
+  flex: 1;
+  padding-right: 40px;
+}
+
+#translationAuthFields .toggle-visibility {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+#translationAuthFields .toggle-visibility:hover {
+  color: var(--text-primary);
+}
+
+/* 翻译预设按钮 */
+.translation-preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.translation-preset-btn {
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+}
+
+/* 翻译节点测试结果 */
+#translationNodeTestResult {
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+#translationNodeTestResult.success {
+  color: var(--success);
+}
+
+#translationNodeTestResult.error {
+  color: var(--danger);
+}
+
+#translationNodeTestResult.loading {
+  color: var(--text-muted);
+}
+
+/* 翻译服务提供商信息展示 */
+.provider-info-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.provider-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.provider-info-row:first-child {
+  padding-top: 0;
+}
+
+.provider-info-row:last-child {
+  padding-bottom: 0;
+}
+
+.provider-info-row:not(:last-child) {
+  border-bottom: 1px solid var(--border);
+}
+
+.provider-info-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.provider-info-label svg {
+  color: var(--text-muted);
+}
+
+.provider-info-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.provider-doc-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.provider-doc-link a {
+  color: var(--primary-light);
+  text-decoration: none;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.provider-doc-link a:hover {
+  text-decoration: underline;
+}
+
+.btn-icon-mini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.btn-icon-mini:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}

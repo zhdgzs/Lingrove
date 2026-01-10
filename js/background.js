@@ -986,6 +986,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // 翻译 API 代理（用于配置的翻译服务，避免 CORS）
+  if (message.action === 'translationApiProxy') {
+    const { url, method, headers, body } = message;
+
+    const fetchOptions = {
+      method: method || 'GET',
+      headers: headers || {}
+    };
+
+    if (body) {
+      fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
+    }
+
+    fetch(url, fetchOptions)
+      .then(async response => {
+        const text = await response.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+
+        if (!response.ok) {
+          sendResponse({
+            success: false,
+            status: response.status,
+            error: typeof data === 'object' ? JSON.stringify(data) : data
+          });
+        } else {
+          sendResponse({ success: true, data, status: response.status });
+        }
+      })
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
   // 通用 fetch 代理（用于第三方 API，避免 CORS）
   if (message.action === 'fetchProxy') {
     fetch(message.url)

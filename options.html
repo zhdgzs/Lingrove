@@ -186,6 +186,96 @@
             </div>
           </div>
         </div>
+
+        <!-- 翻译 API 配置区域 -->
+        <div class="translation-api-container">
+          <div class="translation-api-header">
+            <div class="translation-api-title-row">
+              <span class="translation-api-title">翻译 API 节点</span>
+              <span class="translation-api-hint">拖拽调整优先级，优先使用排在前面的节点</span>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="addTranslationNodeBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+              </svg>
+              添加节点
+            </button>
+          </div>
+          <div class="translation-nodes-list" id="translationNodesList">
+            <!-- 翻译节点卡片将通过 JS 动态生成 -->
+          </div>
+          <div class="translation-nodes-empty" id="translationNodesEmpty">
+            <svg viewBox="0 0 24 24" width="48" height="48">
+              <path fill="currentColor" d="M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z"/>
+            </svg>
+            <p>暂无翻译 API 节点</p>
+            <p class="hint">点击上方「添加节点」按钮配置翻译服务</p>
+          </div>
+        </div>
+
+        <!-- 翻译节点编辑弹窗 -->
+        <div class="modal-overlay" id="translationNodeModalOverlay" style="display: none;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 id="translationNodeModalTitle">添加翻译节点</h3>
+              <button type="button" class="modal-close" id="translationNodeModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="translationNodeNameInput">节点名称</label>
+                <input type="text" id="translationNodeNameInput" placeholder="例如：百度翻译、有道智云">
+              </div>
+              <div class="form-group">
+                <label for="translationProviderSelect">翻译服务</label>
+                <select id="translationProviderSelect">
+                  <option value="">请选择翻译服务</option>
+                  <option value="google">谷歌翻译</option>
+                  <option value="baidu">百度翻译</option>
+                  <option value="tencent">腾讯云翻译</option>
+                  <option value="youdao">有道智云</option>
+                  <option value="deepl">DeepL</option>
+                </select>
+              </div>
+              <!-- 动态认证字段区域 -->
+              <div id="translationAuthFields">
+                <!-- 根据选择的服务动态显示 -->
+              </div>
+              <div class="form-group">
+                <label for="translationRateLimitInput">速率限制 (QPS)</label>
+                <div class="rate-limit-input-group">
+                  <div class="rate-limit-input-wrapper">
+                    <input type="number" id="translationRateLimitInput" min="0" max="100" placeholder="0">
+                    <span class="rate-limit-unit">次/秒</span>
+                  </div>
+                  <span class="rate-limit-hint">0 或留空表示无限制</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>快速填充</label>
+                <div class="preset-buttons translation-preset-buttons">
+                  <button type="button" class="btn btn-outline btn-sm translation-preset-btn" data-preset="google">谷歌翻译</button>
+                  <button type="button" class="btn btn-outline btn-sm translation-preset-btn" data-preset="baidu">百度翻译</button>
+                  <button type="button" class="btn btn-outline btn-sm translation-preset-btn" data-preset="tencent">腾讯云</button>
+                  <button type="button" class="btn btn-outline btn-sm translation-preset-btn" data-preset="youdao">有道智云</button>
+                  <button type="button" class="btn btn-outline btn-sm translation-preset-btn" data-preset="deepl">DeepL</button>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" id="testTranslationNodeBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.91,10.59L6.5,12L11,16.5Z"/>
+                </svg>
+                测试连接
+              </button>
+              <span class="test-result" id="translationNodeTestResult"></span>
+              <div class="modal-footer-right">
+                <button type="button" class="btn btn-secondary" id="cancelTranslationNodeBtn">取消</button>
+                <button type="button" class="btn btn-primary" id="saveTranslationNodeBtn">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 学习偏好 -->
@@ -1239,7 +1329,13 @@
   <script src="js/content/constants.js"></script>
   <script src="js/content/prompt-rules.js"></script>
   <script src="js/content/themes.js"></script>
+  <script src="js/content/storage.js"></script>
+  <script src="js/content/translation-types.js"></script>
+  <script src="js/content/crypto-utils.js"></script>
+  <script src="js/content/translation-adapters.js"></script>
+  <script src="js/content/translation-service.js"></script>
   <script src="js/options.js"></script>
+  <script src="js/options-translation.js"></script>
 </body>
 </html>
 
