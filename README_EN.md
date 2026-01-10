@@ -25,6 +25,58 @@
 
 ---
 
+## === 2026-01-10 New Features ===
+
+### 🌐 Translation API Service Support
+
+New independent translation service module, supports translating specified webpage text and replacing original content:
+
+- **Custom Translation API** — Configure Google, Baidu, Tencent Cloud, Youdao and other translation services
+- **Multi-Node Configuration** — Support multiple translation service nodes with priority-based usage
+- **Auto Fallback** — Automatically fallback to AI translation when translation service is unavailable
+
+**Supported Free Translation APIs:**
+
+| Provider | Free Quota | Documentation |
+|----------|------------|---------------|
+| Google Translate | 500K chars/month | https://cloud.google.com/translate/pricing |
+| Baidu Translate | 50K chars/month (unverified) 1M chars/month (verified) | https://fanyi-api.baidu.com/product/112 |
+| Tencent Cloud | 5M chars/month | https://cloud.tencent.com/document/product/551/35017 |
+| Youdao | One-time ¥50 credit | https://ai.youdao.com/DOCSIRMA/html/trans/price/wbfy/index.html |
+
+### ☁️ Cloud Sync
+
+New cloud sync feature for cross-device learning data synchronization:
+
+- Learned vocabulary list sync
+- Memorize vocabulary list sync
+- Extension settings sync
+
+### 📝 Text Selection Translation
+
+Select any text on the page to trigger translation popup:
+
+- **Short text** — Display translation result directly
+- **Paragraph text** — Support long paragraph translation
+
+### 👁️ Learned Vocabulary Display Settings
+
+Configure how learned vocabulary is displayed on the page:
+
+- **Hidden** — Do not display learned vocabulary at all
+- **Original** — Display in original form
+- **Translation** — Display in translated form
+
+### 📊 Percentage-Based Replacement Intensity
+
+Replacement intensity changed from fixed word count to percentage mode, dynamically calculating replacement count based on paragraph length for smarter adaptation.
+
+### ⚡ Translation Threshold Optimization
+
+Support custom translation threshold, optimized trigger logic with dynamic minimum text length for more accurate translation triggering.
+
+---
+
 > This project is forked from [VocabMeld](https://github.com/lzskyline/VocabMeld).
 >
 > Due to some issues in the original project and incomplete functionality and slow iterative updates, I decided to fork and maintain it independently with improvements.
