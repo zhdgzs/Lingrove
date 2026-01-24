@@ -378,7 +378,7 @@
     `;
 
     // 计算位置
-    let posLeft, posTop;
+    let posLeft, posTop, anchorBottom, anchorTop;
     const caretRange = document.caretRangeFromPoint(mouseX, mouseY);
     if (caretRange && element.contains(caretRange.startContainer)) {
       const tempRange = document.createRange();
@@ -386,16 +386,49 @@
       tempRange.setEnd(caretRange.startContainer, caretRange.startOffset);
       const caretRect = tempRange.getBoundingClientRect();
       posLeft = caretRect.left;
-      posTop = caretRect.bottom;
+      anchorBottom = caretRect.bottom;
+      anchorTop = caretRect.top;
     } else {
       const rect = element.getBoundingClientRect();
       posLeft = rect.left;
-      posTop = mouseY + 16;
+      anchorBottom = mouseY + 16;
+      anchorTop = mouseY;
     }
 
+    // 先临时显示 tooltip 以获取其高度
     L.tooltip.style.left = posLeft + window.scrollX + 'px';
-    L.tooltip.style.top = posTop + window.scrollY + 2 + 'px';
+    L.tooltip.style.top = anchorBottom + window.scrollY + 2 + 'px';
     L.tooltip.style.display = 'block';
+    L.tooltip.style.visibility = 'hidden';
+
+    // 获取 tooltip 尺寸和视口信息
+    const tooltipRect = L.tooltip.getBoundingClientRect();
+    const tooltipHeight = tooltipRect.height;
+    const viewportHeight = window.innerHeight;
+
+    // 计算下方和上方的可用空间
+    const spaceBelow = viewportHeight - anchorBottom;
+    const spaceAbove = anchorTop;
+
+    // 决定显示位置：优先下方，空间不足时显示在上方
+    if (spaceBelow >= tooltipHeight + 10) {
+      // 下方空间充足，显示在下方
+      posTop = anchorBottom + window.scrollY + 2;
+    } else if (spaceAbove >= tooltipHeight + 10) {
+      // 下方空间不足但上方空间充足，显示在上方
+      posTop = anchorTop + window.scrollY - tooltipHeight - 2;
+    } else {
+      // 两边空间都不足，选择空间较大的一侧
+      if (spaceAbove > spaceBelow) {
+        posTop = anchorTop + window.scrollY - tooltipHeight - 2;
+      } else {
+        posTop = anchorBottom + window.scrollY + 2;
+      }
+    }
+
+    // 应用最终位置并显示
+    L.tooltip.style.top = posTop + 'px';
+    L.tooltip.style.visibility = 'visible';
 
     // 加载词典数据
     const dictionaryType = L.config.dictionaryType || 'en-en';
