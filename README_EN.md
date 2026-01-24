@@ -25,6 +25,43 @@
 
 ---
 
+## === 2026-01-24 Feature Updates ===
+
+### ☁️ Auto Sync
+
+New scheduled auto-sync feature for automatic data backup without manual operation:
+
+- **Scheduled Auto Backup** — Automatically detect and upload data to WebDAV cloud every hour
+- **Smart File Management** — Keep only one auto-sync file per day (`auto_sync_YYYY-MM-DD.json`), automatically clean up old files
+- **Silent Operation** — Run in background without interrupting normal usage
+- **Optional Toggle** — Enable/disable auto-sync freely in settings page
+
+### 🔄 Page Restore
+
+New keyboard shortcut to temporarily restore page to original state:
+
+- **Shortcut Restore** — Press `Alt+R` to quickly restore page to untranslated state
+- **Smart State Management** — Automatically disable auto-processing after manual restore to avoid repeated translation
+- **Shortcut Split** — Split original `Alt+T` into process page (`Alt+T`) and restore page (`Alt+R`) as two independent shortcuts
+- **UI Optimization** — Popup action area changed to grid layout with buttons displayed side by side
+
+### 🚫 IP Address Filtering
+
+New IP address auto-filtering feature to skip local development environments:
+
+- **Auto Recognition** — Automatically recognize and skip localhost, 192.168.x.x, IPv6 and other local addresses
+- **One-Click Toggle** — Enable/disable IP address filtering with one click in settings page
+- **Developer Friendly** — Avoid unnecessary translation processing in local development environments
+
+### 🐛 Translation Popup Optimization
+
+Fixed translation popup display issues to improve user experience:
+
+- **Smart Positioning** — Automatically detect popup position to ensure full display within visible area
+- **Boundary Handling** — Automatically adjust position when popup exceeds screen boundaries to avoid being obscured
+
+---
+
 ## === 2026-01-10 New Features ===
 
 ### 🌐 Translation API Service Support
@@ -153,6 +190,7 @@ Support custom translation threshold, optimized trigger logic with dynamic minim
 | Action | Description |
 |--------|-------------|
 | `Alt+T` | Quick process current page |
+| `Alt+R` | Quick restore current page |
 | Hover on word | View phonetics, difficulty, dictionary definition |
 | Click phonetics | Play pronunciation |
 | Click "Learned" | Word won't be replaced again |
