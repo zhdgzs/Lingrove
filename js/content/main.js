@@ -8,6 +8,7 @@
 
   // 状态变量
   L.isProcessing = false;
+  L.isManuallyRestored = false; // 标记用户是否手动还原了页面
   L.intersectionObserver = null;
 
   /**
@@ -20,6 +21,8 @@
 
     L.intersectionObserver = new IntersectionObserver((entries) => {
       if (!L.config?.enabled || !L.shouldProcessSite()) return;
+      // 如果用户手动还原了页面,不触发自动处理
+      if (L.isManuallyRestored) return;
 
       let hasNewVisible = false;
 
@@ -286,6 +289,8 @@
     if (!L.intersectionObserver) return;
     if (!L.config?.enabled) return;
     if (!L.shouldProcessSite()) return;
+    // 如果用户手动还原了页面，不触发自动处理
+    if (L.isManuallyRestored) return;
 
     const containers = L.findTextContainers(document.body);
     let hasVisibleUnprocessed = false;
@@ -313,9 +318,18 @@
    * 处理页面
    */
   L.processPage = async function(viewportOnly = true) {
+    // 清除手动还原标志，允许自动处理
+    L.isManuallyRestored = false;
+
     if (!L.config?.enabled) return { processed: 0, disabled: true };
 
     const hostname = window.location.hostname;
+
+    // 检查 IP 地址过滤
+    if (L.config.skipIPAddresses && L.isIPAddress(hostname)) {
+      return { processed: 0, excluded: true, reason: 'ip-address' };
+    }
+
     if (L.config.siteMode === 'all') {
       if (L.config.excludedSites?.some(domain => hostname.includes(domain))) {
         return { processed: 0, excluded: true };

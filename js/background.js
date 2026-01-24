@@ -776,8 +776,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // 快捷键处理
 chrome.commands.onCommand.addListener((command, tab) => {
-  if (command === 'toggle-translation') {
+  if (command === 'process-page') {
     chrome.tabs.sendMessage(tab.id, { action: 'processPage' });
+  } else if (command === 'restore-page') {
+    chrome.tabs.sendMessage(tab.id, { action: 'restorePage' });
   }
 });
 
@@ -1551,3 +1553,194 @@ async function webdavDelete(server, username, password, filename) {
     return { success: false, message: `删除失败: ${error.message}` };
   }
 }
+
+// ============ 自动同步功能 ============
+
+/**
+ * 收集所有数据用于自动同步
+ */
+async function collectAllData() {
+  const syncData = await new Promise(resolve => chrome.storage.sync.get(null, resolve));
+  const localData = await new Promise(resolve => chrome.storage.local.get(null, resolve));
+
+  const exportData = {
+    version: '1.0',
+    exportDate: new Date().toISOString()
+  };
+
+  // 配置设置
+  exportData.settings = {
+    apiEndpoint: syncData.apiEndpoint,
+    apiKey: syncData.apiKey,
+    modelName: syncData.modelName,
+    nativeLanguage: syncData.nativeLanguage,
+    targetLanguage: syncData.targetLanguage,
+    difficultyLevel: syncData.difficultyLevel,
+    intensity: syncData.intensity,
+    minLengthConfig: syncData.minLengthConfig,
+    autoProcess: syncData.autoProcess,
+    showPhonetic: syncData.showPhonetic,
+    dictionaryType: syncData.dictionaryType,
+    blacklist: syncData.blacklist,
+    whitelist: syncData.whitelist,
+    siteMode: syncData.siteMode,
+    excludedSites: syncData.excludedSites,
+    allowedSites: syncData.allowedSites,
+    customPromptRules: syncData.customPromptRules,
+    apiNodes: syncData.apiNodes,
+    rateLimitEnabled: syncData.rateLimitEnabled,
+    globalRateLimit: syncData.globalRateLimit,
+    processMode: syncData.processMode,
+    cacheMaxSize: syncData.cacheMaxSize,
+    translationStyle: syncData.translationStyle,
+    learnedWordDisplay: syncData.learnedWordDisplay,
+    theme: syncData.theme,
+    colorTheme: syncData.colorTheme,
+    customTheme: syncData.customTheme,
+    customizedThemes: syncData.customizedThemes,
+    ttsVoice: syncData.ttsVoice,
+    ttsRate: syncData.ttsRate,
+    showAddMemorize: syncData.showAddMemorize,
+    customSourceRules: syncData.customSourceRules,
+    customTargetRules: syncData.customTargetRules
+  };
+
+  // 云同步配置
+  if (syncData.cloudSync) {
+    exportData.cloudSync = syncData.cloudSync;
+  }
+
+  // 词汇数据
+  exportData.learnedWords = localData.learnedWords || [];
+  exportData.memorizeList = localData.memorizeList || [];
+  exportData.wordCache = localData.wordCache || [];
+
+  // 统计数据
+  exportData.stats = {
+    totalWords: syncData.totalWords || 0,
+    todayWords: syncData.todayWords || 0,
+    lastResetDate: syncData.lastResetDate,
+    cacheHits: syncData.cacheHits || 0,
+    cacheMisses: syncData.cacheMisses || 0
+  };
+
+  return exportData;
+}
+
+/**
+ * 执行自动同步
+ */
+async function performAutoSync() {
+  try {
+    console.log('[Lingrove] Auto sync triggered');
+
+    // 获取云同步配置
+    const result = await new Promise(resolve => chrome.storage.sync.get(['cloudSync'], resolve));
+    const cloudSync = result.cloudSync;
+
+    if (!cloudSync || !cloudSync.autoSyncEnabled) {
+      console.log('[Lingrove] Auto sync is disabled');
+      return;
+    }
+
+    if (!cloudSync.server || !cloudSync.username || !cloudSync.password) {
+      console.log('[Lingrove] Cloud sync not configured');
+      return;
+    }
+
+    // 生成今天的文件名
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const filename = `auto_sync_${today}.json`;
+
+    // 检查今天的文件是否已存在
+    const listResult = await webdavList(cloudSync.server, cloudSync.username, cloudSync.password);
+    if (!listResult.success) {
+      console.error('[Lingrove] Failed to list files:', listResult.message);
+      return;
+    }
+
+    const files = listResult.files || [];
+    const todayFileExists = files.some(f => f.name === filename);
+
+    if (todayFileExists) {
+      console.log('[Lingrove] Auto sync already done today, skipping');
+      return;
+    }
+
+    // 删除所有旧的自动同步文件
+    const oldAutoSyncFiles = files.filter(f => f.name.startsWith('auto_sync_') && f.name !== filename);
+    for (const oldFile of oldAutoSyncFiles) {
+      console.log('[Lingrove] Deleting old auto sync file:', oldFile.name);
+      await webdavDelete(cloudSync.server, cloudSync.username, cloudSync.password, oldFile.name);
+    }
+
+    // 收集数据并上传今天的文件
+    const data = await collectAllData();
+
+    // 直接上传文件（不使用 webdavUpload，因为它会生成时间戳文件名）
+    await ensureWebdavDir(cloudSync.server, cloudSync.username, cloudSync.password);
+    const fileUrl = `${cloudSync.server}${CLOUD_SYNC_CONFIG.backupDir}/${filename}`;
+
+    const uploadResponse = await fetch(fileUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': getWebdavAuthHeader(cloudSync.username, cloudSync.password),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data, null, 2)
+    });
+
+    if (uploadResponse.ok || uploadResponse.status === 201 || uploadResponse.status === 204) {
+      console.log('[Lingrove] Auto sync successful:', filename);
+
+      // 更新上次自动同步时间
+      await new Promise(resolve => {
+        chrome.storage.sync.set({
+          cloudSync: { ...cloudSync, lastAutoSyncTime: Date.now() }
+        }, resolve);
+      });
+    } else {
+      console.error('[Lingrove] Auto sync upload failed: HTTP', uploadResponse.status);
+    }
+  } catch (error) {
+    console.error('[Lingrove] Auto sync error:', error);
+  }
+}
+
+/**
+ * 初始化自动同步
+ */
+async function initAutoSync() {
+  // 监听配置变化
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'sync' && changes.cloudSync) {
+      const newConfig = changes.cloudSync.newValue;
+      if (newConfig?.autoSyncEnabled) {
+        // 启用自动同步，创建定时器
+        chrome.alarms.create('autoSync', { periodInMinutes: 60 });
+        console.log('[Lingrove] Auto sync alarm created');
+      } else {
+        // 禁用自动同步，清除定时器
+        chrome.alarms.clear('autoSync');
+        console.log('[Lingrove] Auto sync alarm cleared');
+      }
+    }
+  });
+
+  // 监听定时器触发
+  chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === 'autoSync') {
+      performAutoSync();
+    }
+  });
+
+  // 检查当前配置，如果已启用则创建定时器
+  const result = await new Promise(resolve => chrome.storage.sync.get(['cloudSync'], resolve));
+  if (result.cloudSync?.autoSyncEnabled) {
+    chrome.alarms.create('autoSync', { periodInMinutes: 60 });
+    console.log('[Lingrove] Auto sync alarm initialized');
+  }
+}
+
+// 初始化自动同步
+initAutoSync();

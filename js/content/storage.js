@@ -48,6 +48,7 @@
             siteMode: syncResult.siteMode || 'all',
             excludedSites: syncResult.excludedSites || syncResult.blacklist || [],
             allowedSites: syncResult.allowedSites || [],
+            skipIPAddresses: syncResult.skipIPAddresses ?? false,
             learnedWords: localResult.learnedWords || [],
             memorizeList: localResult.memorizeList || [],
             colorTheme: syncResult.colorTheme || 'default',

@@ -144,6 +144,28 @@
   };
 
   /**
+   * 检测 hostname 是否为 IP 地址
+   * @param {string} hostname - 主机名
+   * @returns {boolean}
+   */
+  L.isIPAddress = function(hostname) {
+    if (!hostname) return false;
+
+    // localhost 特殊处理
+    if (hostname === 'localhost' || hostname.startsWith('localhost:')) {
+      return true;
+    }
+
+    // IPv4 正则（包括端口）
+    const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/;
+
+    // IPv6 正则（简化版，包括 [::1] 格式）
+    const ipv6Regex = /^\[?([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}\]?(:\d+)?$/;
+
+    return ipv4Regex.test(hostname) || ipv6Regex.test(hostname);
+  };
+
+  /**
    * 重建文本，只保留指定的词汇（用于发送给 AI）
    * @param {string} text - 原始文本
    * @param {string[]} targetWords - 目标词汇列表

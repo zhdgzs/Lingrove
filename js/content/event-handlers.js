@@ -279,6 +279,10 @@
 
     // 滚动处理
     const handleScroll = L.debounce(() => {
+      // 如果用户手动还原了页面，不触发自动处理
+      if (L.isManuallyRestored) {
+        return;
+      }
       if (L.config?.autoProcess && L.config?.enabled) {
         L.observeTextContainers();
       }
@@ -287,6 +291,10 @@
 
     // 监听 DOM 变化
     const mutationObserver = new MutationObserver(L.debounce(() => {
+      // 如果用户手动还原了页面，不触发自动处理
+      if (L.isManuallyRestored) {
+        return;
+      }
       if (L.config?.autoProcess && L.config?.enabled) {
         L.observeTextContainers();
       }
