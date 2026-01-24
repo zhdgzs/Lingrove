@@ -1340,7 +1340,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateSiteListVisibility(siteMode);
       elements.excludedSitesInput.value = (result.excludedSites || result.blacklist || []).join('\n');
       elements.allowedSitesInput.value = (result.allowedSites || []).join('\n');
-      
+
+      // IP 地址过滤
+      const skipIPAddressesCheckbox = document.getElementById('skipIPAddresses');
+      if (skipIPAddressesCheckbox) {
+        skipIPAddressesCheckbox.checked = result.skipIPAddresses ?? false;
+      }
+
       // 发音设置
       elements.ttsRate.value = result.ttsRate || 1.0;
       elements.ttsRateValue.textContent = (result.ttsRate || 1.0).toFixed(1);
@@ -1655,6 +1661,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       siteMode: document.querySelector('input[name="siteMode"]:checked').value,
       excludedSites: elements.excludedSitesInput.value.split('\n').filter(s => s.trim()),
       allowedSites: elements.allowedSitesInput.value.split('\n').filter(s => s.trim()),
+      skipIPAddresses: document.getElementById('skipIPAddresses')?.checked ?? false,
       colorTheme: document.querySelector('input[name="colorTheme"]:checked')?.value || 'default',
       customTheme: customTheme,
       // 保存可修改的内置主题配置
@@ -1718,7 +1725,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         debouncedSave(200);
       });
     });
-    
+
+    // IP 地址过滤
+    const skipIPAddressesCheckbox = document.getElementById('skipIPAddresses');
+    if (skipIPAddressesCheckbox) {
+      skipIPAddressesCheckbox.addEventListener('change', () => debouncedSave(200));
+    }
+
     // 学习语言改变时，重新加载声音列表
     elements.targetLanguage.addEventListener('change', () => {
       debouncedSave(200);
@@ -2226,7 +2239,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       password: '',
       lastSyncTime: null,
       lastSyncType: null,
-      lastSyncStatus: null
+      lastSyncStatus: null,
+      autoSyncEnabled: false,
+      lastAutoSyncTime: null
     };
 
     // 加载云同步配置
@@ -2265,6 +2280,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (elements.cloudSyncPassword) {
         // 密码是 Base64 编码的，解码后显示
         elements.cloudSyncPassword.value = config.password ? atob(config.password) : '';
+      }
+
+      // 自动同步选项
+      const autoSyncCheckbox = document.getElementById('autoSyncEnabled');
+      if (autoSyncCheckbox) {
+        autoSyncCheckbox.checked = config.autoSyncEnabled ?? false;
       }
 
       // 显示上次同步状态
@@ -2728,6 +2749,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         password: btoa(elements.cloudSyncPassword.value)
       });
     });
+
+    // 自动同步选项
+    const autoSyncCheckbox = document.getElementById('autoSyncEnabled');
+    if (autoSyncCheckbox) {
+      autoSyncCheckbox.addEventListener('change', async () => {
+        await saveCloudSyncConfig({
+          autoSyncEnabled: autoSyncCheckbox.checked
+        });
+      });
+    }
 
     // 初始化云同步 UI
     initCloudSyncUI();

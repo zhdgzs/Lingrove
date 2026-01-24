@@ -24,7 +24,8 @@
     "storage",
     "activeTab",
     "contextMenus",
-    "tts"
+    "tts",
+    "alarms"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -62,12 +63,19 @@
     "open_in_tab": true
   },
   "commands": {
-    "toggle-translation": {
+    "process-page": {
       "suggested_key": {
         "default": "Alt+T",
         "mac": "Alt+T"
       },
-      "description": "__MSG_commandToggleTranslation__"
+      "description": "__MSG_commandProcessPage__"
+    },
+    "restore-page": {
+      "suggested_key": {
+        "default": "Alt+R",
+        "mac": "Alt+R"
+      },
+      "description": "__MSG_commandRestorePage__"
     }
   },
   "web_accessible_resources": [

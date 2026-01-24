@@ -250,6 +250,9 @@
    * 恢复所有翻译
    */
   L.restoreAll = function() {
+    // 设置手动还原标志，禁用自动处理
+    L.isManuallyRestored = true;
+
     document.querySelectorAll('.lingrove-translated').forEach(L.restoreOriginal);
     document.querySelectorAll('[data-lingrove-processed]').forEach(el => el.removeAttribute('data-lingrove-processed'));
     document.querySelectorAll('[data-lingrove-observing]').forEach(el => el.removeAttribute('data-lingrove-observing'));

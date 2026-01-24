@@ -7,8 +7,12 @@
     "message": "在日常浏览中自然习得语言，智能替换网页词汇，创造沉浸式双语学习环境",
     "description": "扩展描述"
   },
-  "commandToggleTranslation": {
-    "message": "切换翻译处理",
+  "commandProcessPage": {
+    "message": "处理当前页面",
+    "description": "快捷键描述"
+  },
+  "commandRestorePage": {
+    "message": "还原当前页面",
     "description": "快捷键描述"
   },
   "popupTitle": {

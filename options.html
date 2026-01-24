@@ -939,6 +939,20 @@
           <textarea id="excludedSitesInput" placeholder="example.com&#10;github.com"></textarea>
         </div>
 
+        <!-- IP 地址过滤选项 -->
+        <div class="form-group">
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-title">跳过 IP 地址</span>
+              <span class="toggle-desc">跳过所有 IP 地址（包括 localhost、192.168.x.x、IPv6 等）</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="skipIPAddresses">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
         <div class="form-group site-list-group" id="allowedSitesGroup" style="display: none;">
           <label for="allowedSitesInput">指定站点</label>
           <p class="help-text">只有这些站点会进行处理，每行一个（支持部分匹配，如 "news" 匹配所有包含 news 的域名）</p>
@@ -1188,6 +1202,18 @@
                   测试连接
                 </button>
                 <span class="cloud-sync-test-result" id="cloudSyncTestResult"></span>
+              </div>
+
+              <!-- 自动同步选项 -->
+              <div class="toggle-item" style="margin-top: 16px;">
+                <div class="toggle-info">
+                  <span class="toggle-title">启用自动同步</span>
+                  <span class="toggle-desc">每小时自动检测，文件命名为 auto_sync_YYYY-MM-DD.json，每天同步一次，自动清理旧文件</span>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="autoSyncEnabled">
+                  <span class="toggle-slider"></span>
+                </label>
               </div>
 
               <!-- 同步操作 -->
