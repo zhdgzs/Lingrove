@@ -3707,6 +3707,12 @@ input:checked + .toggle-slider:before {
   text-overflow: ellipsis;
 }
 
+.translation-node-error {
+  font-size: 11px;
+  color: var(--danger);
+  margin-top: 4px;
+}
+
 /* 翻译节点启用/禁用开关 */
 .translation-node-toggle {
   position: relative;

@@ -125,6 +125,11 @@
     // 脱敏显示密钥
     const maskedKey = getMaskedKey(node);
 
+    // 错误信息显示
+    const errorHtml = node.lastTestError && node.lastTestResult === 'failed'
+      ? `<div class="translation-node-error">${escapeHtml(node.lastTestError)}</div>`
+      : '';
+
     return `
       <div class="translation-node-card ${isEnabled ? '' : 'disabled'}" data-node-id="${node.id}" draggable="true">
         <div class="translation-node-drag-handle">
@@ -139,6 +144,7 @@
             <span class="translation-node-provider">${escapeHtml(providerName)}</span>
           </div>
           <div class="translation-node-key">${escapeHtml(maskedKey)}</div>
+          ${errorHtml}
         </div>
         <div class="translation-node-actions">
           <label class="translation-node-toggle" title="${isEnabled ? '点击禁用' : '点击启用'}">
@@ -574,6 +580,7 @@
   async function testNodeById(nodeId, btn) {
     const card = btn.closest('.translation-node-card');
     const statusEl = card.querySelector('.translation-node-status');
+    const infoEl = card.querySelector('.translation-node-info');
 
     // 显示加载状态
     statusEl.className = 'translation-node-status untested';
@@ -581,16 +588,49 @@
 
     try {
       const result = await translationService.testConnection(nodeId);
+      const errorMsg = result.success ? null : (result.error?.message || '连接失败');
 
-      // 更新节点状态
-      await updateNodeTestResult(nodeId, result.success ? 'success' : 'failed');
+      // 更新节点状态（包含错误信息）
+      await updateNodeTestResult(nodeId, result.success ? 'success' : 'failed', errorMsg);
 
       // 更新 UI
       statusEl.className = `translation-node-status ${result.success ? 'success' : 'failed'}`;
-      statusEl.title = result.success ? `连接成功 (${result.latency}ms)` : (result.error?.message || '连接失败');
+      statusEl.title = result.success ? `连接成功 (${result.latency}ms)` : errorMsg;
+
+      // 更新错误提示
+      let errorEl = card.querySelector('.translation-node-error');
+      if (result.success) {
+        // 成功时移除错误提示
+        if (errorEl) errorEl.remove();
+      } else {
+        // 失败时更新或创建错误提示
+        if (errorEl) {
+          errorEl.textContent = errorMsg;
+        } else {
+          errorEl = document.createElement('div');
+          errorEl.className = 'translation-node-error';
+          errorEl.textContent = errorMsg;
+          infoEl?.appendChild(errorEl);
+        }
+      }
     } catch (error) {
+      const errorMsg = error.message || '测试失败';
       statusEl.className = 'translation-node-status failed';
-      statusEl.title = error.message || '测试失败';
+      statusEl.title = errorMsg;
+
+      // 更新错误提示
+      let errorEl = card.querySelector('.translation-node-error');
+      if (errorEl) {
+        errorEl.textContent = errorMsg;
+      } else {
+        errorEl = document.createElement('div');
+        errorEl.className = 'translation-node-error';
+        errorEl.textContent = errorMsg;
+        infoEl?.appendChild(errorEl);
+      }
+
+      // 保存错误状态
+      await updateNodeTestResult(nodeId, 'failed', errorMsg);
     } finally {
       btn.disabled = false;
     }
