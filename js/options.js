@@ -1112,9 +1112,23 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (response?.success) {
             statusIndicator.classList.add('healthy');
             statusIndicator.title = '正常';
+            // 移除错误提示
+            const errorEl = card?.querySelector('.api-node-error');
+            if (errorEl) errorEl.remove();
           } else {
             statusIndicator.classList.add('error');
             statusIndicator.title = response?.message || '连接失败';
+            // 更新或创建错误提示
+            const errorMsg = response?.message || '连接失败';
+            let errorEl = card?.querySelector('.api-node-error');
+            if (errorEl) {
+              errorEl.textContent = errorMsg;
+            } else if (card) {
+              errorEl = document.createElement('div');
+              errorEl.className = 'api-node-error';
+              errorEl.textContent = errorMsg;
+              card.querySelector('.api-node-info')?.appendChild(errorEl);
+            }
           }
         }
 
@@ -2118,7 +2132,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           siteMode: syncData.siteMode,
           excludedSites: syncData.excludedSites,
           allowedSites: syncData.allowedSites,
-          apiNodes: syncData.apiNodes
+          apiNodes: syncData.apiNodes,
+          translationNodes: syncData.translationNodes
         };
       }
 
@@ -2422,6 +2437,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         allowedSites: syncData.allowedSites,
         customPromptRules: syncData.customPromptRules,
         apiNodes: syncData.apiNodes,
+        translationNodes: syncData.translationNodes,
         rateLimitEnabled: syncData.rateLimitEnabled,
         globalRateLimit: syncData.globalRateLimit,
         processMode: syncData.processMode,

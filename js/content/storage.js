@@ -438,12 +438,14 @@ async function reorderTranslationNodes(nodeIds) {
  * 更新节点测试结果
  * @param {string} nodeId - 节点 ID
  * @param {string} result - 测试结果 (success | failed)
+ * @param {string|null} errorMsg - 错误信息（成功时为 null）
  * @returns {Promise}
  */
-async function updateNodeTestResult(nodeId, result) {
+async function updateNodeTestResult(nodeId, result, errorMsg = null) {
   return updateTranslationNode(nodeId, {
     lastTestTime: Date.now(),
-    lastTestResult: result
+    lastTestResult: result,
+    lastTestError: errorMsg
   });
 }
 
