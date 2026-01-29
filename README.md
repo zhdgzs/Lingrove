@@ -10,6 +10,11 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/zhdgzs/Lingrove"><img src="https://img.shields.io/badge/GitHub-zhdgzs%2FLingrove-blue?logo=github" alt="GitHub"></a>
+  <a href="https://gitee.com/zhdgzs/Lingrove"><img src="https://img.shields.io/badge/Gitee-zhdgzs%2FLingrove-red?logo=gitee" alt="Gitee"></a>
+</p>
+
+<p align="center">
   <a href="README_EN.md">English</a> | 中文
 </p>
 
