@@ -7,6 +7,58 @@
   'use strict';
 
   /**
+   * 按难度优先级选取词汇
+   * 优先选择与用户设置相同难度的词汇，不够再逐级增加难度，同级超过则随机选取
+   * @param {object[]} candidates - 候选词汇数组
+   * @param {number} targetCount - 目标数量
+   * @param {string} userLevel - 用户设置的难度等级
+   * @returns {object[]} 选取的词汇数组
+   */
+  L.selectByDifficultyPriority = function(candidates, targetCount, userLevel) {
+    if (targetCount <= 0 || candidates.length === 0) {
+      return [];
+    }
+
+    const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+    const userLevelIndex = levels.indexOf(userLevel || 'B1');
+
+    // 从用户等级开始，向上逐级选取
+    const priorityOrder = levels.slice(userLevelIndex >= 0 ? userLevelIndex : 2);
+
+    const selected = [];
+    const selectedSet = new Set();
+
+    for (const level of priorityOrder) {
+      if (selected.length >= targetCount) break;
+
+      // 筛选当前难度等级的候选词汇
+      const levelCandidates = candidates.filter(c =>
+        (c.difficulty || 'B1') === level &&
+        !selectedSet.has(c.original.toLowerCase())
+      );
+
+      const needed = targetCount - selected.length;
+
+      if (levelCandidates.length <= needed) {
+        // 全部选取
+        for (const c of levelCandidates) {
+          selected.push(c);
+          selectedSet.add(c.original.toLowerCase());
+        }
+      } else {
+        // 随机选取
+        const shuffled = [...levelCandidates].sort(() => Math.random() - 0.5);
+        for (let i = 0; i < needed; i++) {
+          selected.push(shuffled[i]);
+          selectedSet.add(shuffled[i].original.toLowerCase());
+        }
+      }
+    }
+
+    return selected;
+  };
+
+  /**
    * 翻译文本
    * @param {string} text - 待翻译文本
    * @returns {Promise<{immediate: object[], async: Promise|null}>}
@@ -91,7 +143,11 @@
     // 获取已学会单词列表
     const learnedWordsSet = new Set((L.config.learnedWords || []).map(w => w.original.toLowerCase()));
 
-    // 过滤缓存结果（不再限制数量，由 AI 根据百分比决定）
+    // 计算目标翻译词汇数量（基于百分比）
+    const translationDensity = L.config.translationDensity || 30;
+    const targetCount = Math.ceil(allWords.length * (translationDensity / 100));
+
+    // 过滤缓存结果（按难度等级和已学会状态过滤）
     const filteredCached = cached
       .filter(c =>
         L.isDifficultyCompatible(c.difficulty || 'B1', L.config.difficultyLevel) &&
@@ -109,8 +165,18 @@
         };
       });
 
-    // 返回所有缓存结果作为即时结果
-    const immediateResults = filteredCached;
+    // 按难度优先级选取缓存词汇（不超过目标数量）
+    const selectedCached = L.selectByDifficultyPriority(
+      filteredCached,
+      targetCount,
+      L.config.difficultyLevel
+    );
+
+    // 计算还需要从 API 获取的词汇数量
+    const needFromApi = targetCount - selectedCached.length;
+
+    // 返回选取的缓存结果作为即时结果
+    const immediateResults = selectedCached;
 
     if (immediateResults.length > 0) {
       L.updateStats({ cacheHits: immediateResults.length, cacheMisses: 0 });
@@ -119,11 +185,12 @@
     // 检查文本长度是否足够调用 API
     const textTooShort = text.trim().length < L.getMinTextLength(text);
 
-    if (textTooShort || uncached.length === 0) {
+    // 如果缓存已满足目标数量，或文本太短，或没有未缓存词汇，则不调用 API
+    if (needFromApi <= 0 || textTooShort || uncached.length === 0) {
       return { immediate: immediateResults, async: null };
     }
 
-    // 异步调用 API（只传递百分比，让 AI 决定翻译词汇数量）
+    // 异步调用 API 补充词汇
     const asyncPromise = (async () => {
       try {
         const prompt = L.buildTranslationPrompt({
@@ -205,7 +272,14 @@
           !immediateWords.has(r.original.toLowerCase())
         );
 
-        return filteredCorrectedResults;
+        // 按难度优先级选取，只补充需要的数量（needFromApi 在闭包中可访问）
+        const selectedApiResults = L.selectByDifficultyPriority(
+          filteredCorrectedResults,
+          needFromApi,
+          L.config.difficultyLevel
+        );
+
+        return selectedApiResults;
 
       } catch (error) {
         console.error('[Lingrove] Async API Error:', error);
