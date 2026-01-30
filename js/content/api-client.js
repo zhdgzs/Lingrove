@@ -272,14 +272,7 @@
           !immediateWords.has(r.original.toLowerCase())
         );
 
-        // 按难度优先级选取，只补充需要的数量（needFromApi 在闭包中可访问）
-        const selectedApiResults = L.selectByDifficultyPriority(
-          filteredCorrectedResults,
-          needFromApi,
-          L.config.difficultyLevel
-        );
-
-        return selectedApiResults;
+        return filteredCorrectedResults;
 
       } catch (error) {
         console.error('[Lingrove] Async API Error:', error);
