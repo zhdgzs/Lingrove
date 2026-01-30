@@ -1665,6 +1665,16 @@ async function performAutoSync(forceSync = false) {
 
     const files = listResult.files || [];
     const todayFileExists = files.some(f => f.name === filename);
+    
+    // 删除所有旧的自动同步文件
+    const oldAutoSyncFiles = files.filter(f => f.name.startsWith('auto_sync_') && f.name !== filename);
+    for (const oldFile of oldAutoSyncFiles) {
+      console.log('[Lingrove] Deleting old auto sync file:', oldFile.name);
+      const deleteResult = await webdavDelete(cloudSync.server, cloudSync.username, cloudSync.password, oldFile.name);
+      if (!deleteResult.success) {
+        console.error('[Lingrove] Failed to delete old auto sync file:', oldFile.name, deleteResult.message);
+      }
+    }
 
     // 如果不是强制同步且今天已同步，则跳过
     if (!forceSync && todayFileExists) {
@@ -1672,17 +1682,10 @@ async function performAutoSync(forceSync = false) {
       return;
     }
 
-    // 删除所有旧的自动同步文件
-    const oldAutoSyncFiles = files.filter(f => f.name.startsWith('auto_sync_') && f.name !== filename);
-    for (const oldFile of oldAutoSyncFiles) {
-      console.log('[Lingrove] Deleting old auto sync file:', oldFile.name);
-      await webdavDelete(cloudSync.server, cloudSync.username, cloudSync.password, oldFile.name);
-    }
-
     // 收集数据并上传今天的文件
     const data = await collectAllData();
 
-    // 直接上传文件（不使用 webdavUpload，因为它会生成时间戳文件名）
+    // 直接上传文件
     await ensureWebdavDir(cloudSync.server, cloudSync.username, cloudSync.password);
     const fileUrl = `${cloudSync.server}${CLOUD_SYNC_CONFIG.backupDir}/${filename}`;
 
