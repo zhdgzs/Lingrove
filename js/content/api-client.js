@@ -143,9 +143,15 @@
     // 获取已学会单词列表
     const learnedWordsSet = new Set((L.config.learnedWords || []).map(w => w.original.toLowerCase()));
 
-    // 计算目标翻译词汇数量（基于百分比）
+    // 计算实际词汇数量（用于翻译密度计算）
+    // 注意：allWords 包含大量中文短语组合，用于缓存匹配，但不应用于密度计算
+    const englishWordCount = words.length;  // 英文单词数
+    const chineseCharCount = chineseText.reduce((sum, phrase) => sum + phrase.length, 0);  // 中文字符数
+    const actualWordCount = englishWordCount + chineseCharCount / 2;  // 实际词汇总数
+
+    // 计算目标翻译词汇数量（基于实际词汇数量，而非组合数量）
     const translationDensity = L.config.translationDensity || 30;
-    const targetCount = Math.ceil(allWords.length * (translationDensity / 100));
+    const targetCount = Math.ceil(actualWordCount * (translationDensity / 100));
 
     // 过滤缓存结果（按难度等级和已学会状态过滤）
     const filteredCached = cached
