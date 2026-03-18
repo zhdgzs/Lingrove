@@ -61,8 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     customDensityInput: document.getElementById('customDensityInput'),
     minLengthCJK: document.getElementById('minLengthCJK'),
     minLengthEN: document.getElementById('minLengthEN'),
-    applyRecommendedMinLength: document.getElementById('applyRecommendedMinLength'),
-    recommendedMinLengthHint: document.getElementById('recommendedMinLengthHint'),
     processModeRadios: document.querySelectorAll('input[name="processMode"]'),
 
     // 行为设置
@@ -1267,7 +1265,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (elements.customDensityInput) {
         elements.customDensityInput.value = translationDensity;
       }
-      updateRecommendedMinLengthHint(translationDensity);
 
       // 最小文本长度配置
       const minLengthConfig = result.minLengthConfig || Lingrove.MIN_LENGTH_CONFIG;
@@ -1767,7 +1764,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
           density = parseInt(selected?.value) || 30;
         }
-        updateRecommendedMinLengthHint(density);
         debouncedSave(200);
       });
     });
@@ -1800,27 +1796,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         customRadio.checked = true;
       }
       const density = parseInt(elements.customDensityInput.value) || 30;
-      updateRecommendedMinLengthHint(density);
       debouncedSave(200);
     });
 
     // 最小文本长度配置
     elements.minLengthCJK?.addEventListener('change', () => debouncedSave(200));
     elements.minLengthEN?.addEventListener('change', () => debouncedSave(200));
-    elements.applyRecommendedMinLength?.addEventListener('click', () => {
-      const selected = document.querySelector('input[name="translationDensity"]:checked');
-      let density = 30;
-      if (selected?.value === 'custom') {
-        density = parseInt(elements.customDensityInput?.value) || 30;
-      } else {
-        density = parseInt(selected?.value) || 30;
-      }
-      // 密度越高，需要更长的文本来提供足够的翻译词汇
-      const multiplier = density / 30; // 30% 为基准
-      if (elements.minLengthCJK) elements.minLengthCJK.value = Math.round(20 * multiplier);
-      if (elements.minLengthEN) elements.minLengthEN.value = Math.round(50 * multiplier);
-      debouncedSave(200);
-    });
 
     elements.processModeRadios.forEach(radio => {
       radio.addEventListener('change', () => debouncedSave(200));
@@ -1910,16 +1891,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.selectedDifficulty.textContent = level;
   }
 
-  // 更新推荐最小长度提示
-  // 翻译密度越高，需要更长的文本来提供足够的翻译词汇
-  function updateRecommendedMinLengthHint(density) {
-    const multiplier = density / 30; // 30% 为基准
-    const cjk = Math.round(20 * multiplier);
-    const en = Math.round(50 * multiplier);
-    if (elements.recommendedMinLengthHint) {
-      elements.recommendedMinLengthHint.textContent = `推荐值：中日韩 ${cjk}，英文 ${en}`;
-    }
-  }
 
   // 切换到指定页面
   function switchToSection(sectionId) {
