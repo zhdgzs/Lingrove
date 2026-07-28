@@ -1,6 +1,8 @@
-.claude
-.codex
-.omc
+.agents/
+.claude/
+.codex/
+.omc/
+.serena/
 
 
 ### VS Code ###
