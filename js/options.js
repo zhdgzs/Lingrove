@@ -668,6 +668,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // API 预设配置
   const API_PRESETS = {
+    siliconflow: { name: '硅基流动', endpoint: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen3.5-4B' },
     modelscope: { name: '魔搭', endpoint: 'https://api-inference.modelscope.cn/v1/chat/completions', model: 'deepseek-ai/DeepSeek-V3.2' },
     deepseek: { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat' },
     openai: { name: 'OpenAI', endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini' },

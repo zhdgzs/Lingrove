@@ -2774,8 +2774,25 @@ input:checked + .toggle-slider:before {
 }
 
 .preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px !important;
   padding: 6px 12px !important;
+}
+
+.preset-recommendation {
+  color: var(--success);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.preset-buttons + .help-text a {
+  color: var(--primary-light);
+}
+
+.preset-buttons + .help-text a:hover {
+  color: var(--primary);
 }
 
 .btn-outline {

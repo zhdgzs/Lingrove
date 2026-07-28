@@ -168,7 +168,7 @@
 ### 配置 API
 
 1. 点击扩展图标 → 设置
-2. 选择预设服务（**推荐魔搭社区**，免费额度充足）或自定义配置
+2. 选择预设服务（**推荐硅基流动或魔搭社区**，均提供免费模型或额度）或自定义配置
 3. 填入 API 密钥，测试连接
 
 <p align="center">
@@ -189,6 +189,7 @@
 
 | 服务商 | 端点 | 推荐模型 | 备注 |
 |--------|------|----------|------|
+| **硅基流动** ⭐ | `https://api.siliconflow.cn/v1/chat/completions` | Qwen/Qwen3.5-4B | 默认模型免费，推荐；[价格说明](https://www.siliconflow.cn/pricing) |
 | **魔搭社区** ⭐ | `https://api-inference.modelscope.cn/v1/chat/completions` | deepseek-ai/DeepSeek-V3.2 | 免费额度充足，推荐 |
 | DeepSeek | `https://api.deepseek.com/chat/completions` | deepseek-chat | |
 | OpenAI | `https://api.openai.com/v1/chat/completions` | gpt-4o-mini | |

@@ -155,7 +155,7 @@ Support custom translation threshold, optimized trigger logic with dynamic minim
 ### API Configuration
 
 1. Click the extension icon → Settings
-2. Choose a preset service (**ModelScope Community recommended**, generous free quota) or custom configuration
+2. Choose a preset service (**SiliconFlow or ModelScope Community recommended**, with free models or quota) or custom configuration
 3. Enter your API key and test the connection
 
 <p align="center">
@@ -176,6 +176,7 @@ Support custom translation threshold, optimized trigger logic with dynamic minim
 
 | Provider | Endpoint | Recommended Model | Notes |
 |----------|----------|-------------------|-------|
+| **SiliconFlow** ⭐ | `https://api.siliconflow.cn/v1/chat/completions` | Qwen/Qwen3.5-4B | Default model is free; recommended; [pricing](https://www.siliconflow.cn/pricing) |
 | **ModelScope** ⭐ | `https://api-inference.modelscope.cn/v1/chat/completions` | deepseek-ai/DeepSeek-V3.2 | Generous free quota, recommended |
 | DeepSeek | `https://api.deepseek.com/chat/completions` | deepseek-chat | |
 | OpenAI | `https://api.openai.com/v1/chat/completions` | gpt-4o-mini | |
