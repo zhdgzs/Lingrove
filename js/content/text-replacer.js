@@ -252,6 +252,8 @@
   L.restoreAll = function() {
     // 设置手动还原标志，禁用自动处理
     L.isManuallyRestored = true;
+    // 使还原前发起的异步翻译结果失效，避免旧密度结果重新写入页面
+    L.processingGeneration = (L.processingGeneration || 0) + 1;
 
     document.querySelectorAll('.lingrove-translated').forEach(L.restoreOriginal);
     document.querySelectorAll('[data-lingrove-processed]').forEach(el => el.removeAttribute('data-lingrove-processed'));

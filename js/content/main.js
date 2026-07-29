@@ -10,6 +10,7 @@
   L.isProcessing = false;
   L.isManuallyRestored = false; // 标记用户是否手动还原了页面
   L.intersectionObserver = null;
+  L.processingGeneration = L.processingGeneration || 0;
 
   /**
    * 设置 IntersectionObserver
@@ -55,6 +56,7 @@
     if (L.isProcessing || L.pendingContainers.size === 0) return;
 
     L.isProcessing = true;
+    const processingGeneration = L.processingGeneration;
 
     try {
       // 收集所有待处理的容器
@@ -95,6 +97,7 @@
       const batches = L.createTextBatches(segments);
 
       for (const batch of batches) {
+        if (processingGeneration !== L.processingGeneration) break;
         await L.processBatchSegments(batch, whitelistWords);
       }
     } finally {
@@ -180,14 +183,54 @@
   L.processBatchSegments = async function(segments, whitelistWords) {
     if (segments.length === 0) return;
 
+    const processingGeneration = L.processingGeneration;
+
     // 发送完整原文给 AI，保持语义完整
     const combinedText = segments.map(s => s.text).join('\n\n---\n\n');
 
     try {
       const result = await L.translateText(combinedText);
+      if (processingGeneration !== L.processingGeneration) return;
 
       const allReplacements = [...(result.immediate || [])];
       const learnedWordDisplay = L.config.learnedWordDisplay || 'hide';
+      let remainingBudget = Math.max(0, Number(result.targetCount) || 0);
+
+      const getLearnedReplacements = (segmentText, alreadyReplaced = new Set()) => {
+        if (learnedWordDisplay === 'hide') return [];
+
+        const learnedWordsMap = new Map((L.config.learnedWords || []).map(w => [w.original.toLowerCase(), w]));
+        return Array.from(learnedWordsMap.values())
+          .filter(w =>
+            segmentText.includes(w.original.toLowerCase()) &&
+            !alreadyReplaced.has(w.original.toLowerCase())
+          )
+          .map(w => ({
+            original: w.original,
+            translation: w.word,
+            phonetic: w.phonetic || '',
+            difficulty: w.difficulty || 'B1',
+            isLearned: true,
+            position: segmentText.indexOf(w.original.toLowerCase())
+          }));
+      };
+
+      const applyAutomaticReplacements = (segment, replacements) => {
+        if (remainingBudget <= 0 || replacements.length === 0) return 0;
+
+        const limitedReplacements = replacements.slice(0, remainingBudget);
+        const appliedCount = L.applyReplacements(segment.element, limitedReplacements);
+        remainingBudget = Math.max(0, remainingBudget - appliedCount);
+
+        if (appliedCount > 0) {
+          const wordsToFetch = limitedReplacements
+            .map(r => r.original)
+            .concat(limitedReplacements.map(r => r.translation));
+          L.prefetchDictionaryData(wordsToFetch);
+        }
+
+        return appliedCount;
+      };
 
       for (const segment of segments) {
         const segmentText = segment.text.toLowerCase();
@@ -198,39 +241,21 @@
           !whitelistWords.has(r.original.toLowerCase())
         );
 
-        // 根据设置处理已学会词汇
-        let learnedReplacements = [];
-        if (learnedWordDisplay !== 'hide') {
-          const learnedWordsMap = new Map((L.config.learnedWords || []).map(w => [w.original.toLowerCase(), w]));
-          // 直接从 learnedWords 中获取，而不是从 allReplacements 中过滤
-          learnedReplacements = Array.from(learnedWordsMap.values())
-            .filter(w => segmentText.includes(w.original.toLowerCase()))
-            .map(w => ({
-              original: w.original,
-              translation: w.word,  // learnedWords 中翻译字段是 word
-              phonetic: w.phonetic || '',
-              difficulty: w.difficulty || 'B1',
-              isLearned: true,
-              position: segmentText.toLowerCase().indexOf(w.original.toLowerCase())
-            }));
-        }
+        const automaticCount = applyAutomaticReplacements(segment, matchingReplacements);
+        const learnedCount = L.applyReplacements(segment.element, getLearnedReplacements(segmentText));
 
-        const allToApply = [...matchingReplacements, ...learnedReplacements];
-
-        if (allToApply.length > 0) {
-          L.applyReplacements(segment.element, allToApply);
+        if (automaticCount + learnedCount > 0) {
           L.processedFingerprints.add(segment.fingerprint);
-          const wordsToFetch = matchingReplacements.map(r => r.original).concat(matchingReplacements.map(r => r.translation));
-          L.prefetchDictionaryData(wordsToFetch);
         }
       }
 
       if (result.async) {
         result.async.then(asyncReplacements => {
+          if (processingGeneration !== L.processingGeneration) return;
           if (asyncReplacements?.length) {
-            const learnedWordDisplay = L.config.learnedWordDisplay || 'hide';
-
             for (const segment of segments) {
+              if (processingGeneration !== L.processingGeneration) return;
+
               const segmentText = segment.text.toLowerCase();
               const alreadyReplaced = new Set();
               segment.element.querySelectorAll('.lingrove-translated').forEach(el => {
@@ -244,33 +269,7 @@
                 !alreadyReplaced.has(r.original.toLowerCase())
               );
 
-              // 根据设置处理已学会词汇
-              let learnedReplacements = [];
-              if (learnedWordDisplay !== 'hide') {
-                const learnedWordsMap = new Map((L.config.learnedWords || []).map(w => [w.original.toLowerCase(), w]));
-                // 直接从 learnedWords 中获取，而不是从 asyncReplacements 中过滤
-                learnedReplacements = Array.from(learnedWordsMap.values())
-                  .filter(w =>
-                    segmentText.includes(w.original.toLowerCase()) &&
-                    !alreadyReplaced.has(w.original.toLowerCase())
-                  )
-                  .map(w => ({
-                    original: w.original,
-                    translation: w.word,  // learnedWords 中翻译字段是 word
-                    phonetic: w.phonetic || '',
-                    difficulty: w.difficulty || 'B1',
-                    isLearned: true,
-                    position: segmentText.toLowerCase().indexOf(w.original.toLowerCase())
-                  }));
-              }
-
-              const allToApply = [...matchingReplacements, ...learnedReplacements];
-
-              if (allToApply.length > 0) {
-                L.applyReplacements(segment.element, allToApply);
-                const wordsToFetch = matchingReplacements.map(r => r.original).concat(matchingReplacements.map(r => r.translation));
-                L.prefetchDictionaryData(wordsToFetch);
-              }
+              applyAutomaticReplacements(segment, matchingReplacements);
             }
           }
         }).catch(error => {

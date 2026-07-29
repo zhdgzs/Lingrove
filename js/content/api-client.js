@@ -59,9 +59,22 @@
   };
 
   /**
+   * 根据有效词汇数量计算自动翻译上限
+   * 使用向下取整，确保实际目标数量不会超过用户设置的密度
+   * @param {number} actualWordCount - 有效词汇数量
+   * @param {number} translationDensity - 翻译密度百分比
+   * @returns {number} 自动翻译上限
+   */
+  L.calculateTranslationTarget = function(actualWordCount, translationDensity) {
+    const wordCount = Math.max(0, Number(actualWordCount) || 0);
+    const density = Math.min(100, Math.max(0, Number(translationDensity) || 0));
+    return Math.floor(wordCount * (density / 100));
+  };
+
+  /**
    * 翻译文本
    * @param {string} text - 待翻译文本
-   * @returns {Promise<{immediate: object[], async: Promise|null}>}
+   * @returns {Promise<{immediate: object[], async: Promise|null, targetCount: number}>}
    */
   L.translateText = async function(text) {
     if (!L.config.hasApiNodes && !L.config.apiEndpoint) {
@@ -78,10 +91,10 @@
 
     // 根据处理模式检查是否需要处理该文本
     if (L.config.processMode === 'native-only' && !isNative) {
-      return { immediate: [], async: null };
+      return { immediate: [], async: null, targetCount: 0 };
     }
     if (L.config.processMode === 'target-only' && isNative) {
-      return { immediate: [], async: null };
+      return { immediate: [], async: null, targetCount: 0 };
     }
 
     const sourceLang = isNative ? L.config.nativeLanguage : detectedLang;
@@ -142,6 +155,8 @@
 
     // 获取已学会单词列表
     const learnedWordsSet = new Set((L.config.learnedWords || []).map(w => w.original.toLowerCase()));
+    // 记忆词由专用流程强制处理，不占用普通智能选词的密度额度
+    const memorizeWordsSet = new Set((L.config.memorizeList || []).map(w => w.word.toLowerCase()));
 
     // 计算实际词汇数量（用于翻译密度计算）
     // 注意：allWords 包含大量中文短语组合，用于缓存匹配，但不应用于密度计算
@@ -151,13 +166,14 @@
 
     // 计算目标翻译词汇数量（基于实际词汇数量，而非组合数量）
     const translationDensity = L.config.translationDensity || 30;
-    const targetCount = Math.ceil(actualWordCount * (translationDensity / 100));
+    const targetCount = L.calculateTranslationTarget(actualWordCount, translationDensity);
 
     // 过滤缓存结果（按难度等级和已学会状态过滤）
     const filteredCached = cached
       .filter(c =>
         L.isDifficultyCompatible(c.difficulty || 'B1', L.config.difficultyLevel) &&
-        !learnedWordsSet.has(c.word.toLowerCase())
+        !learnedWordsSet.has(c.word.toLowerCase()) &&
+        !memorizeWordsSet.has(c.word.toLowerCase())
       )
       .map(c => {
         const idx = text.toLowerCase().indexOf(c.word.toLowerCase());
@@ -193,7 +209,7 @@
 
     // 如果缓存已满足目标数量，或文本太短，或没有未缓存词汇，则不调用 API
     if (needFromApi <= 0 || textTooShort || uncached.length === 0) {
-      return { immediate: immediateResults, async: null };
+      return { immediate: immediateResults, async: null, targetCount };
     }
 
     // 异步调用 API 补充词汇
@@ -204,6 +220,7 @@
           targetLang,
           text: text,
           translationDensity: L.config.translationDensity || 30,
+          targetCount: needFromApi,
           customPrompt: L.config.customPromptRules,
           config: L.config
         });
@@ -271,14 +288,21 @@
 
         const immediateWords = new Set(immediateResults.map(r => r.original.toLowerCase()));
         const currentLearnedWords = new Set((L.config.learnedWords || []).map(w => w.original.toLowerCase()));
+        const currentMemorizeWords = new Set((L.config.memorizeList || []).map(w => w.word.toLowerCase()));
 
-        // 过滤掉已学会和已在即时结果中的词汇
+        // 过滤掉已学会、记忆词和已在即时结果中的词汇
         const filteredCorrectedResults = correctedResults.filter(r =>
           !currentLearnedWords.has(r.original.toLowerCase()) &&
+          !currentMemorizeWords.has(r.original.toLowerCase()) &&
           !immediateWords.has(r.original.toLowerCase())
         );
 
-        return filteredCorrectedResults;
+        // API 只补充缓存结果未占用的额度，客户端硬限制作为最终保障
+        return L.selectByDifficultyPriority(
+          filteredCorrectedResults,
+          needFromApi,
+          L.config.difficultyLevel
+        );
 
       } catch (error) {
         console.error('[Lingrove] Async API Error:', error);
@@ -286,7 +310,7 @@
       }
     })();
 
-    return { immediate: immediateResults, async: asyncPromise };
+    return { immediate: immediateResults, async: asyncPromise, targetCount };
   };
 
   /**

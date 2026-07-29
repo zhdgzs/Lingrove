@@ -315,7 +315,8 @@
           if (changes.theme) {
             L.updateUITheme();
           }
-          if (changes.difficultyLevel || changes.intensity || changes.translationStyle || changes.processMode) {
+          if (changes.difficultyLevel || changes.translationDensity || changes.translationStyle ||
+              changes.processMode || changes.learnedWordDisplay) {
             L.restoreAll();
             if (L.config.enabled) {
               L.processPage();

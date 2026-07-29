@@ -4,7 +4,8 @@
   "description": "Lingrove - 沉浸式语言学习 Chrome 插件 - 在日常浏览中自然习得语言",
   "scripts": {
     "build": "node scripts/build.js",
-    "watch": "node scripts/build.js --watch"
+    "watch": "node scripts/build.js --watch",
+    "test": "node --test tests/*.test.js"
   },
   "keywords": [
     "chrome-extension",

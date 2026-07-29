@@ -151,7 +151,7 @@
    * 构建完整的翻译提示词
    */
   L.buildTranslationPrompt = function(options) {
-    const { sourceLang, targetLang, text, translationDensity, customPrompt, config } = options;
+    const { sourceLang, targetLang, text, translationDensity, targetCount, customPrompt, config } = options;
 
     // 获取源语言规则（优先使用自定义规则）
     const defaultSourceRule = L.SOURCE_LANGUAGE_RULES[sourceLang] ||
@@ -177,9 +177,10 @@ ${userRule}
 
 ## 任务参数：
 1. 请根据有效词汇列表选择约 ${translationDensity}% 的词汇进行翻译
-2. 优先选择CEFR等级在${config?.difficultyLevel || 'B1'}及以上的词汇
-3. 翻译方向：从 ${sourceLang} 翻译到 ${targetLang}
-4. 不要重复翻译已经是${targetLang}的内容
+2. 本次最多补充 ${targetCount} 个词汇，禁止超过此数量
+3. 优先选择CEFR等级在${config?.difficultyLevel || 'B1'}及以上的词汇
+4. 翻译方向：从 ${sourceLang} 翻译到 ${targetLang}
+5. 不要重复翻译已经是${targetLang}的内容
 
 ## 输出格式：
 返回 JSON 数组，每个元素包含：
