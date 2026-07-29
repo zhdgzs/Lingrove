@@ -166,6 +166,17 @@
   };
 
   /**
+   * 检测是否为应跳过的本地地址
+   * @param {Location|URL|object} locationInfo - 页面地址信息
+   * @returns {boolean}
+   */
+  L.isLocalAddress = function(locationInfo) {
+    if (!locationInfo) return false;
+
+    return locationInfo.protocol === 'file:' || L.isIPAddress(locationInfo.hostname);
+  };
+
+  /**
    * 重建文本，只保留指定的词汇（用于发送给 AI）
    * @param {string} text - 原始文本
    * @param {string[]} targetWords - 目标词汇列表

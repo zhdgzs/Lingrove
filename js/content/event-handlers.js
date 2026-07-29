@@ -322,6 +322,13 @@
               L.processPage();
             }
           }
+          if (changes.siteMode || changes.excludedSites || changes.allowedSites ||
+              changes.skipIPAddresses) {
+            L.restoreAll();
+            if (L.config.enabled && L.config.autoProcess && L.shouldProcessSite()) {
+              L.processPage();
+            }
+          }
           if (changes.memorizeList) {
             const oldList = changes.memorizeList.oldValue || [];
             const newList = changes.memorizeList.newValue || [];

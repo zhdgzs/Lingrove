@@ -938,12 +938,12 @@
           <textarea id="excludedSitesInput" placeholder="example.com&#10;github.com"></textarea>
         </div>
 
-        <!-- IP 地址过滤选项 -->
+        <!-- 本地地址过滤选项 -->
         <div class="form-group">
           <div class="toggle-item">
             <div class="toggle-info">
-              <span class="toggle-title">跳过 IP 地址</span>
-              <span class="toggle-desc">跳过所有 IP 地址（包括 localhost、192.168.x.x、IPv6 等）</span>
+              <span class="toggle-title">跳过 IP 地址和本地文件</span>
+              <span class="toggle-desc">跳过 IP、localhost 和 file:// 本地文件页面（端口不影响识别）</span>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="skipIPAddresses">

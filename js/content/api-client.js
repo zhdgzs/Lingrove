@@ -569,7 +569,8 @@
    * @returns {Promise<number>}
    */
   L.processSpecificWords = async function(targetWords) {
-    if (!L.config?.enabled || !targetWords?.length) {
+    if (!L.config?.enabled || !targetWords?.length ||
+        (L.shouldProcessSite && !L.shouldProcessSite())) {
       return 0;
     }
 

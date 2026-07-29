@@ -322,21 +322,8 @@
 
     if (!L.config?.enabled) return { processed: 0, disabled: true };
 
-    const hostname = window.location.hostname;
-
-    // 检查 IP 地址过滤
-    if (L.config.skipIPAddresses && L.isIPAddress(hostname)) {
-      return { processed: 0, excluded: true, reason: 'ip-address' };
-    }
-
-    if (L.config.siteMode === 'all') {
-      if (L.config.excludedSites?.some(domain => hostname.includes(domain))) {
-        return { processed: 0, excluded: true };
-      }
-    } else {
-      if (!L.config.allowedSites?.some(domain => hostname.includes(domain))) {
-        return { processed: 0, excluded: true };
-      }
+    if (!L.shouldProcessSite()) {
+      return { processed: 0, excluded: true };
     }
 
     if (L.wordCache.size === 0) {
@@ -366,7 +353,8 @@
     L.setupIntersectionObserver();
     L.setupEventListeners();
 
-    if (L.config.autoProcess && L.config.enabled && (L.config.hasApiNodes || L.config.apiEndpoint)) {
+    if (L.config.autoProcess && L.config.enabled && L.shouldProcessSite() &&
+        (L.config.hasApiNodes || L.config.apiEndpoint)) {
       setTimeout(() => {
         const memorizeWords = (L.config.memorizeList || []).map(w => w.word).filter(w => w && w.trim());
         if (memorizeWords.length > 0) {

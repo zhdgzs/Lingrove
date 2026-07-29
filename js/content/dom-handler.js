@@ -152,6 +152,12 @@
    */
   L.shouldProcessSite = function() {
     const hostname = window.location.hostname;
+
+    // 开启本地地址过滤后，跳过 IP、localhost 和 file:// 页面
+    if (L.config.skipIPAddresses && L.isLocalAddress(window.location)) {
+      return false;
+    }
+
     if (L.config.siteMode === 'all') {
       // 所有网站模式：检查是否在排除列表中
       if (L.config.excludedSites?.some(domain => hostname.includes(domain))) {
